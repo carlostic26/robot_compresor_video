@@ -1,3 +1,3 @@
-# Robot Compresor Video
+# Robot Video Compressor
 
-Aplicación móvil en Flutter para comprimir videos de forma sencilla, con un flujo claro desde la selección del archivo hasta la obtención del resultado optimizado.
+A Flutter mobile application that compresses videos with a clean and intuitive workflow, from video selection to optimized output generation.
