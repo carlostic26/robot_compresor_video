@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Column(
           children: [
-            /// TABS CON INDICADOR ANIMADO
+            /// TABS DE SECCIONES
             BlocBuilder<HomeSectionBloc, HomeSectionState>(
               builder: (context, state) {
                 return AnimatedSectionTabs(
@@ -83,6 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+
+            SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
 
             /// PAGEVIEW CON LAS 4 SECCIONES
             Expanded(
