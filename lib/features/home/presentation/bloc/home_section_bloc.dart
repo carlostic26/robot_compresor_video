@@ -14,7 +14,7 @@ class HomeSectionBloc extends Bloc<HomeSectionEvent, HomeSectionState> {
   }
 
   /// Maneja el cambio de página
-  /// Cuando el usuario desliza o toca un tab, esta función se ejecuta
+  /// Cuando el usuario desliza o toca un tab
   Future<void> _onPageChanged(
     PageChanged event,
     Emitter<HomeSectionState> emit,

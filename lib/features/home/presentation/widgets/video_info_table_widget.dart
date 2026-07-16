@@ -47,7 +47,7 @@ class VideoInfoTableWidget extends StatelessWidget {
             'Información del vídeo',
             style: Theme.of(
               context,
-            ).textTheme.titleLarge?.copyWith(color: Colors.blue),
+            ).textTheme.titleLarge?.copyWith(color: Colors.blue, fontSize: 16),
           ),
         ),
 

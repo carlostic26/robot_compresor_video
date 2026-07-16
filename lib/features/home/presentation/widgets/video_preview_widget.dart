@@ -55,8 +55,8 @@ class VideoPreviewWidget extends StatelessWidget {
 
           /// Botón de reproducción (sin acción funcional)
           Container(
-            width: 80,
-            height: 80,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.9),

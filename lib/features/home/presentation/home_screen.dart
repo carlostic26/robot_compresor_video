@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
+import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/animated_section_tabs.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/section_pages.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/compressor_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/result_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/subir_section_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -54,8 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<HomeSectionBloc>(
-      create: (context) => _homeSectionBloc..add(const InitPage()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<HomeSectionBloc>(
+          create: (_) => _homeSectionBloc..add(const InitPage()),
+        ),
+
+        BlocProvider<VideoBloc>(create: (_) => VideoBloc()),
+      ],
+
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
