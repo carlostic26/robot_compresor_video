@@ -1,16 +1,22 @@
 part of 'video_bloc.dart';
 
 class VideoState extends Equatable {
-  final String? selectedVideoName;
+  final VideoFile? video;
 
-  const VideoState({this.selectedVideoName});
+  const VideoState({
+    this.video,
+  });
 
-  VideoState copyWith({String? selectedVideoName}) {
+  VideoState copyWith({
+    VideoFile? video,
+  }) {
     return VideoState(
-      selectedVideoName: selectedVideoName ?? this.selectedVideoName,
+      video: video ?? this.video,
     );
   }
 
   @override
-  List<Object?> get props => [selectedVideoName];
+  List<Object?> get props => [
+        video,
+      ];
 }

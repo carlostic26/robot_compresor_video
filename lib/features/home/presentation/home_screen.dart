@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
@@ -20,14 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   late HomeSectionBloc _homeSectionBloc;
 
-  /// Lista de secciones en el mismo orden que las páginas
-  static const List<String> _sections = [
-    'Subir',
-    'Compresor',
-    'Avanzado',
-    'Resultado',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -42,12 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  /// Maneja el cambio de página desde el PageView
   void _onPageChanged(int index) {
     _homeSectionBloc.add(PageChanged(index));
   }
 
-  /// Maneja cuando se presiona un tab
   void _onTabPressed(int index) {
     _pageController.animateToPage(
       index,
@@ -64,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
           create: (_) => _homeSectionBloc..add(const InitPage()),
         ),
 
-        BlocProvider<VideoBloc>(create: (_) => VideoBloc()),
+        BlocProvider<VideoBloc>(create: (_) => sl<VideoBloc>()),
       ],
 
       child: Scaffold(
@@ -82,35 +73,48 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
           ],
         ),
-        body: Column(
-          children: [
-            /// TABS DE SECCIONES
-            BlocBuilder<HomeSectionBloc, HomeSectionState>(
-              builder: (context, state) {
-                return AnimatedSectionTabs(
-                  sections: _sections,
-                  currentIndex: state.currentPageIndex,
-                  onTabPressed: _onTabPressed,
-                );
-              },
-            ),
+        body: BlocBuilder<VideoBloc, VideoState>(
+          builder: (context, videoState) {
+            final sections = videoState.video == null
+                ? const ['Subir', 'Avanzado', 'Resultado']
+                : const ['Compresor', 'Avanzado', 'Resultado'];
 
-            SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
+            return Column(
+              children: [
+                /// TABS DE SECCIONES
+                BlocBuilder<HomeSectionBloc, HomeSectionState>(
+                  builder: (context, state) {
+                    return AnimatedSectionTabs(
+                      sections: sections,
+                      currentIndex: state.currentPageIndex,
+                      onTabPressed: _onTabPressed,
+                    );
+                  },
+                ),
 
-            /// PAGEVIEW CON LAS 4 SECCIONES
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                children: const [
-                  SubirSection(),
-                  CompressorSection(),
-                  AvanzadoSection(),
-                  ResultadoSection(),
-                ],
-              ),
-            ),
-          ],
+                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
+
+                /// PAGEVIEW 3 SECCIONES DINAMICAS
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    children: videoState.video == null
+                        ? const [
+                            SubirSection(),
+                            AvanzadoSection(),
+                            ResultadoSection(),
+                          ]
+                        : const [
+                            CompressorSection(),
+                            AvanzadoSection(),
+                            ResultadoSection(),
+                          ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         bottomNavigationBar: SizedBox(
           height: ScreenSizeService.heightPercent(context, 8),

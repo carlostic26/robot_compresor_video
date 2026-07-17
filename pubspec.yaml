@@ -16,13 +16,21 @@ dependencies:
   go_router: ^15.1.2
   equatable: ^2.0.7
   path_provider: ^2.1.5
-  video_compress: any
-  file_picker: any
+  video_compress: 3.1.4
+  file_picker: 11.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_icons:
+  android: true
+  ios: true 
+  image_path: "assets/logo.png"
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png

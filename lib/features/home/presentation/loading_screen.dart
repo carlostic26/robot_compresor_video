@@ -51,10 +51,8 @@ class _LoadingScreenState extends State<LoadingScreen>
           children: [
             SizedBox(
               width: widthScreen,
-              child: Placeholder(
-                fallbackHeight: iconSize,
-                color: Colors.grey.shade300,
-              ),
+              height: iconSize,
+              child: Image.asset('assets/logo.png', fit: BoxFit.contain),
             ),
             SizedBox(height: verticalSpace),
             Padding(
@@ -65,18 +63,24 @@ class _LoadingScreenState extends State<LoadingScreen>
                     width: progressWidth,
                     child: LinearProgressIndicator(
                       value: progress,
-                      minHeight: 10,
+                      minHeight: 5,
                       backgroundColor: Colors.grey.shade300,
                     ),
                   ),
                   SizedBox(height: verticalSpace * 0.5),
                   Text('${(progress * 100).round()}%'),
-                  SizedBox(height: ScreenSizeService.heightPercent(context, 5)),
-                  TextButton(
-                    onPressed: () {
-                      context.go(AppRoutes.home);
-                    },
-                    child: const Text('Continuar'),
+                  SizedBox(
+                    height: ScreenSizeService.heightPercent(context, 10),
+                  ),
+                  SizedBox(
+                    width: widthScreen * 0.6,
+                    height: ScreenSizeService.heightPercent(context, 4),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.go(AppRoutes.home);
+                      },
+                      child: const Text('Continuar'),
+                    ),
                   ),
                 ],
               ),

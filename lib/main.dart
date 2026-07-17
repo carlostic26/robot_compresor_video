@@ -3,8 +3,11 @@ import 'core/routes/app_router.dart';
 import 'core/services/injection_container.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
-  setupDependencies();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await setupDependencies();
+
   runApp(const App());
 }
 
