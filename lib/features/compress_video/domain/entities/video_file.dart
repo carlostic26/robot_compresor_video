@@ -2,6 +2,44 @@ class VideoFile {
   final String path;
   final String name;
   final int size;
+  final Duration duration;
 
-  const VideoFile({required this.path, required this.name, required this.size});
+  //Resolution
+  final int width;
+  final int height;
+
+  final int bitrate;
+  final DateTime? createdAt;
+  final String? thumbnailPath;
+
+  const VideoFile({
+    required this.path,
+    required this.name,
+    required this.size,
+    required this.duration,
+    required this.width,
+    required this.height,
+    required this.bitrate,
+    required this.createdAt,
+    required this.thumbnailPath,
+  });
+
+  double get sizeMB => size / (1024 * 1024);
+  String get resolution => '$width x $height';
+  String get extension => name.split('.').last.toUpperCase();
+
+  String get formattedDuration {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    }
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
+  }
 }

@@ -1,39 +1,12 @@
 import 'package:flutter/material.dart';
-
-/// Modelo para la información del video (mock)
-class VideoInfo {
-  final String name;
-  final String duration;
-  final String date;
-  final String size;
-  final String bitRate;
-
-  const VideoInfo({
-    required this.name,
-    required this.duration,
-    required this.date,
-    required this.size,
-    required this.bitRate,
-  });
-
-  /// Factory para crear datos mock
-  factory VideoInfo.mock() {
-    return const VideoInfo(
-      name: 'Viaje a la playa.mp4',
-      duration: '00:02:45',
-      date: '14 jul. 2025 10:30 a. m.',
-      size: '52.4 MB',
-      bitRate: '2540 kbps',
-    );
-  }
-}
+import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 
 /// Widget que muestra la información del video en forma de tabla
 class VideoInfoTableWidget extends StatelessWidget {
   /// Información del video a mostrar
-  final VideoInfo videoInfo;
+  final VideoFile videoFile;
 
-  const VideoInfoTableWidget({super.key, required this.videoInfo});
+  const VideoInfoTableWidget({super.key, required this.videoFile});
 
   @override
   Widget build(BuildContext context) {
@@ -63,35 +36,35 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.description_outlined,
                 label: 'Nombre',
-                value: videoInfo.name,
+                value: videoFile.name,
               ),
               _buildDivider(),
               _buildInfoRow(
                 context,
                 icon: Icons.schedule,
                 label: 'Duración',
-                value: videoInfo.duration,
+                value: videoFile.formattedDuration,
               ),
               _buildDivider(),
               _buildInfoRow(
                 context,
                 icon: Icons.calendar_today,
                 label: 'Fecha',
-                value: videoInfo.date,
+                value: '--',
               ),
               _buildDivider(),
               _buildInfoRow(
                 context,
                 icon: Icons.storage,
                 label: 'Peso',
-                value: videoInfo.size,
+                value:  '${videoFile.sizeMB.toStringAsFixed(2)} MB',
               ),
               _buildDivider(),
               _buildInfoRow(
                 context,
                 icon: Icons.speed,
                 label: 'Bit rate',
-                value: videoInfo.bitRate,
+                value: videoFile.bitrate == 0 ? '--' : '${videoFile.bitrate} kbps',
               ),
             ],
           ),
