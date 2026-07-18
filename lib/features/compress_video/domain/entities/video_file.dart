@@ -42,4 +42,22 @@ class VideoFile {
     return '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
   }
+
+  String get shortName {
+    if (name.length <= 20) {
+      return name;
+    }
+
+    final dot = name.lastIndexOf('.');
+
+    if (dot == -1) {
+      return '${name.substring(0, 27)}...';
+    }
+
+    final extension = name.substring(dot);
+
+    final visible = 26 - extension.length;
+
+    return '${name.substring(0, visible)}...$extension';
+  }
 }

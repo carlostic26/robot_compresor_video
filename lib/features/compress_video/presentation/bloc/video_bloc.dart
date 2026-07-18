@@ -18,17 +18,25 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     PickVideoRequested event,
     Emitter<VideoState> emit,
   ) async {
-    final video = await pickVideoUseCase();
+    emit(state.copyWith(isLoading: true));
 
-    if (video == null) {
-      return;
+    try {
+      final video = await pickVideoUseCase();
+
+      if (video == null) {
+        emit(state.copyWith(isLoading: false));
+        return;
+      }
+
+      emit(state.copyWith(video: video, isLoading: false));
+
+      debugPrint("VIDEO SELECCIONADO");
+      debugPrint(video.name);
+      debugPrint(video.path);
+      debugPrint(video.size.toString());
+    } catch (e) {
+      emit(state.copyWith(isLoading: false));
+      debugPrint(e.toString());
     }
-
-    emit(state.copyWith(video: video));
-
-    debugPrint("VIDEO SELECCIONADO");
-    debugPrint(video.name);
-    debugPrint(video.path);
-    debugPrint(video.size.toString());
   }
 }

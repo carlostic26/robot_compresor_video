@@ -79,39 +79,58 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? const ['Subir', 'Avanzado', 'Resultado']
                 : const ['Compresor', 'Avanzado', 'Resultado'];
 
-            return Column(
+            if (videoState.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return Stack(
               children: [
-                /// TABS DE SECCIONES
-                BlocBuilder<HomeSectionBloc, HomeSectionState>(
-                  builder: (context, state) {
-                    return AnimatedSectionTabs(
-                      sections: sections,
-                      currentIndex: state.currentPageIndex,
-                      onTabPressed: _onTabPressed,
-                    );
-                  },
+                Column(
+                  children: [
+                    /// TABS DE SECCIONES
+                    BlocBuilder<HomeSectionBloc, HomeSectionState>(
+                      builder: (context, state) {
+                        return AnimatedSectionTabs(
+                          sections: sections,
+                          currentIndex: state.currentPageIndex,
+                          onTabPressed: _onTabPressed,
+                        );
+                      },
+                    ),
+
+                    SizedBox(
+                      height: ScreenSizeService.heightPercent(context, 2),
+                    ),
+
+                    /// PAGEVIEW 3 SECCIONES DINAMICAS
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: _onPageChanged,
+                        children: videoState.video == null
+                            ? const [
+                                SubirSection(),
+                                AvanzadoSection(),
+                                ResultadoSection(),
+                              ]
+                            : const [
+                                CompressorSection(),
+                                AvanzadoSection(),
+                                ResultadoSection(),
+                              ],
+                      ),
+                    ),
+                  ],
                 ),
 
-                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
-
-                /// PAGEVIEW 3 SECCIONES DINAMICAS
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    children: videoState.video == null
-                        ? const [
-                            SubirSection(),
-                            AvanzadoSection(),
-                            ResultadoSection(),
-                          ]
-                        : const [
-                            CompressorSection(),
-                            AvanzadoSection(),
-                            ResultadoSection(),
-                          ],
+                /// Overlay de carga
+                if (videoState.isLoading)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
                   ),
-                ),
               ],
             );
           },

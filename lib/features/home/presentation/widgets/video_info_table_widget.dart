@@ -36,7 +36,7 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.description_outlined,
                 label: 'Nombre',
-                value: videoFile.name,
+                value: videoFile.shortName,
               ),
               _buildDivider(),
               _buildInfoRow(
@@ -57,14 +57,16 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.storage,
                 label: 'Peso',
-                value:  '${videoFile.sizeMB.toStringAsFixed(2)} MB',
+                value: '${videoFile.sizeMB.toStringAsFixed(2)} MB',
               ),
               _buildDivider(),
               _buildInfoRow(
                 context,
                 icon: Icons.speed,
                 label: 'Bit rate',
-                value: videoFile.bitrate == 0 ? '--' : '${videoFile.bitrate} kbps',
+                value: videoFile.bitrate == 0
+                    ? '--'
+                    : '${videoFile.bitrate} kbps',
               ),
             ],
           ),
@@ -102,6 +104,7 @@ class VideoInfoTableWidget extends StatelessWidget {
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
