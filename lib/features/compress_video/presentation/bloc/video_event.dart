@@ -10,3 +10,12 @@ abstract class VideoEvent extends Equatable {
 class PickVideoRequested extends VideoEvent {
   const PickVideoRequested();
 }
+
+class CompressVideoRequested extends VideoEvent {
+  final CompressionConfig config;
+
+  const CompressVideoRequested({required this.config});
+
+  @override
+  List<Object?> get props => [config];
+}

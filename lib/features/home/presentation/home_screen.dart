@@ -54,10 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider<HomeSectionBloc>(
           create: (_) => _homeSectionBloc..add(const InitPage()),
         ),
-
-        BlocProvider<VideoBloc>(create: (_) => sl<VideoBloc>()),
+        BlocProvider<VideoBloc>(create: (_) => getIt<VideoBloc>()),
       ],
-
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -79,9 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? const ['Subir', 'Avanzado', 'Resultado']
                 : const ['Compresor', 'Avanzado', 'Resultado'];
 
-            if (videoState.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+            final isLoading =
+                videoState.status == VideoStatus.picking ||
+                videoState.status == VideoStatus.compressing;
 
             return Stack(
               children: [
@@ -102,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: ScreenSizeService.heightPercent(context, 2),
                     ),
 
-                    /// PAGEVIEW 3 SECCIONES DINAMICAS
+                    /// PAGEVIEW DE LAS 3 SECCIONES
                     Expanded(
                       child: PageView(
                         controller: _pageController,
@@ -124,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 /// Overlay de carga
-                if (videoState.isLoading)
+                if (isLoading)
                   Positioned.fill(
                     child: Container(
                       color: Colors.black.withValues(alpha: 0.65),
