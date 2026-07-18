@@ -1,455 +1,194 @@
-# Referencia Rápida
+# Developer Quick Reference Guide
 
-Guía rápida de comandos y patrones comunes.
+This guide provides code templates, CLI shortcuts, and formatting conventions frequently used in the Robot Video Compressor project.
 
-## 🏃 Comandos Rápidos
+---
 
-### Iniciar Desarrollo
+## 🏃 CLI Commands Cheat Sheet
+
+### Development Lifecycle
 ```bash
-cd robot_compresor_video
+# Get project dependencies
 flutter pub get
+
+# Run on the default connected device
 flutter run
+
+# Format code files inside directory
+flutter format lib/
 ```
 
-### Hot Reload (durante desarrollo)
-- Presiona `r` en la terminal
-
-### Build & Deploy
+### Build Distribution
 ```bash
-# APK para Android
+# Android release APK
 flutter build apk
 
-# IPA para iOS
+# iOS build bundle
 flutter build ios
 
-# Web
-flutter build web
+# Windows desktop app
+flutter build windows
 ```
 
-### Testing
+### Cache & Cleanups
 ```bash
-# Ejecutar todos los tests
-flutter test
-
-# Ejecutar un test específico
-flutter test test/nombre_test.dart
-
-# Ver cobertura
-flutter test --coverage
-```
-
-### Limpieza
-```bash
+# Clean compilation files
 flutter clean
-flutter pub get
+
+# Flush package cache
+flutter pub cache repair
 ```
 
 ---
 
-## 📐 Estructura de Carpetas
+## 📐 Common Code Snippets
 
-```
-lib/
-├── core/           # Compartido (servicios, constantes, temas)
-├── features/       # Features principales
-│   └── home/       # Feature home
-│       ├── data/   # [Futuro] APIs y BD
-│       ├── domain/ # [Futuro] Lógica de negocio
-│       └── presentation/
-│           ├── bloc/          # Estado
-│           ├── widgets/       # Componentes
-│           └── home_screen.dart
-└── shared/         # Widgets y extensiones globales
-```
-
----
-
-## 🎯 Patrones Comunes
-
-### Crear Nuevo Bloc
+### 1. Declaring a BLoC Event & State
 
 ```dart
-// event.dart
-part of 'nuevo_bloc.dart';
+// my_feature_event.dart
+part of 'my_feature_bloc.dart';
 
-abstract class NuevoEvent extends Equatable {
-  const NuevoEvent();
+abstract class MyFeatureEvent extends Equatable {
+  const MyFeatureEvent();
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
-// state.dart
-part of 'nuevo_bloc.dart';
+class TriggerAction extends MyFeatureEvent {
+  final String param;
+  const TriggerAction(this.param);
+  @override
+  List<Object?> get props => [param];
+}
+```
 
-class NuevoState extends Equatable {
-  final int valor;
-  const NuevoState({this.valor = 0});
-  
-  NuevoState copyWith({int? valor}) {
-    return NuevoState(valor: valor ?? this.valor);
+```dart
+// my_feature_state.dart
+part of 'my_feature_bloc.dart';
+
+class MyFeatureState extends Equatable {
+  final bool isLoading;
+  final String? result;
+
+  const MyFeatureState({this.isLoading = false, this.result});
+
+  MyFeatureState copyWith({bool? isLoading, String? result}) {
+    return MyFeatureState(
+      isLoading: isLoading ?? this.isLoading,
+      result: result ?? this.result,
+    );
   }
-  
-  @override
-  List<Object> get props => [valor];
-}
 
-// bloc.dart
+  @override
+  List<Object?> get props => [isLoading, result];
+}
+```
+
+```dart
+// my_feature_bloc.dart
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-part 'nuevo_event.dart';
-part 'nuevo_state.dart';
+part 'my_feature_event.dart';
+part 'my_feature_state.dart';
 
-class NuevoBloc extends Bloc<NuevoEvent, NuevoState> {
-  NuevoBloc() : super(const NuevoState()) {
-    on<NuevoEvent>(_onNuevoEvent);
+class MyFeatureBloc extends Bloc<MyFeatureEvent, MyFeatureState> {
+  MyFeatureBloc() : super(const MyFeatureState()) {
+    on<TriggerAction>(_onTriggerAction);
   }
-  
-  Future<void> _onNuevoEvent(
-    NuevoEvent event,
-    Emitter<NuevoState> emit,
+
+  Future<void> _onTriggerAction(
+    TriggerAction event,
+    Emitter<MyFeatureState> emit,
   ) async {
-    // Lógica aquí
+    emit(state.copyWith(isLoading: true));
+    // Execute use case logic here...
+    emit(state.copyWith(isLoading: false, result: "Completed: ${event.param}"));
   }
 }
 ```
 
-### Usar BlocBuilder
+---
 
+### 2. Consuming BLoCs in UI Components
+
+#### Rebuilding UI Layout on State Changes
 ```dart
-BlocBuilder<NuevoBloc, NuevoState>(
+BlocBuilder<VideoBloc, VideoState>(
   builder: (context, state) {
-    return Text('Valor: ${state.valor}');
+    if (state.isLoading) {
+      return const CircularProgressIndicator();
+    }
+    return Text('Selected File: ${state.video?.name ?? "None"}');
   },
 )
 ```
 
-### Usar BlocListener
-
+#### Triggering Navigation or Dialog Side-Effects
 ```dart
-BlocListener<NuevoBloc, NuevoState>(
+BlocListener<VideoBloc, VideoState>(
   listener: (context, state) {
-    // Acciones sin reconstruir (navegación, dialogs)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Valor: ${state.valor}')),
-    );
-  },
-  child: // Widget aquí
-)
-```
-
-### Crear Nuevo Widget
-
-```dart
-class MiWidget extends StatelessWidget {
-  final String titulo;
-  final VoidCallback onPressed;
-
-  const MiWidget({
-    super.key,
-    required this.titulo,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      child: Text(titulo),
-    );
-  }
-}
-```
-
-### Usar GetIt (Service Locator)
-
-```dart
-// Registrar en main.dart
-void setupServiceLocator() {
-  getIt.registerSingleton<MyService>(MyService());
-}
-
-// Usar en cualquier lado
-final service = getIt<MyService>();
-```
-
----
-
-## 🎨 Estilos Comunes
-
-### Texto
-
-```dart
-// Heading grande
-Text('Título', style: Theme.of(context).textTheme.headlineSmall)
-
-// Body text
-Text('Contenido', style: Theme.of(context).textTheme.bodyMedium)
-
-// Small text
-Text('Pequeño', style: Theme.of(context).textTheme.bodySmall)
-```
-
-### Espaciado
-
-```dart
-const SizedBox(height: 8)    // Pequeño
-const SizedBox(height: 16)   // Medio
-const SizedBox(height: 24)   // Grande
-const SizedBox(height: 32)   // Extra grande
-```
-
-### Colores
-
-```dart
-Colors.blue              // Primario
-Colors.grey[400]         // Secundario
-Colors.white             // Blanco
-Colors.black87           // Negro
-Colors.transparent       // Transparente
-Colors.blue.withValues(alpha: 0.5)  // Opacidad
-```
-
-### Bordes y Esquinas
-
-```dart
-// Borde redondeado
-BorderRadius.circular(12)
-
-// Sombra
-BoxShadow(
-  color: Colors.black.withValues(alpha: 0.2),
-  blurRadius: 8,
-  offset: const Offset(0, 2),
-)
-
-// Borde
-Border.all(color: Colors.blue, width: 2)
-```
-
----
-
-## 🚀 Agregar Nueva Sección
-
-1. Crear widget en `section_pages.dart`:
-```dart
-class MiSeccionSection extends StatelessWidget {
-  const MiSeccionSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(children: []),
-    );
-  }
-}
-```
-
-2. Agregar a `_sections` en `home_screen.dart`:
-```dart
-static const List<String> _sections = [
-  'Subir',
-  'Compresor',
-  'Avanzado',
-  'Resultado',
-  'Mi Sección',  // ← Nueva
-];
-```
-
-3. Agregar al PageView en `home_screen.dart`:
-```dart
-children: const [
-  SubirSection(),
-  CompressorSection(),
-  AvanzadoSection(),
-  ResultadoSection(),
-  MiSeccionSection(),  // ← Nueva
-],
-```
-
----
-
-## 🔧 Utilidades Útiles
-
-### ScreenSizeService
-
-```dart
-// Obtener porcentaje del ancho
-final width = ScreenSizeService.widthPercent(context, 95);
-
-// Obtener porcentaje del alto
-final height = ScreenSizeService.heightPercent(context, 40);
-
-// Obtener tamaño completo
-final size = MediaQuery.of(context).size;
-```
-
-### Navegación con go_router
-
-```dart
-// Navegar
-context.go('/home');
-
-// Navegar con parámetros
-context.push('/detail/$id');
-
-// Volver
-context.pop();
-```
-
-### SnackBar
-
-```dart
-ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: const Text('Mensaje'),
-    duration: const Duration(seconds: 2),
-    backgroundColor: Colors.blue,
-  ),
-);
-```
-
-### Dialog
-
-```dart
-showDialog(
-  context: context,
-  builder: (context) => AlertDialog(
-    title: const Text('Título'),
-    content: const Text('Contenido'),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cerrar'),
-      ),
-    ],
-  ),
-);
-```
-
----
-
-## 🧪 Testing Pattern
-
-```dart
-void main() {
-  group('MyWidget', () {
-    testWidgets('muestra el texto correcto', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: MyWidget()),
+    if (state.video != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Loaded ${state.video!.name}')),
       );
-
-      expect(find.text('Esperado'), findsOneWidget);
-    });
-
-    testWidgets('ejecuta callback al presionar', (tester) async {
-      bool pressed = false;
-      
-      await tester.pumpWidget(
-        MaterialApp(
-          home: MyWidget(onPressed: () => pressed = true),
-        ),
-      );
-
-      await tester.tap(find.byType(ElevatedButton));
-      expect(pressed, true);
-    });
-  });
-}
-```
-
----
-
-## ⚙️ Configuración Importante
-
-### pubspec.yaml
-Ubicación de dependencias:
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_bloc: ^9.1.1
-  go_router: ^15.1.2
-```
-
-### analysis_options.yaml
-Reglas de linting:
-```yaml
-linter:
-  rules:
-    - avoid_empty_else
-    - avoid_print
-    - prefer_const_constructors
-```
-
----
-
-## 🔍 Debug Tips
-
-### Ver logs
-```bash
-flutter logs
-```
-
-### Hot reload no funciona
-```bash
-# Hacer hot restart
-Presiona R en terminal
-
-# O manual
-flutter run --no-fast-start
-```
-
-### Device no aparece
-```bash
-# Listar devices
-flutter devices
-
-# Esperar a device
-flutter run -d flutter-tester
-```
-
----
-
-## 📱 Responsive Tips
-
-```dart
-// Mobile first (adapta para tablet)
-final isMobile = MediaQuery.of(context).size.width < 600;
-
-// Usar LayoutBuilder
-LayoutBuilder(
-  builder: (context, constraints) {
-    if (constraints.maxWidth < 600) {
-      return MobileLayout();
-    } else {
-      return TabletLayout();
     }
   },
+  child: const MyLayoutContainer(),
 )
 ```
 
 ---
 
-## 🎯 Checklist Antes de Commit
+### 3. Dependency Injection Registry (`get_it`)
 
-- [ ] Código compilable (`flutter analyze` sin errores)
-- [ ] Tests pasando (`flutter test`)
-- [ ] Código formateado (`flutter format lib/`)
-- [ ] Sin warnings importantes
-- [ ] Commit message descriptivo
-- [ ] No tiene secrets o credenciales
+Register dependencies in [injection_container.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/injection_container.dart):
+```dart
+// For long-lived service instances (Singletons)
+sl.registerLazySingleton<VideoPickerDatasource>(() => VideoPickerDatasource());
 
----
+// For screens requiring fresh states each initialization (Factories)
+sl.registerFactory(() => VideoBloc(pickVideoUseCase: sl()));
+```
 
-## 📚 Documentación Relacionada
-
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Arquitectura completa
-- [BLOC_SYSTEM.md](./BLOC_SYSTEM.md) - Detalle del BLoC
-- [COMPONENTS.md](./COMPONENTS.md) - Widgets disponibles
-- [GETTING_STARTED.md](./GETTING_STARTED.md) - Guía de inicio
+Locate and read dependencies from anywhere in the codebase:
+```dart
+final videoBloc = sl<VideoBloc>();
+```
 
 ---
 
-*Última actualización: Julio 2025*
+## 🎨 Theme Tokens & Common Styles
+
+### Typography Tokens
+```dart
+// Large headers
+Text('Header Title', style: Theme.of(context).textTheme.headlineSmall)
+
+// Common descriptions
+Text('Body content text', style: Theme.of(context).textTheme.bodyMedium)
+
+// Micro-copy labels
+Text('Small label detail', style: Theme.of(context).textTheme.bodySmall)
+```
+
+### Proportional Layout Calculations
+Always avoid hardcoding absolute layout dimensions. Use `ScreenSizeService` values to calculate dimensions as screen percentages:
+```dart
+// Container takes up 90% of screen width
+width: ScreenSizeService.widthPercent(context, 90)
+
+// Padding matches 2% of screen height
+height: ScreenSizeService.heightPercent(context, 2)
+```
+
+---
+
+## 🎯 Pre-Commit Checklist
+
+Before submitting code reviews, verify:
+- [ ] Code compiles cleanly without diagnostics errors.
+- [ ] Code formatting meets standards (`flutter format lib/`).
+- [ ] The local test suite passes (`flutter test`).
+- [ ] No credential strings or API secrets are committed.

@@ -1,49 +1,63 @@
-# Robot Video Compressor - Documentación
+# Robot Video Compressor - Documentation Index
 
-Documentación completa del proyecto Robot Video Compressor, un aplicativo Flutter para comprimir videos.
+Welcome to the documentation for the Robot Video Compressor project, a Flutter-based mobile application designed for local video compression with a clean, responsive workflow.
 
-## 📋 Índice
+---
 
-1. [Arquitectura](./ARCHITECTURE.md) - Estructura general del proyecto
-2. [Bloc System](./BLOC_SYSTEM.md) - Sistema de gestión de estado
-3. [Componentes](./COMPONENTS.md) - Widgets y componentes del proyecto
-4. [Estructura del Proyecto](./PROJECT_STRUCTURE.md) - Árbol de directorios
-5. [Guía de Inicio](./GETTING_STARTED.md) - Cómo empezar a trabajar
+## 📋 Documentation Index
+
+1. **[STATUS.md](./STATUS.md)** - Implementation checklist (fully functional, mocked, and pending features)
+2. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - High-level layers, clean architecture patterns, and data flows
+3. **[BLOC_SYSTEM.md](./BLOC_SYSTEM.md)** - Business logic components and state management flows
+4. **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Complete file and folder hierarchy explained
+5. **[COMPONENTS.md](./COMPONENTS.md)** - Details on UI screens, custom painters, and presentation widgets
+6. **[COLOR_PALETTE.md](./COLOR_PALETTE.md)** - Dark mode guidelines, hex colors, and design tokens
+7. **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Local environment setup, prerequisites, and build commands
+8. **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Code templates, utilities, and common terminal shortcuts
+
+---
 
 ## 🚀 Quick Start
 
 ```bash
-# Clonar el repositorio
+# 1. Clone the repository
 git clone [repo-url]
+cd robot_compresor_video
 
-# Instalar dependencias
+# 2. Get Dart dependencies
 flutter pub get
 
-# Ejecutar la aplicación
+# 3. Verify installation environment
+flutter doctor
+
+# 4. Run the app in development mode
 flutter run
 ```
 
-## 📱 Características Actuales
+---
 
-- ✅ Sistema de secciones con navegación por pestañas
-- ✅ Navegación deslizable entre 4 secciones principales
-- ✅ Previsualizador de videos con información de metadatos
-- ✅ Gestión de estado con Bloc
-- ✅ Interfaz oscura (Dark Mode)
+## 📱 Core Features & Current Scope
 
-## 🛠️ Stack Tecnológico
-
-- **Flutter** - Framework de UI multiplataforma
-- **Dart** - Lenguaje de programación
-- **flutter_bloc** - Gestión de estado
-- **go_router** - Navegación
-- **equatable** - Comparaciones de objetos
-- **get_it** - Inyección de dependencias
-
-## 📞 Contacto y Soporte
-
-Para preguntas o problemas, contacta al equipo de desarrollo.
+- **Dynamic Tab Layout**: Adapts layout based on the app state (e.g., switches the initial tab from "Upload" to "Compressor" once a video has been picked).
+- **Smooth PageView Navigation**: Swipes horizontally across 3 main sections (Upload/Compressor, Advanced, and Results).
+- **Responsive Layouts**: Utilizing `ScreenSizeService` to calculate proportions dynamically for different devices.
+- **Dependency Injection**: Scalable and testable component registry managed using the `get_it` service locator.
+- **Dark Theme Mode**: Designed from scratch with custom theme settings.
 
 ---
 
-*Última actualización: Julio 2025*
+## 🛠️ Technology Stack
+
+- **Flutter**: Cross-platform mobile UI framework.
+- **Dart**: Underlying programming language.
+- **flutter_bloc**: Bloc pattern implementation for clean state boundaries.
+- **go_router**: Route-based declarative navigation.
+- **get_it**: Service locator for dependency injection.
+- **equatable**: Object-level value equality helper.
+- **video_player**: Extracting metadata parameters.
+
+---
+
+## 📞 Support & Contribution
+
+If you experience issues, consult [STATUS.md](./STATUS.md) to check if a feature is fully implemented, or refer to [GETTING_STARTED.md](./GETTING_STARTED.md) for local troubleshooting guides.

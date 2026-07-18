@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 /// Widget que muestra la miniatura del video con un botón de play superpuesto
 class VideoPreviewWidget extends StatelessWidget {
-  /// URL de la imagen de previsualización (mock)
-  final String thumbnailUrl;
-
-  /// Ancho del widget (opcional)
+  final String? thumbnailPath;
   final double? width;
-
-  /// Alto del widget (opcional)
   final double? height;
 
   const VideoPreviewWidget({
     super.key,
-    required this.thumbnailUrl,
+    required this.thumbnailPath,
     this.width,
     this.height,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasThumbnail =
+        thumbnailPath != null && File(thumbnailPath!).existsSync();
     return Container(
       width: width ?? double.infinity,
       height: height ?? 250,
@@ -36,11 +34,22 @@ class VideoPreviewWidget extends StatelessWidget {
             height: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: NetworkImage(thumbnailUrl),
-                fit: BoxFit.cover,
-              ),
+              image: hasThumbnail
+                  ? DecorationImage(
+                      image: FileImage(File(thumbnailPath!)),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
+            child: thumbnailPath == null
+                ? const Center(
+                    child: Icon(
+                      Icons.video_library_rounded,
+                      size: 72,
+                      color: Colors.white54,
+                    ),
+                  )
+                : null,
           ),
 
           /// Overlay oscuro semi-transparente

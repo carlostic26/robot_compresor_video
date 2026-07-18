@@ -1,382 +1,132 @@
-# Guía de Inicio Rápido
+# Getting Started Guide
 
-Guía para nuevos desarrolladores que quieren contribuir al proyecto Robot Video Compressor.
+This guide helps new developers set up, run, and start contributing to the Robot Video Compressor project.
 
-## 🚀 Primeros Pasos
+---
 
-### 1. Requisitos Previos
+## 🚀 Initial Environment Setup
 
-Asegúrate de tener instalado:
-- **Flutter SDK** (versión 3.11.4+)
-- **Dart SDK** (incluido en Flutter)
+### 1. Prerequisites
+Ensure you have the following installed on your developer machine:
+- **Flutter SDK** (`3.11.4` or newer)
+- **Dart SDK** (comes bundled inside Flutter)
 - **Git**
-- **Android Studio** (para desarrollo Android)
-- **Xcode** (para desarrollo iOS)
-- **VS Code** o **Android Studio** (editor de código)
+- **Android Studio** & **SDK Command-line Tools** (for Android development)
+- **Xcode** (for iOS development, macOS only)
+- **VS Code** or **Android Studio** (IDE editor of choice)
 
-### 2. Verificar Instalación
-
+### 2. Verify Your Configuration
+Run the following tool command to ensure all developer dependencies are correctly configured:
 ```bash
-# Verificar Flutter
+# Check installed tool versions
 flutter --version
-
-# Verificar Dart
 dart --version
 
-# Verificar que todo está listo
+# Run validation checks on your machine
 flutter doctor
 ```
 
 ---
 
-## 📥 Clonar el Proyecto
+## 📥 Cloning and Initializing the Project
 
 ```bash
-# Clonar repositorio
-git clone [URL_DEL_REPOSITORIO]
+# 1. Clone the repository
+git clone [URL_OF_REPOSITORY]
 cd robot_compresor_video
 
-# Descargar dependencias
+# 2. Fetch and configure pubspec packages
 flutter pub get
 
-# (Opcional) Obtener la última versión de dependencias
+# 3. (Optional) Update dependencies to compatible patch releases
 flutter pub upgrade
 ```
 
 ---
 
-## 🎯 Estructura del Proyecto
+## 💻 Running the Application
 
-Para entender mejor el proyecto, lee estos documentos en orden:
-
-1. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Cómo está organizado el código
-2. **[BLOC_SYSTEM.md](./BLOC_SYSTEM.md)** - Cómo funciona la gestión de estado
-3. **[COMPONENTS.md](./COMPONENTS.md)** - Widgets disponibles
-4. **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - Árbol de directorios
-
----
-
-## 💻 Ejecutar la Aplicación
-
-### En Emulador Android
-
+### Under a Simulator / Emulator
+Ensure an emulator is active. If not, launch one via Android Studio, Xcode, or the CLI:
 ```bash
-# Listar dispositivos disponibles
+# List available simulators and devices
 flutter devices
 
-# Ejecutar en modo debug
+# Run the project on a default device
 flutter run
 
-# Ejecutar en dispositivo específico
+# Run on a specific device using its id
 flutter run -d [device_id]
 ```
 
-### En Dispositivo iOS
-
+### Building Release Packages
 ```bash
-# Ejecutar en iPhone
-flutter run -d iphone
-```
-
-### En Web
-
-```bash
-flutter run -d chrome
-```
-
-### En Linux/Windows
-
-```bash
-flutter run -d linux
-# o
-flutter run -d windows
-```
-
----
-
-## 🔧 Desarrollo
-
-### Modo Debug con Hot Reload
-
-```bash
-flutter run
-```
-
-Durante el desarrollo:
-- Presiona `r` para hot reload (recarga rápida)
-- Presiona `R` para hot restart (recarga completa)
-- Presiona `q` para quit (salir)
-
-### Build para Producción
-
-```bash
-# Android
+# Android (generates release APK)
 flutter build apk
 
-# iOS
+# iOS (generates archive files)
 flutter build ios
 
-# Web
-flutter build web
-
-# Linux
-flutter build linux
-
-# Windows
+# Desktop platforms
 flutter build windows
+flutter build linux
 ```
 
 ---
 
-## 📁 Archivos Importantes
+## 🛠️ Developer Onboarding Sequence
 
-### `pubspec.yaml`
-Archivo principal de configuración:
-- Versión del proyecto
-- Dependencias (librerías)
-- Assets (imágenes, fuentes)
-
-```yaml
-name: robot_compresor_video
-version: 1.0.0+1
-
-dependencies:
-  flutter: sdk: flutter
-  flutter_bloc: ^9.1.1
-  go_router: ^15.1.2
-  # ... más dependencias
-```
-
-### `lib/main.dart`
-Punto de entrada de la aplicación:
-
-```dart
-void main() {
-  setupServiceLocator();  // Configurar inyección de dependencias
-  runApp(const MyApp());  // Iniciar la app
-}
-```
-
-### `lib/features/home/presentation/home_screen.dart`
-Pantalla principal con:
-- Tabs de navegación
-- PageView para deslizar entre secciones
-- Bloc para gestionar estado
+To get comfortable with the codebase, review the documentation in this order:
+1. **[STATUS.md](./STATUS.md)**: Current completion status of features (stubs vs. functional implementations).
+2. **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Architectural layers, dependency injection rules, and clean boundaries.
+3. **[BLOC_SYSTEM.md](./BLOC_SYSTEM.md)**: How events and states control UI tabs and file processing.
+4. **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)**: File placement maps.
 
 ---
 
-## 🎨 Estructura de Features
+## 🧪 Testing Suite
 
-Cada feature sigue la arquitectura limpia:
-
-```
-feature_name/
-├── data/                 # Obtener datos (APIs, BD)
-│   ├── datasources/
-│   └── repositories/
-├── domain/               # Lógica de negocio
-│   ├── entities/
-│   ├── repositories/     # Interfaces
-│   └── usecases/
-└── presentation/         # UI
-    ├── bloc/            # Estado
-    ├── widgets/         # Componentes
-    └── screens/         # Pantallas
-```
-
----
-
-## 📝 Agregar Nueva Funcionalidad
-
-### Ejemplo: Agregar nueva sección
-
-**1. Crear el widget en `section_pages.dart`:**
-
-```dart
-class MiSeccionSection extends StatelessWidget {
-  const MiSeccionSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          // Tu contenido aquí
-        ],
-      ),
-    );
-  }
-}
-```
-
-**2. Agregar a la lista de secciones en `home_screen.dart`:**
-
-```dart
-static const List<String> _sections = [
-  'Subir',
-  'Compresor',
-  'Avanzado',
-  'Resultado',
-  'Mi Sección',  // ← Nueva
-];
-```
-
-**3. Agregar al PageView:**
-
-```dart
-children: const [
-  SubirSection(),
-  CompressorSection(),
-  AvanzadoSection(),
-  ResultadoSection(),
-  MiSeccionSection(),  // ← Nueva
-],
-```
-
----
-
-## 🧪 Testing
-
-### Ejecutar todos los tests
+Automated tests are located in the [test/](file:///c:/projects/play_console_2/robot_compresor_video/test/) directory.
 
 ```bash
+# Execute all tests inside the suite
 flutter test
-```
 
-### Ejecutar test específico
-
-```bash
+# Run a specific unit test file
 flutter test test/widget_test.dart
-```
 
-### Ver coverage (cobertura de código)
-
-```bash
+# Run with test coverage calculations
 flutter test --coverage
 ```
 
----
-
-## 🔍 Debugging
-
-### Usar debugger en VS Code
-
-1. Abre `.vscode/launch.json` (o crea uno)
-2. Agrega esta configuración:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Flutter",
-      "type": "dart",
-      "request": "launch",
-      "program": "lib/main.dart"
-    }
-  ]
-}
-```
-
-3. Presiona `F5` para iniciar el debugger
-
-### Usar DevTools
-
-```bash
-flutter pub global activate devtools
-devtools
-```
-
-Luego abre http://localhost:9100 en tu navegador.
+To expand testing coverage:
+- Put domain model parser tests under `test/unit/`.
+- Put bloc behavior tests under `test/unit/presentation/`.
+- Put visual layout checks under `test/widget/`.
 
 ---
 
-## 📚 Patrones Comunes
+## 🔍 Troubleshooting & Cleaning Cache
 
-### Usar BlocBuilder
-
-```dart
-BlocBuilder<HomeSectionBloc, HomeSectionState>(
-  builder: (context, state) {
-    return Text('Página: ${state.currentPageIndex}');
-  },
-)
-```
-
-### Acceder a Bloc desde cualquier lado
-
-```dart
-final bloc = context.read<HomeSectionBloc>();
-bloc.add(PageChanged(1));
-```
-
-### Usar ScreenSizeService para responsive
-
-```dart
-final height = ScreenSizeService.heightPercent(context, 40);
-final width = ScreenSizeService.widthPercent(context, 95);
-```
-
----
-
-## 🔌 Agregar Nuevas Dependencias
-
+### Cache Cleanups
+If you encounter compiler discrepancies, cached conflicts, or package sync errors, run the following sequence:
 ```bash
-# Agregar nueva dependencia
-flutter pub add nombre_paquete
-
-# Agregar como dev dependency
-flutter pub add --dev nombre_paquete
-
-# Ver todos los paquetes disponibles
-flutter pub search nombre_paquete
-```
-
----
-
-## 📋 Checklist para Empezar
-
-- [ ] Clonar el repositorio
-- [ ] Ejecutar `flutter pub get`
-- [ ] Verificar con `flutter doctor`
-- [ ] Ejecutar la app con `flutter run`
-- [ ] Leer documentación (ARCHITECTURE.md)
-- [ ] Explorar el código
-- [ ] Escribir tu primer commit
-
----
-
-## 🐛 Solucionar Problemas Comunes
-
-### Error: "flutter: command not found"
-```bash
-# Agregar Flutter al PATH
-export PATH="$PATH:[path-to-flutter]/bin"
-```
-
-### Error: "No devices found"
-```bash
-# Asegurar que el emulador está corriendo
-flutter emulators
-flutter emulators launch [emulator_id]
-```
-
-### Limpiar proyecto
-
-```bash
-# Limpiar build
+# Erase all build directories and compiled temporary objects
 flutter clean
 
-# Limpiar caché
-flutter pub cache repair
-
-# Reinstalar dependencias
+# Fetch clean package files
 flutter pub get
 ```
 
-### Problemas con pods (iOS)
+### Android Gradle Sync Issues
+```bash
+# Navigate to native folder and clear wrapper caches
+cd android
+./gradlew clean
+cd ..
+```
 
+### iOS CocoaPods Sync Issues
 ```bash
 cd ios
 pod repo update
@@ -386,75 +136,9 @@ cd ..
 
 ---
 
-## 📖 Recursos Útiles
+## 📖 Helpful Links & Official Resources
 
-### Documentación Oficial
-- [Flutter Docs](https://flutter.dev/docs)
-- [Dart Docs](https://dart.dev/guides)
-- [Bloc Library](https://bloclibrary.dev/)
-
-### Tutoriales
-- [Flutter BLoC Pattern](https://www.youtube.com/watch?v=SQJxEV_YFQI)
-- [Clean Architecture in Flutter](https://resocoder.com/flutter-clean-architecture)
-- [go_router Guide](https://codewithandrea.com/articles/flutter-navigation-go_router/)
-
-### Comunidades
-- [Flutter Community](https://github.com/flutter)
-- [Dart Community](https://dart.dev/community)
-- [StackOverflow Flutter](https://stackoverflow.com/questions/tagged/flutter)
-
----
-
-## 💬 Preguntas Frecuentes
-
-### ¿Cómo sé en qué rama estoy?
-```bash
-git branch
-# o
-git status
-```
-
-### ¿Cómo cambio de rama?
-```bash
-git checkout nombre_rama
-# o (forma moderna)
-git switch nombre_rama
-```
-
-### ¿Cómo creo una nueva rama?
-```bash
-git switch -c nombre_nueva_rama
-```
-
-### ¿Cómo actualizo desde main?
-```bash
-git fetch origin
-git rebase origin/main
-```
-
----
-
-## 🚀 Próximos Pasos
-
-Después de familiarizarte con el proyecto:
-
-1. **Lee el código existente** para entender los patrones
-2. **Escribe tests** para tus cambios
-3. **Sigue las convenciones** del proyecto
-4. **Comenta tu código** cuando sea necesario
-5. **Haz commits pequeños y descriptivos**
-
----
-
-## 📞 ¿Necesitas Ayuda?
-
-Si tienes dudas:
-1. Revisa la documentación relevante en `/docs`
-2. Busca en el código existente ejemplos similares
-3. Consulta con el equipo
-
----
-
-¡Felicidades! Ya estás listo para empezar a desarrollar. 🎉
-
-*Para más información, lee [ARCHITECTURE.md](./ARCHITECTURE.md)*
+- **Official Flutter Documentation**: [https://flutter.dev/docs](https://flutter.dev/docs)
+- **Dart Programming Guides**: [https://dart.dev/guides](https://dart.dev/guides)
+- **BLoC Library Handbook**: [https://bloclibrary.dev/](https://bloclibrary.dev/)
+- **GetIt Locator Guidelines**: [https://pub.dev/packages/get_it](https://pub.dev/packages/get_it)

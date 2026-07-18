@@ -23,9 +23,8 @@ class CompressorSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // aquí todavía dejamos el preview mock
               VideoPreviewWidget(
-                thumbnailUrl: '',
+                thumbnailPath: video.thumbnailPath,
                 height: ScreenSizeService.heightPercent(context, 22),
               ),
 

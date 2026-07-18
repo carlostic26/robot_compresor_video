@@ -1,347 +1,122 @@
-# Componentes y Widgets
+# UI Components & Widgets
 
-Documentación detallada de todos los widgets y componentes del proyecto.
-
-## 📁 Ubicación
-
-Todos los widgets se encuentran en: `lib/features/home/presentation/widgets/`
-
-## 🎨 Widgets del Proyecto
-
-### 1. **AnimatedSectionTabs**
-
-**Archivo:** `animated_section_tabs.dart`
-
-**Descripción:** Widget que muestra las pestañas de navegación entre secciones con un indicador animado.
-
-**Props:**
-- `sections: List<String>` - Lista de nombres de las secciones
-- `currentIndex: int` - Índice de la sección actualmente seleccionada
-- `onTabPressed: Function(int)` - Callback cuando se presiona una pestaña
-
-**Ejemplo de uso:**
-```dart
-AnimatedSectionTabs(
-  sections: ['Subir', 'Compresor', 'Avanzado', 'Resultado'],
-  currentIndex: 0,
-  onTabPressed: (index) {
-    // Manejar toque en pestaña
-  },
-)
-```
-
-**Características:**
-- Texto coloreado (azul cuando está activo, gris cuando no)
-- Indicador de subrayado animado
-- Transiciones suaves de 300ms
-- Totalmente responsive
+This document describes all custom UI components and widgets implemented in the Robot Video Compressor application. These files are located under [lib/features/home/presentation/widgets/](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/).
 
 ---
 
-### 2. **VideoPreviewWidget**
+## 🎨 Presentation Widgets Breakdown
 
-**Archivo:** `video_preview_widget.dart`
-
-**Descripción:** Widget que muestra la miniatura del video con un botón de reproducción superpuesto (sin funcionalidad).
-
-**Props:**
-- `thumbnailUrl: String` - URL de la imagen de previsualización (requerido)
-- `width: double?` - Ancho del widget (opcional, por defecto 100%)
-- `height: double?` - Alto del widget (opcional, por defecto 250)
-
-**Ejemplo de uso:**
-```dart
-VideoPreviewWidget(
-  thumbnailUrl: 'https://example.com/thumbnail.jpg',
-  width: 400,
-  height: 250,
-)
-```
-
-**Características:**
-- Muestra imagen de previsualización
-- Overlay oscuro semi-transparente (30% opacidad)
-- Botón de play circular centrado (ilustrativo, sin acción)
-- Bordes redondeados
-- Sombra bajo el botón de play
-
-**Estados:**
-- Default: Muestra la imagen con overlay
+### 1. AnimatedSectionTabs
+- **File**: [animated_section_tabs.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/animated_section_tabs.dart)
+- **Description**: Displays a row of horizontal tabs indicating page sections. It features a sliding blue accent underline that animates dynamically when selection changes.
+- **Parameters**:
+  - `sections` (`List<String>`): The names of the sections to render.
+  - `currentIndex` (`int`): The active section index.
+  - `onTabPressed` (`Function(int)`): Callback triggered when a tab is pressed.
+- **Example**:
+  ```dart
+  AnimatedSectionTabs(
+    sections: const ['Subir', 'Avanzado', 'Resultado'],
+    currentIndex: state.currentPageIndex,
+    onTabPressed: (index) => _onTabPressed(index),
+  )
+  ```
 
 ---
 
-### 3. **VideoInfoTableWidget**
-
-**Archivo:** `video_info_table_widget.dart`
-
-**Descripción:** Widget que muestra información detallada del video en formato de tabla.
-
-**Props:**
-- `videoInfo: VideoInfo` - Objeto con información del video
-
-**Ejemplo de uso:**
-```dart
-VideoInfoTableWidget(
-  videoInfo: VideoInfo(
-    name: 'video.mp4',
-    duration: '00:02:45',
-    date: '14 jul. 2025 10:30 a. m.',
-    size: '52.4 MB',
-    bitRate: '2540 kbps',
-  ),
-)
-```
-
-**Modelo VideoInfo:**
-```dart
-class VideoInfo {
-  final String name;          // Nombre del archivo
-  final String duration;      // Duración (formato HH:MM:SS)
-  final String date;          // Fecha de creación
-  final String size;          // Tamaño del archivo
-  final String bitRate;       // Velocidad de bits
-
-  const VideoInfo({
-    required this.name,
-    required this.duration,
-    required this.date,
-    required this.size,
-    required this.bitRate,
-  });
-
-  // Factory para crear datos mock
-  factory VideoInfo.mock() { ... }
-}
-```
-
-**Características:**
-- Tabla estilizada con fondo oscuro
-- Iconos coloreados (azul) para cada campo
-- Divisores entre filas
-- Información alineada (etiqueta a la izquierda, valor a la derecha)
-- Responsive y escalable
-
-**Información mostrada:**
-- 📄 Nombre del archivo
-- ⏱️ Duración del video
-- 📅 Fecha de creación
-- 💾 Tamaño del archivo
-- 🚀 Velocidad de bits (Bit rate)
+### 2. VideoPreviewWidget
+- **File**: [video_preview_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/video_preview_widget.dart)
+- **Description**: Shows a preview container for the selected video. It currently renders a placeholder network image with a dark overlay and an illustrative play button icon centered on top.
+- **Parameters**:
+  - `thumbnailUrl` (`String`): The URL of the image to display (currently mocked).
+  - `width` (`double?`): The widget width (defaults to full width).
+  - `height` (`double?`): The widget height (defaults to `250`).
+- **Implementation Status**: **Mocked**. It does not stream or play the selected local video, nor does it generate a real local thumbnail yet.
 
 ---
 
-### 4. **SubirSection**
-
-**Archivo:** `section_pages.dart`
-
-**Descripción:** Sección para subir videos con área de arrastrar y soltar.
-
-**Características:**
-- Área con borde punteado (líneas discontinuas)
-- Icono de nube con flecha hacia arriba (azul)
-- Título "Sube tu video"
-- Subtítulo "Toca para seleccionar"
-- Formatos soportados: MP4, MOV, AVI, MKV
-- Tamaño máximo: 2 GB
-- Ocupa 95% del ancho y 40% del alto
-- Toque muestra un SnackBar
-
-**Responsive:**
-```dart
-// Calcula automáticamente el alto basado en la pantalla
-final screenHeight = MediaQuery.of(context).size.height;
-height = screenHeight * 0.4;  // 40% de la altura
-```
+### 3. VideoInfoTableWidget
+- **File**: [video_info_table_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/video_info_table_widget.dart)
+- **Description**: Renders technical details of the selected video inside a dark slate card container.
+- **Parameters**:
+  - `videoFile` (`VideoFile`): The loaded domain entity containing video metadata.
+- **Displayed Fields**:
+  - **Name**: Displayed via the `shortName` getter (truncates long file names and keeps the extension visible).
+  - **Duration**: Formatted dynamically (e.g., `MM:SS` or `HH:MM:SS`).
+  - **Date**: Shows `--` (mocked, pending extraction).
+  - **Size**: Formatted from raw bytes to `MB` with two decimal places.
+  - **Bit rate**: Shows `--` if `0`, or formatted string in `kbps`.
+- **Styling**:
+  - Background styled with Slate Surface color.
+  - Row details divided by horizontal lines.
+  - Primary blue icons highlight each detail row.
 
 ---
 
-### 5. **CompressorSection**
-
-**Archivo:** `section_pages.dart`
-
-**Descripción:** Sección que muestra la previsualización del video y su información.
-
-**Contenido:**
-- VideoPreviewWidget con imagen mockada
-- VideoInfoTableWidget con información del video
-- Scroll vertical para contenido que excede la pantalla
-
-**Características:**
-- SingleChildScrollView para contenido scrolleable
-- Padding de 16 en todos lados
-- Espaciado de 24 entre componentes
+### 4. SubirSection
+- **File**: [subir_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/subir_section_widget.dart)
+- **Description**: The default starting view. It displays a drag-and-drop styled dotted border container enclosing a upload cloud icon, prompting users to upload files.
+- **Behaviors**:
+  - Tapping anywhere in the blue-dotted box triggers `PickVideoRequested` event inside `VideoBloc`.
+  - Shows supported file types (`MP4, MOV, AVI, MKV`) and maximum file size guidelines (`2 GB`).
+- **Layout**: Uses 95% of screen width and 30% of screen height to fit device displays cleanly.
 
 ---
 
-### 6. **AvanzadoSection**
-
-**Archivo:** `section_pages.dart`
-
-**Descripción:** Sección para opciones avanzadas (placeholder actual).
-
-**Estado:** En desarrollo
-
----
-
-### 7. **ResultadoSection**
-
-**Archivo:** `section_pages.dart`
-
-**Descripción:** Sección para mostrar resultados (placeholder actual).
-
-**Estado:** En desarrollo
+### 5. CompressorSection
+- **File**: [compressor_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/compressor_section_widget.dart)
+- **Description**: Displayed in place of `SubirSection` once a video file has been successfully loaded into the state.
+- **Contents**:
+  - Contains `VideoPreviewWidget`.
+  - Renders `VideoInfoTableWidget`.
+  - Shows a main action button labeled **"Comprimir"** (Compress).
+- **Implementation Status**: **Under Development**. The action button has an empty callback.
 
 ---
 
-### 8. **DashedBorderPainter** (CustomPainter)
-
-**Archivo:** `section_pages.dart`
-
-**Descripción:** Pintor personalizado que dibuja bordes punteados.
-
-**Props:**
-- `color: Color` - Color del borde
-- `strokeWidth: double` - Grosor de la línea (por defecto 2)
-- `dashWidth: double` - Largo de cada raya (por defecto 8)
-- `dashSpace: double` - Espacio entre rayas (por defecto 6)
-- `borderRadius: double` - Radio de las esquinas (por defecto 12)
-
-**Uso:**
-```dart
-CustomPaint(
-  painter: DashedBorderPainter(
-    color: Colors.blue.withValues(alpha: 0.5),
-    strokeWidth: 2,
-    dashWidth: 10,
-    dashSpace: 8,
-  ),
-  child: Container(...)
-)
-```
+### 6. AvanzadoSection (Advanced Settings)
+- **File**: [advanced_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/advanced_section_widget.dart)
+- **Description**: Intended to customize compression settings (e.g., quality factor slider, deleting the original video, resolution scale overrides).
+- **Implementation Status**: **Static Placeholder**. Renders an icon and a text label indicating the section content will go here.
 
 ---
 
-## 🎯 Estructura de Widgets
-
-```
-home_screen.dart
-├── AnimatedSectionTabs
-│   └── Usa BlocBuilder para reaccionar a cambios de estado
-├── PageView
-│   ├── SubirSection
-│   │   └── DashedBorderPainter (borde punteado)
-│   ├── CompressorSection
-│   │   ├── VideoPreviewWidget
-│   │   └── VideoInfoTableWidget
-│   ├── AvanzadoSection
-│   └── ResultadoSection
-└── BottomNavigationBar (Placeholder)
-```
+### 7. ResultadoSection (Results View)
+- **File**: [result_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/result_section_widget.dart)
+- **Description**: Intended to show compression analytics (original size vs. compressed size, compression ratio percentage, saved space bar, sharing or saving options).
+- **Implementation Status**: **Static Placeholder**. Renders a check icon and a placeholder label.
 
 ---
 
-## 🔄 Flujo de Datos en Componentes
-
-```
-home_screen.dart
-     │
-     ├─→ BlocBuilder<HomeSectionBloc>
-     │        │
-     │        └─→ AnimatedSectionTabs (currentIndex del estado)
-     │
-     └─→ PageView (onPageChanged dispara evento)
-              │
-              ├─→ SubirSection
-              │    └─ GestureDetector (muestra SnackBar)
-              │
-              ├─→ CompressorSection
-              │    ├─ VideoPreviewWidget
-              │    └─ VideoInfoTableWidget
-              │
-              ├─→ AvanzadoSection
-              │
-              └─→ ResultadoSection
-```
-
----
-
-## 🎨 Tema y Estilos
-
-### Colores Utilizados
-- **Primario:** `Colors.blue` - Para iconos activos, bordes, subrayados
-- **Secundario:** `Colors.grey[400]` - Para textos secundarios
-- **Fondo:** `Colors.grey[800-900]` - Para contenedores
-- **Texto:** `Colors.white` - Para texto principal
-
-### Espaciados Comunes
-- Padding pequeño: 8px
-- Padding medio: 16px
-- Padding grande: 24px
-- Padding XL: 32px
-
-### Bordes Redondeados
-- BorderRadius estándar: 12px
-- BorderRadius en botones: 8-12px
+### 8. DashedBorderPainter (CustomPainter)
+- **File**: [section_pages.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/section_pages.dart)
+- **Description**: A utility custom painter helper class that draws dotted outlines on a canvas path.
+- **Parameters**:
+  - `color` (`Color`): Color of the dashed line.
+  - `strokeWidth` (`double`): Line thickness (defaults to `2`).
+  - `dashWidth` (`double`): Length of each individual dash segment (defaults to `8`).
+  - `dashSpace` (`double`): Space size between dash segments (defaults to `6`).
+  - `borderRadius` (`double`): Corner radius of the container (defaults to `12`).
+- **Example**:
+  ```dart
+  CustomPaint(
+    painter: DashedBorderPainter(
+      color: Colors.blue.withValues(alpha: 0.5),
+      strokeWidth: 2,
+      dashWidth: 10,
+      dashSpace: 8,
+      borderRadius: 12,
+    ),
+    child: Container(...),
+  )
+  ```
 
 ---
 
-## 📱 Responsive Design
+## 📱 Responsive & Layout Calculations
 
-Los widgets están diseñados para ser responsivos:
-
-```dart
-// Ancho dinámico (95% del ancho de pantalla)
-width: MediaQuery.of(context).size.width * 0.95
-
-// Alto dinámico (40% del alto de pantalla)
-height: MediaQuery.of(context).size.height * 0.4
-
-// Usando ScreenSizeService
-final height = ScreenSizeService.heightPercent(context, 8);
-```
-
----
-
-## 🧪 Testing Widgets
-
-### Ejemplo: Test para AnimatedSectionTabs
-
-```dart
-void main() {
-  group('AnimatedSectionTabs', () {
-    testWidgets('muestra el indicador en la posición correcta', 
-      (WidgetTester tester) async {
-      
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: AnimatedSectionTabs(
-              sections: ['Tab 1', 'Tab 2'],
-              currentIndex: 0,
-              onTabPressed: (_) {},
-            ),
-          ),
-        ),
-      );
-
-      // Verificar que Tab 1 está seleccionado
-      expect(find.text('Tab 1'), findsOneWidget);
-    });
-  });
-}
-```
-
----
-
-## 🚀 Próximas Mejoras
-
-- [ ] Agregar animaciones más complejas
-- [ ] Mejorar accesibilidad (labels para screen readers)
-- [ ] Agregar temas claro/oscuro dinámico
-- [ ] Crear componentes para secciones "Avanzado" y "Resultado"
-- [ ] Implementar file picker para "Subir" sección
-- [ ] Agregar video player funcional en VideoPreviewWidget
-
----
-
-Para información sobre la arquitectura, ver [ARCHITECTURE.md](./ARCHITECTURE.md)
+All components utilize proportional sizing to ensure rendering on standard phone screens:
+- Screen sizes are parsed dynamically using media queries or [screen_size_service.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/screen_size_service.dart).
+- Sizing references standard percentages:
+  - `ScreenSizeService.heightPercent(context, 22)` for video preview cards.
+  - `ScreenSizeService.widthPercent(context, 90)` for full-width action buttons.

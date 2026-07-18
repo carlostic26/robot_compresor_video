@@ -1,342 +1,154 @@
-# Estructura del Proyecto
+# Project Directory Structure
 
-Descripción detallada de la estructura de directorios y archivos del proyecto.
+This document details the file layout, folders, and architecture folders inside the Robot Video Compressor repository.
 
-## 📁 Árbol Completo
+---
+
+## 📁 Repository Directory Tree
 
 ```
 robot_compresor_video/
-├── android/                          # Código nativo de Android
-│   ├── app/                          # App module
-│   │   ├── build.gradle.kts
-│   │   └── src/
-│   │       ├── debug/
-│   │       ├── main/
-│   │       └── profile/
-│   ├── build.gradle.kts
-│   ├── gradle.properties
-│   ├── local.properties             # [No versionado] Configuración local
-│   ├── settings.gradle.kts
-│   └── gradle/                      # Configuración de Gradle
-│       └── wrapper/
 │
-├── ios/                              # Código nativo de iOS
-│   ├── Runner.xcodeproj/            # Proyecto Xcode
+├── android/                            # Native Android platform configuration
+│   ├── app/                            # Application module container
+│   │   ├── build.gradle.kts            # Build scripts
+│   │   └── src/                        # Native Java/Kotlin source directories
+│   └── gradle/                         # Gradle wrappers
+│
+├── ios/                                # Native iOS platform configuration
+│   ├── Runner.xcodeproj/               # Xcode project workspace files
 │   ├── Runner.xcworkspace/
-│   ├── Runner/                      # App principal
-│   │   ├── AppDelegate.swift
-│   │   ├── SceneDelegate.swift
-│   │   ├── Info.plist
-│   │   ├── Assets.xcassets/
-│   │   └── Base.lproj/
-│   ├── RunnerTests/
-│   └── Flutter/                     # Configuración Flutter para iOS
-│       ├── Debug.xcconfig
-│       ├── Release.xcconfig
-│       └── ephemeral/               # [Autogenerado] Ignorar
+│   └── Runner/                         # App assets and Swift files
 │
-├── web/                              # Código para web
-│   ├── index.html
-│   ├── manifest.json
-│   └── icons/
+├── web/                                # Web target assets (index.html, manifest.json)
+├── linux/                              # Linux desktop build configs
 │
-├── linux/                            # Código para Linux (desktop)
-│   ├── CMakeLists.txt
-│   ├── flutter/
-│   └── runner/
-│
-├── lib/                              # ⭐ CÓDIGO PRINCIPAL DE FLUTTER
-│   ├── main.dart                    # Punto de entrada
-│   ├── core/                        # Núcleo compartido
-│   │   ├── constants/               # Constantes globales
-│   │   ├── errors/                  # Definición de errores personalizados
-│   │   ├── routes/                  # Configuración de rutas (go_router)
-│   │   ├── services/                # Servicios globales
-│   │   │   └── screen_size_service.dart
-│   │   ├── theme/                   # Temas de la aplicación
-│   │   └── utils/                   # Utilidades compartidas
+├── lib/                                # ⭐ MAIN FLUTTER SOURCE DIRECTORY
+│   ├── main.dart                       # Application entry point & configuration setup
 │   │
-│   ├── features/                    # Funcionalidades principales
-│   │   └── home/                    # Feature: Home
-│   │       ├── data/                # [Futuro] Capa de datos
-│   │       │   ├── datasources/     # [Futuro] APIs, local storage
-│   │       │   └── repositories/    # [Futuro] Implementación
-│   │       ├── domain/              # [Futuro] Capa de dominio
-│   │       │   ├── entities/        # [Futuro] Entidades
-│   │       │   ├── repositories/    # [Futuro] Interfaces
-│   │       │   └── usecases/        # [Futuro] Casos de uso
-│   │       └── presentation/        # ⭐ Capa de presentación
-│   │           ├── bloc/            # Gestión de estado
-│   │           │   ├── home_section_bloc.dart
-│   │           │   ├── home_section_event.dart
-│   │           │   └── home_section_state.dart
-│   │           ├── widgets/         # Widgets específicos del feature
-│   │           │   ├── animated_section_tabs.dart
-│   │           │   ├── section_pages.dart
-│   │           │   ├── video_preview_widget.dart
-│   │           │   └── video_info_table_widget.dart
-│   │           └── home_screen.dart # Pantalla principal
+│   ├── core/                           # Shared utility core module
+│   │   ├── constants/                  # Theme constants, values, strings
+│   │   ├── errors/                     # App custom exceptions & failures mapping
+│   │   ├── routes/                     # Router setup using go_router
+│   │   │   ├── app_router.dart         # Declares route lists and endpoints
+│   │   │   └── app_routes.dart         # Path string constants
+│   │   ├── services/                   # Global singletons
+│   │   │   ├── injection_container.dart # Registering dependencies with GetIt
+│   │   │   ├── screen_size_service.dart # Sizing calculations for UI
+│   │   │   └── service_locator.dart    # Setup helper reference
+│   │   ├── theme/                      # Styling setup
+│   │   │   └── app_theme.dart          # Dark mode styling values
+│   │   └── utils/                      # Common pure functions & helpers
 │   │
-│   └── shared/                      # Código compartido entre features
-│       ├── extensions/              # Extensiones de Dart
-│       └── widgets/                 # Widgets globales reutilizables
+│   ├── features/                       # Modular business features
+│   │   ├── home/                       # Core navigation orchestration
+│   │   │   └── presentation/           # Main tab frames and pages
+│   │   │       ├── bloc/               # HomeSectionBloc
+│   │   │       ├── widgets/            # Section widgets & custom tabs
+│   │   │       │   ├── advanced_section_widget.dart  # Advanced options placeholder
+│   │   │       │   ├── animated_section_tabs.dart     # Dynamic selection header
+│   │   │       │   ├── compressor_section_widget.dart # Loaded file metadata view
+│   │   │       │   ├── result_section_widget.dart     # Output options placeholder
+│   │   │       │   ├── section_pages.dart             # Painter helpers
+│   │   │       │   ├── subir_section_widget.dart      # File picker upload area
+│   │   │       │   ├── video_info_table_widget.dart   # Details table widget
+│   │   │       │   └── video_preview_widget.dart      # Video preview wrapper
+│   │   │       ├── home_screen.dart    # Coordinator screen scaffold
+│   │   │       └── loading_screen.dart # Startup linear loader overlay
+│   │   │
+│   │   └── compress_video/             # Main video parsing feature
+│   │       ├── data/                   # Data layer implementation
+│   │       │   ├── datasources/        # Low-level external library managers
+│   │       │   │   ├── video_compressor_datasource.dart # Video compressor stub
+│   │       │   │   ├── video_metadata_datasource.dart   # Reads size/resolution
+│   │       │   │   └── video_picker_datasource.dart     # Triggers file picking
+│   │       │   └── repositories/       # Implementing domain interfaces
+│   │       │       └── video_repository_impl.dart
+│   │       ├── domain/                 # Domain logic layer
+│   │       │   ├── entities/           # Pure entity models
+│   │       │   │   ├── compression_config.dart
+│   │       │   │   ├── compression_result.dart
+│   │       │   │   └── video_file.dart
+│   │       │   ├── repositories/       # Abstract repository interfaces
+│   │       │   │   └── video_repository.dart
+│   │       │   └── use_cases/          # Business logic coordinators
+│   │       │       ├── compress_video_use_case.dart
+│   │       │       └── pick_video_use_case.dart
+│   │       └── presentation/           # UI elements & BLoC state managers
+│   │           └── bloc/               # VideoBloc (handles file select status)
+│   │
+│   └── shared/                         # Common UI elements shared across features
+│       ├── extensions/                 # Utility extensions (e.g. padding/string extensions)
+│       └── widgets/                    # Reusable visual components
 │
-├── test/                             # Tests unitarios
-│   └── widget_test.dart
+├── test/                               # Testing suite directory
+│   └── widget_test.dart                # Basic Flutter testing
 │
-├── build/                            # [Autogenerado] Ignorar
-│   ├── app/                         # Outputs del build
-│   ├── flutter_assets/
-│   ├── jni/
-│   └── native_assets/
+├── docs/                               # 📚 PROJECT DOCUMENTATION
+│   ├── README.md                       # Documentation index
+│   ├── ARCHITECTURE.md                 # High-level clean architecture layers
+│   ├── BLOC_SYSTEM.md                  # State managers detailed
+│   ├── COMPONENTS.md                   # Custom widgets and UI layers catalog
+│   ├── PROJECT_STRUCTURE.md            # This file
+│   ├── COLOR_PALETTE.md                # Styling colors specifications
+│   ├── STATUS.md                       # Feature implementation status
+│   └── GETTING_STARTED.md              # Installation guides & dev tips
 │
-├── docs/                             # 📚 DOCUMENTACIÓN
-│   ├── README.md                    # Índice de documentación
-│   ├── ARCHITECTURE.md              # Arquitectura del proyecto
-│   ├── BLOC_SYSTEM.md               # Sistema de BLoC
-│   ├── COMPONENTS.md                # Widgets y componentes
-│   ├── PROJECT_STRUCTURE.md         # Este archivo
-│   └── GETTING_STARTED.md           # Guía de inicio
-│
-├── analysis_options.yaml             # Configuración de análisis (linter)
-├── pubspec.yaml                      # ⭐ DEPENDENCIAS DEL PROYECTO
-├── pubspec.lock                      # [Autogenerado] Lock de dependencias
-├── README.md                         # Documentación principal del proyecto
-├── robot_compresor_video.iml         # Archivo IntelliJ IDEA
-└── .gitignore                        # Archivos ignorados por Git
-```
-
-## 📋 Descripción por Carpeta
-
-### `lib/` - Código Principal
-
-#### `main.dart`
-Punto de entrada de la aplicación. Configura:
-- Tema de la aplicación
-- Navegación (go_router)
-- Setup inicial
-
-```dart
-void main() {
-  // Setup de dependencias
-  setupServiceLocator();
-  
-  runApp(const MyApp());
-}
-```
-
-#### `core/` - Funcionalidad Compartida
-
-**`core/constants/`**
-- Constantes globales (colores, strings, números)
-- Configuración compartida en toda la app
-
-**`core/errors/`**
-- Definición de excepciones personalizadas
-- Errores de dominio específicos
-
-**`core/routes/`**
-- Configuración de go_router
-- Definición de rutas de la app
-
-**`core/services/`**
-- ScreenSizeService: Cálculo de tamaños responsive
-- Otros servicios globales (autenticación, etc.)
-
-**`core/theme/`**
-- AppTheme: Tema oscuro/claro
-- Estilos de texto
-- Colores de la app
-
-**`core/utils/`**
-- Funciones auxiliares globales
-- Extensiones de tipos comunes
-
-#### `features/` - Funcionalidades Principales
-
-Cada feature es independiente y contiene:
-
-```
-feature/
-├── data/          # Acceso a datos (BD, APIs)
-├── domain/        # Lógica de negocio
-└── presentation/  # UI e interacción
-```
-
-**`features/home/`** - Feature actual
-
-```
-home/
-├── data/                           # [Futuro]
-│   ├── datasources/               # APIs, SQLite, SharedPreferences
-│   └── repositories/              # Implementación de repos
-│
-├── domain/                        # [Futuro]
-│   ├── entities/                  # Objetos de dominio
-│   ├── repositories/              # Interfaces de repos
-│   └── usecases/                  # Lógica de negocio
-│
-└── presentation/                  # ✅ Implementado
-    ├── bloc/                      # Gestión de estado
-    │   ├── home_section_bloc.dart         # Bloc principal
-    │   ├── home_section_event.dart        # Eventos
-    │   └── home_section_state.dart        # Estado
-    ├── widgets/                   # Widgets del feature
-    │   ├── animated_section_tabs.dart     # Tabs de navegación
-    │   ├── section_pages.dart             # Secciones principales
-    │   ├── video_preview_widget.dart      # Preview del video
-    │   └── video_info_table_widget.dart   # Tabla de info
-    └── home_screen.dart           # Pantalla principal
-```
-
-#### `shared/` - Código Reutilizable
-
-**`shared/extensions/`**
-- Extensiones de tipos (String, int, etc.)
-- Métodos helper globales
-
-**`shared/widgets/`**
-- Widgets globales (diálogos, botones comunes, etc.)
-- Componentes reutilizables en toda la app
-
-### `test/` - Testing
-
-```
-test/
-└── widget_test.dart               # Tests de widgets
-```
-
-Estructura recomendada para agregar más tests:
-```
-test/
-├── unit/                          # Tests unitarios
-│   ├── bloc/
-│   └── services/
-├── widget/                        # Tests de widgets
-│   └── home/
-└── integration/                   # Tests de integración
-```
-
-### `docs/` - Documentación
-
-```
-docs/
-├── README.md                      # Índice de docs
-├── ARCHITECTURE.md                # Arquitectura limpia
-├── BLOC_SYSTEM.md                 # Sistema de BLoC
-├── COMPONENTS.md                  # Widgets del proyecto
-├── PROJECT_STRUCTURE.md           # Este archivo
-└── GETTING_STARTED.md             # Cómo comenzar
-```
-
-### `android/` y `ios/` - Código Nativo
-
-- **`android/`**: Código Java/Kotlin específico de Android
-- **`ios/`**: Código Swift/Objective-C específico de iOS
-
-### Carpetas Autogeneradas
-
-- **`build/`**: Outputs del build (ignorar)
-- **`ephemeral/`**: Archivos temporales (ignorar)
-- **`pubspec.lock`**: Lock de dependencias (no editar)
-
----
-
-## 📊 Estadísticas de Archivos
-
-| Carpeta | Archivos | Descripción |
-|---------|----------|-------------|
-| `lib/features/home` | 8 | Código de la feature home |
-| `lib/core` | 5+ | Código compartido |
-| `docs/` | 5 | Documentación |
-| `android/` | ~15 | Configuración Android |
-| `ios/` | ~20 | Configuración iOS |
-
----
-
-## 🔄 Dependencias Internas
-
-```
-home_screen.dart
-    ├─→ bloc/home_section_bloc.dart
-    ├─→ widgets/animated_section_tabs.dart
-    ├─→ widgets/section_pages.dart
-    └─→ core/services/screen_size_service.dart
-
-section_pages.dart
-    ├─→ widgets/video_preview_widget.dart
-    └─→ widgets/video_info_table_widget.dart
-
-animated_section_tabs.dart
-    └─→ Standalone (sin dependencias internas)
+├── pubspec.yaml                        # Project dependency manager configuration
+├── analysis_options.yaml               # Linter conventions and compiler analyzer settings
+└── README.md                           # Quick-start documentation at repository root
 ```
 
 ---
 
-## 📦 Configuración de Archivos
+## 🔍 Directory Breakdown
 
-### `pubspec.yaml`
-Define:
-- Nombre y versión del proyecto
-- Dependencias (flutter_bloc, go_router, etc.)
-- Assets (imágenes, fuentes)
-- Configuración de compilación
+### 1. `lib/core/`
+Houses setup components, constants, and utilities shared throughout the entire app:
+- **`routes/`**: Handles the path routing config using `go_router`. Keeps navigation decoupled from screens.
+- **`services/`**: Holds long-lived utility managers. `injection_container.dart` runs on app start to initialize dependency injections.
+- **`theme/`**: Implements custom UI styling variables. It defines dark backgrounds and blue highlights.
 
-### `analysis_options.yaml`
-Configura:
-- Reglas de linting
-- Nivel de severidad de errores
-- Exclusiones de análisis
+### 2. `lib/features/`
+Divided by feature scopes. 
+- **`home`**: Handles screen layout frame and navigation page indices. It contains the loading/startup sequence and coordinates slide animations between sections.
+- **`compress_video`**: Implements the Clean Architecture pattern for video processing.
+  - **`domain`**: Exposes the logic rules and definitions (`use_cases` and `entities`) without relying on packages.
+  - **`data`**: Integrates hardware APIs or package calls. Files under `datasources` fetch paths, read metadata, and (ultimately) run ffmpeg or compression scripts.
+  - **`presentation`**: Houses state controls (`VideoBloc`) to drive screen rendering.
 
-### `.gitignore`
-Archivos ignorados por Git:
-- `build/`
-- `pubspec.lock`
-- `android/local.properties`
-- Otros archivos temporales
+### 3. `lib/shared/`
+Contains common structural widgets (e.g., standard dialogs, loading spinners) and general Dart extension helpers which are feature-agnostic.
 
----
-
-## 🎯 Estructura Recomendada para Agregar Nuevos Features
-
-Para agregar un nuevo feature (ejemplo: `video_editor`):
-
-```
-features/
-└── video_editor/
-    ├── data/
-    │   ├── datasources/
-    │   └── repositories/
-    ├── domain/
-    │   ├── entities/
-    │   ├── repositories/
-    │   └── usecases/
-    └── presentation/
-        ├── bloc/
-        │   ├── video_editor_bloc.dart
-        │   ├── video_editor_event.dart
-        │   └── video_editor_state.dart
-        ├── widgets/
-        │   └── [widgets específicos]
-        └── video_editor_screen.dart
-```
+### 4. `docs/`
+Developer-facing markdown documents describing architecture, state machines, color palettes, and guide procedures.
 
 ---
 
-## 🔗 Relaciones de Importaciones
+## 📦 Adding a New Feature (Workflow Template)
+
+When creating a new feature (e.g., `video_trimmer`), maintain Clean Architecture boundaries by applying this template:
 
 ```
-main.dart
-    ↓
-core/routes/ (go_router config)
-    ↓
-features/home/presentation/home_screen.dart
-    ↓
-    ├─ features/home/presentation/bloc/
-    ├─ features/home/presentation/widgets/
-    └─ core/services/
+lib/features/video_trimmer/
+├── data/
+│   ├── datasources/
+│   │   └── video_trimmer_datasource.dart
+│   └── repositories/
+│       └── video_trimmer_repository_impl.dart
+├── domain/
+│   ├── entities/
+│   │   └── trim_config.dart
+│   ├── repositories/
+│   │   └── video_trimmer_repository.dart
+│   └── use_cases/
+│       └── trim_video_use_case.dart
+└── presentation/
+    ├── bloc/
+    │   ├── video_trimmer_bloc.dart
+    │   ├── video_trimmer_event.dart
+    │   └── video_trimmer_state.dart
+    └── screens/
+        └── video_trimmer_screen.dart
 ```
-
----
-
-Para más detalles sobre la arquitectura, ver [ARCHITECTURE.md](./ARCHITECTURE.md)
+Once added, register data sources, repositories, and use cases inside [injection_container.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/injection_container.dart).
