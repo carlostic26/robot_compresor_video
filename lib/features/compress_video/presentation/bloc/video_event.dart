@@ -19,3 +19,7 @@ class CompressVideoRequested extends VideoEvent {
   @override
   List<Object?> get props => [config];
 }
+
+class SaveVideoRequested extends VideoEvent {
+  const SaveVideoRequested();
+}

@@ -1,9 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_compressor_datasource.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_metadata_datasource.dart';
+import 'package:robot_compresor_video/features/compress_video/data/datasources/video_storage_datasource.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/repositories/video_repository.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 
 import '../../features/compress_video/data/datasources/video_picker_datasource.dart';
@@ -22,12 +24,16 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerLazySingleton<VideoCompressorDatasource>(
-    () => VideoCompressorDatasource(getIt( )),
+    () => VideoCompressorDatasource(getIt()),
+  );
+
+  getIt.registerLazySingleton<VideoStorageDatasource>(
+    () => VideoStorageDatasource(),
   );
 
   /// Repository
   getIt.registerLazySingleton<VideoRepository>(
-    () => VideoRepositoryImpl(getIt(), getIt(), getIt()),
+    () => VideoRepositoryImpl(getIt(), getIt(), getIt(), getIt()),
   );
 
   /// UseCases
@@ -35,8 +41,14 @@ Future<void> setupDependencies() async {
 
   getIt.registerLazySingleton(() => CompressVideoUseCase(getIt()));
 
+  getIt.registerLazySingleton(() => SaveVideoUseCase(getIt()));
+
   /// Bloc
   getIt.registerFactory(
-    () => VideoBloc(pickVideoUseCase: getIt(), compressVideoUseCase: getIt()),
+    () => VideoBloc(
+      pickVideoUseCase: getIt(),
+      compressVideoUseCase: getIt(),
+      saveVideoUseCase: getIt(),
+    ),
   );
 }

@@ -9,4 +9,6 @@ abstract class VideoRepository {
     required VideoFile video,
     required CompressionConfig config,
   });
+
+  Future<void> saveVideo(VideoFile video);
 }

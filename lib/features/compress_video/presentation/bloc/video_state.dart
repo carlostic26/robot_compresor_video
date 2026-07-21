@@ -1,6 +1,14 @@
 part of 'video_bloc.dart';
 
-enum VideoStatus { initial, picking, compressing, success, failure }
+enum VideoStatus {
+  initial,
+  picking,
+  compressing,
+  success,
+  saving,
+  saved,
+  failure,
+}
 
 class VideoState extends Equatable {
   static const _unset = Object();

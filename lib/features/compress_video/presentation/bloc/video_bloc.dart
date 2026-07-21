@@ -6,6 +6,7 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/co
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
 
 part 'video_event.dart';
 part 'video_state.dart';
@@ -13,13 +14,16 @@ part 'video_state.dart';
 class VideoBloc extends Bloc<VideoEvent, VideoState> {
   final PickVideoUseCase pickVideoUseCase;
   final CompressVideoUseCase compressVideoUseCase;
+  final SaveVideoUseCase saveVideoUseCase;
 
-VideoBloc({
+  VideoBloc({
     required this.pickVideoUseCase,
     required this.compressVideoUseCase,
+    required this.saveVideoUseCase,
   }) : super(const VideoState()) {
     on<PickVideoRequested>(_onPickVideoRequested);
     on<CompressVideoRequested>(_onCompressVideoRequested);
+    on<SaveVideoRequested>(_onSaveVideoRequested);
   }
   Future<void> _onPickVideoRequested(
     PickVideoRequested event,
@@ -55,16 +59,15 @@ VideoBloc({
     }
   }
 
-Future<void> _onCompressVideoRequested(
+  Future<void> _onCompressVideoRequested(
     CompressVideoRequested event,
     Emitter<VideoState> emit,
   ) async {
-
-      debugPrint("STATUS 1. Entró al evento");
+    debugPrint("STATUS 1. Entró al evento");
     final video = state.video;
 
     if (video == null) {
-         debugPrint("STATUS 2. Video nulo");
+      debugPrint("STATUS 2. Video nulo");
       emit(
         state.copyWith(
           status: VideoStatus.failure,
@@ -74,21 +77,21 @@ Future<void> _onCompressVideoRequested(
       return;
     }
 
-     debugPrint("STATUS 3. Antes del emit compressing");
+    debugPrint("STATUS 3. Antes del emit compressing");
 
     emit(state.copyWith(status: VideoStatus.compressing, error: null));
 
-      debugPrint("STATUS 4. Después del emit compressing");
+    debugPrint("STATUS 4. Después del emit compressing");
 
     try {
-          debugPrint("STATUS 5. Antes del usecase");
+      debugPrint("STATUS 5. Antes del usecase");
 
       final result = await compressVideoUseCase(
         video: video,
         config: event.config,
       );
 
-       debugPrint("STATUS 6. Terminó el usecase");
+      debugPrint("STATUS 6. Terminó el usecase");
 
       emit(
         state.copyWith(
@@ -98,7 +101,7 @@ Future<void> _onCompressVideoRequested(
         ),
       );
 
-         debugPrint("STATUS 7. Emit success");
+      debugPrint("STATUS 7. Emit success");
 
       debugPrint('COMPRESIÓN FINALIZADA');
     } catch (e) {
@@ -107,6 +110,29 @@ Future<void> _onCompressVideoRequested(
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
 
       debugPrint(e.toString());
+    }
+  }
+
+Future<void> _onSaveVideoRequested(
+    SaveVideoRequested event,
+    Emitter<VideoState> emit,
+  ) async {
+    final result = state.compressionResult;
+
+    if (result == null) {
+      emit(
+        state.copyWith(
+          status: VideoStatus.failure,
+          error: 'No existe un video comprimido.',
+        ),
+      );
+      return;
+    }
+
+    try {
+      await saveVideoUseCase(result.compressedVideo);
+    } catch (e) {
+      emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
     }
   }
 }

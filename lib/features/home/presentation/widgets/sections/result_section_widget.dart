@@ -81,12 +81,35 @@ class ResultSection extends StatelessWidget {
           );
         }
 
+        if (state.status == VideoStatus.saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('✅ Video guardado correctamente')),
+          );
+        }
+
         /// ==========================
         /// RESULTADO FINAL
         /// ==========================
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: VideoSummaryWidget(video: result.compressedVideo),
+          child: Column(
+            children: [
+              VideoSummaryWidget(video: result.compressedVideo),
+
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    context.read<VideoBloc>().add(const SaveVideoRequested());
+                  },
+                  icon: const Icon(Icons.save_alt),
+                  label: const Text('Guardar video'),
+                )
+              ),
+            ],
+          ),
         );
       },
     );
