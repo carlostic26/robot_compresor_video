@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/section_pages.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/section_pages.dart';
 
 class SubirSection extends StatelessWidget {
   const SubirSection({super.key});

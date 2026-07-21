@@ -33,6 +33,6 @@ VideoState copyWith({
     );
   }
 
-  @override
-  List<Object?> get props => [video, compressionResult, compressionResult, error];
+@override
+  List<Object?> get props => [video, compressionResult, status, error];
 }

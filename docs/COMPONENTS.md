@@ -81,7 +81,7 @@ This document describes all custom UI components and widgets implemented in the 
 
 ---
 
-### 7. ResultadoSection (Results View)
+### 7. ResultSection (Results View)
 - **File**: [result_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/result_section_widget.dart)
 - **Description**: Intended to show compression analytics (original size vs. compressed size, compression ratio percentage, saved space bar, sharing or saving options).
 - **Implementation Status**: **Static Placeholder**. Renders a check icon and a placeholder label.

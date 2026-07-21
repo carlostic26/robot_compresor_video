@@ -8,7 +8,7 @@ import 'package:robot_compresor_video/features/home/presentation/widgets/section
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/compressor_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/result_section_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/subir_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/subir_section_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
           ],
         ),
-       body: BlocConsumer<VideoBloc, VideoState>(
+        body: BlocConsumer<VideoBloc, VideoState>(
           listener: (context, state) {
             if (state.status == VideoStatus.compressing) {
               _pageController.animateToPage(
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? const ['Subir', 'Avanzado', 'Resultado']
                 : const ['Compresor', 'Avanzado', 'Resultado'];
 
-   /*          final isLoading =
+            /*          final isLoading =
                 videoState.status == VideoStatus.picking ||
                 videoState.status == VideoStatus.compressing; */
 
@@ -120,19 +120,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? const [
                                 SubirSection(),
                                 AvanzadoSection(),
-                                ResultadoSection(),
+                                ResultSection(),
                               ]
                             : const [
                                 CompressorSection(),
                                 AvanzadoSection(),
-                                ResultadoSection(),
+                                ResultSection(),
                               ],
                       ),
                     ),
                   ],
                 ),
 
-     /*            /// Overlay de carga
+                /*            /// Overlay de carga
                 if (isLoading)
                   Positioned.fill(
                     child: Container(

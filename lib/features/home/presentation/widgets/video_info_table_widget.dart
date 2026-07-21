@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 
+import 'loading_placeholder_widget.dart';
+
 /// Widget que muestra la información del video en forma de tabla
 class VideoInfoTableWidget extends StatelessWidget {
-  /// Información del video a mostrar
   final VideoFile videoFile;
+  final bool isLoading;
 
-  const VideoInfoTableWidget({super.key, required this.videoFile});
+  const VideoInfoTableWidget({
+    super.key,
+    required this.videoFile,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// Título de la sección
+        /// Título
         Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
+          padding: const EdgeInsets.only(bottom: 16),
           child: Text(
             'Información del vídeo',
             style: Theme.of(
@@ -24,7 +30,7 @@ class VideoInfoTableWidget extends StatelessWidget {
           ),
         ),
 
-        /// Tabla de información
+        /// Tabla
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[900],
@@ -38,28 +44,36 @@ class VideoInfoTableWidget extends StatelessWidget {
                 label: 'Nombre',
                 value: videoFile.shortName,
               ),
+
               _buildDivider(),
+
               _buildInfoRow(
                 context,
                 icon: Icons.schedule,
                 label: 'Duración',
                 value: videoFile.formattedDuration,
               ),
+
               _buildDivider(),
+
               _buildInfoRow(
                 context,
                 icon: Icons.calendar_today,
                 label: 'Fecha',
                 value: '--',
               ),
+
               _buildDivider(),
+
               _buildInfoRow(
                 context,
                 icon: Icons.storage,
                 label: 'Peso',
                 value: '${videoFile.sizeMB.toStringAsFixed(2)} MB',
               ),
+
               _buildDivider(),
+
               _buildInfoRow(
                 context,
                 icon: Icons.speed,
@@ -75,7 +89,6 @@ class VideoInfoTableWidget extends StatelessWidget {
     );
   }
 
-  /// Widget que construye una fila de información
   Widget _buildInfoRow(
     BuildContext context, {
     required IconData icon,
@@ -83,14 +96,13 @@ class VideoInfoTableWidget extends StatelessWidget {
     required String value,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          /// Icono
           Icon(icon, color: Colors.blue, size: 20),
+
           const SizedBox(width: 12),
 
-          /// Etiqueta y valor
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -101,14 +113,18 @@ class VideoInfoTableWidget extends StatelessWidget {
                     context,
                   ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                 ),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+
+                if (isLoading)
+                  const LoadingPlaceholderWidget(width: 110, height: 14)
+                else
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -117,12 +133,11 @@ class VideoInfoTableWidget extends StatelessWidget {
     );
   }
 
-  /// Divisor entre filas
   Widget _buildDivider() {
     return Container(
       height: 1,
       color: Colors.grey[800],
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 }

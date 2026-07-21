@@ -88,7 +88,6 @@ Future<void> _onCompressVideoRequested(
       );
 
       debugPrint('COMPRESIÓN FINALIZADA');
-      debugPrint(result.outputPath);
     } catch (e) {
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
 

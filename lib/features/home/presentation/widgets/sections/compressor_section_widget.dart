@@ -4,9 +4,7 @@ import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/compression_dialog.dart';
-
-import '../video_info_table_widget.dart';
-import '../video_preview_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/video_summary_widget.dart';
 
 class CompressorSection extends StatelessWidget {
   const CompressorSection({super.key});
@@ -25,17 +23,12 @@ class CompressorSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              VideoPreviewWidget(
-                thumbnailPath: video.thumbnailPath,
-                height: ScreenSizeService.heightPercent(context, 22),
-              ),
-
-              const SizedBox(height: 24),
-
-              VideoInfoTableWidget(videoFile: video),
+              /// Preview + información
+              VideoSummaryWidget(video: video),
 
               const SizedBox(height: 16),
 
+              /// Botón de compresión
               Center(
                 child: SizedBox(
                   width: ScreenSizeService.widthPercent(context, 90),
