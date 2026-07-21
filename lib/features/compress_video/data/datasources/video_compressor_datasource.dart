@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as path;
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_metadata_datasource.dart';
 import 'package:video_compress/video_compress.dart';
 
@@ -26,16 +28,44 @@ class VideoCompressorDatasource {
       throw Exception('No fue posible comprimir el video.');
     }
 
-    final compressedFile = File(mediaInfo.path!);
+    final tempFile = File(mediaInfo.path!);
 
-final compressedVideo = await metadataDatasource.getVideoMetadata(
-      mediaInfo.path!,
+    if (!await tempFile.exists()) {
+      throw Exception('No se encontró el archivo comprimido.');
+    }
+
+    final directory = tempFile.parent.path;
+
+    /// video.mp4
+    final originalName = path.basename(video.path);
+
+    /// 20260721_103545
+    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+
+    /// compressed_20260721_103545_video.mp4
+    final newName = 'compressed_${timestamp}_$originalName';
+
+    final newPath = path.join(directory, newName);
+
+    /// Si ya existe lo eliminamos
+    final newFile = File(newPath);
+
+    if (await newFile.exists()) {
+      await newFile.delete();
+    }
+
+    /// Renombrar el archivo
+    final renamedFile = await tempFile.rename(newPath);
+
+    /// Leer metadata del nuevo archivo
+    final compressedVideo = await metadataDatasource.getVideoMetadata(
+      renamedFile.path,
     );
 
     return CompressionResult(
       compressedVideo: compressedVideo,
       originalSize: video.size,
-      compressedSize: await compressedFile.length(),
+      compressedSize: await renamedFile.length(),
     );
   }
 

@@ -73,14 +73,37 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: BlocConsumer<VideoBloc, VideoState>(
           listener: (context, state) {
-            if (state.status == VideoStatus.compressing) {
-              _pageController.animateToPage(
-                2,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
+            if (state.status == VideoStatus.success &&
+                state.compressionResult != null) {
+              final result = state.compressionResult!;
+              final messenger = ScaffoldMessenger.of(context);
+
+              messenger.clearSnackBars();
+
+              messenger.showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 3),
+                  content: Text(
+                    '✅ Video comprimido y guardado en\n'
+                    '${result.compressedVideo.path}',
+                  ),
+                ),
               );
 
-              _homeSectionBloc.add(const PageChanged(2));
+              Future.delayed(const Duration(milliseconds: 3200), () {
+                if (!context.mounted) return;
+
+                messenger.showSnackBar(
+                  SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 3),
+                    content: Text(
+                      '🎉 Se redujo un ${result.savedPercentage.toStringAsFixed(1)}%',
+                    ),
+                  ),
+                );
+              });
             }
           },
           builder: (context, videoState) {
@@ -92,54 +115,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 videoState.status == VideoStatus.picking ||
                 videoState.status == VideoStatus.compressing; */
 
-            return Stack(
+            return Column(
               children: [
-                Column(
-                  children: [
-                    /// TABS DE SECCIONES
-                    BlocBuilder<HomeSectionBloc, HomeSectionState>(
-                      builder: (context, state) {
-                        return AnimatedSectionTabs(
-                          sections: sections,
-                          currentIndex: state.currentPageIndex,
-                          onTabPressed: _onTabPressed,
-                        );
-                      },
-                    ),
-
-                    SizedBox(
-                      height: ScreenSizeService.heightPercent(context, 2),
-                    ),
-
-                    /// PAGEVIEW DE LAS 3 SECCIONES
-                    Expanded(
-                      child: PageView(
-                        controller: _pageController,
-                        onPageChanged: _onPageChanged,
-                        children: videoState.video == null
-                            ? const [
-                                SubirSection(),
-                                AvanzadoSection(),
-                                ResultSection(),
-                              ]
-                            : const [
-                                CompressorSection(),
-                                AvanzadoSection(),
-                                ResultSection(),
-                              ],
-                      ),
-                    ),
-                  ],
+                /// TABS DE SECCIONES
+                BlocBuilder<HomeSectionBloc, HomeSectionState>(
+                  builder: (context, state) {
+                    return AnimatedSectionTabs(
+                      sections: sections,
+                      currentIndex: state.currentPageIndex,
+                      onTabPressed: _onTabPressed,
+                    );
+                  },
                 ),
 
-                /*            /// Overlay de carga
-                if (isLoading)
-                  Positioned.fill(
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                  ), */
+                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
+
+                /// PAGEVIEW DE LAS 3 SECCIONES
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    children: videoState.video == null
+                        ? const [
+                            SubirSection(),
+                            AvanzadoSection(),
+                            ResultSection(),
+                          ]
+                        : const [
+                            CompressorSection(),
+                            AvanzadoSection(),
+                            ResultSection(),
+                          ],
+                  ),
+                ),
               ],
             );
           },
