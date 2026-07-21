@@ -4,6 +4,7 @@ import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/compressor_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/result_section_widget.dart';
@@ -60,10 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.transparent,
           centerTitle: true,
           title: const Text('Compresor de video'),
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Navigator.pop(context);
+          leading: Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              );
             },
           ),
           actions: [
@@ -174,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        drawer: const AppDrawer(),
         bottomNavigationBar: SizedBox(
           height: ScreenSizeService.heightPercent(context, 8),
           child: const Placeholder(),
