@@ -22,7 +22,7 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerLazySingleton<VideoCompressorDatasource>(
-    () => VideoCompressorDatasource(),
+    () => VideoCompressorDatasource(getIt( )),
   );
 
   /// Repository

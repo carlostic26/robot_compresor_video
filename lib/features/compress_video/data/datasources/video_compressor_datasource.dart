@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:robot_compresor_video/features/compress_video/data/datasources/video_metadata_datasource.dart';
 import 'package:video_compress/video_compress.dart';
 
 import '../../domain/entities/compression_config.dart';
@@ -7,6 +8,10 @@ import '../../domain/entities/compression_result.dart';
 import '../../domain/entities/video_file.dart';
 
 class VideoCompressorDatasource {
+  final VideoMetadataDatasource metadataDatasource;
+
+  VideoCompressorDatasource(this.metadataDatasource);
+
   Future<CompressionResult> compress({
     required VideoFile video,
     required CompressionConfig config,
@@ -23,8 +28,12 @@ class VideoCompressorDatasource {
 
     final compressedFile = File(mediaInfo.path!);
 
+final compressedVideo = await metadataDatasource.getVideoMetadata(
+      mediaInfo.path!,
+    );
+
     return CompressionResult(
-      outputPath: mediaInfo.path!,
+      compressedVideo: compressedVideo,
       originalSize: video.size,
       compressedSize: await compressedFile.length(),
     );

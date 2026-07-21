@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/entities/compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/compression_dialog.dart';
 
-import 'video_info_table_widget.dart';
-import 'video_preview_widget.dart';
+import '../video_info_table_widget.dart';
+import '../video_preview_widget.dart';
 
 class CompressorSection extends StatelessWidget {
   const CompressorSection({super.key});
@@ -38,7 +40,20 @@ class CompressorSection extends StatelessWidget {
                 child: SizedBox(
                   width: ScreenSizeService.widthPercent(context, 90),
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final config = await showDialog<CompressionConfig>(
+                        context: context,
+                        builder: (_) => const CompressionDialog(),
+                      );
+
+                      if (!context.mounted || config == null) {
+                        return;
+                      }
+
+                      context.read<VideoBloc>().add(
+                        CompressVideoRequested(config: config),
+                      );
+                    },
                     child: const Text('Comprimir'),
                   ),
                 ),

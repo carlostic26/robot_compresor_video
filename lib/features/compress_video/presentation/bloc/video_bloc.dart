@@ -55,8 +55,44 @@ VideoBloc({
     }
   }
 
-  Future<void> _onCompressVideoRequested(
+Future<void> _onCompressVideoRequested(
     CompressVideoRequested event,
     Emitter<VideoState> emit,
-  ) async {}
+  ) async {
+    final video = state.video;
+
+    if (video == null) {
+      emit(
+        state.copyWith(
+          status: VideoStatus.failure,
+          error: 'No hay un video seleccionado.',
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(status: VideoStatus.compressing, error: null));
+
+    try {
+      final result = await compressVideoUseCase(
+        video: video,
+        config: event.config,
+      );
+
+      emit(
+        state.copyWith(
+          compressionResult: result,
+          status: VideoStatus.success,
+          error: null,
+        ),
+      );
+
+      debugPrint('COMPRESIÓN FINALIZADA');
+      debugPrint(result.outputPath);
+    } catch (e) {
+      emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
+
+      debugPrint(e.toString());
+    }
+  }
 }

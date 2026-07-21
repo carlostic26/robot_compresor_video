@@ -1,10 +1,13 @@
+import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
+
 class CompressionResult {
-  final String outputPath;
+  final VideoFile compressedVideo;
+
   final int originalSize;
   final int compressedSize;
-
+  
   const CompressionResult({
-    required this.outputPath,
+    required this.compressedVideo,
     required this.originalSize,
     required this.compressedSize,
   });

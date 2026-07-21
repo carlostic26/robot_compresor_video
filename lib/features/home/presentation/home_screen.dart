@@ -4,10 +4,10 @@ import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_section_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/animated_section_tabs.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/compressor_section_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/result_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/advanced_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/animated_section_tabs.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/compressor_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/sections/result_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/subir_section_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -71,15 +71,26 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
           ],
         ),
-        body: BlocBuilder<VideoBloc, VideoState>(
+       body: BlocConsumer<VideoBloc, VideoState>(
+          listener: (context, state) {
+            if (state.status == VideoStatus.compressing) {
+              _pageController.animateToPage(
+                2,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+
+              _homeSectionBloc.add(const PageChanged(2));
+            }
+          },
           builder: (context, videoState) {
             final sections = videoState.video == null
                 ? const ['Subir', 'Avanzado', 'Resultado']
                 : const ['Compresor', 'Avanzado', 'Resultado'];
 
-            final isLoading =
+   /*          final isLoading =
                 videoState.status == VideoStatus.picking ||
-                videoState.status == VideoStatus.compressing;
+                videoState.status == VideoStatus.compressing; */
 
             return Stack(
               children: [
@@ -121,14 +132,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
 
-                /// Overlay de carga
+     /*            /// Overlay de carga
                 if (isLoading)
                   Positioned.fill(
                     child: Container(
                       color: Colors.black.withValues(alpha: 0.65),
                       child: const Center(child: CircularProgressIndicator()),
                     ),
-                  ),
+                  ), */
               ],
             );
           },

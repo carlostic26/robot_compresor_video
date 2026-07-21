@@ -25,7 +25,7 @@ class VideoRepositoryImpl implements VideoRepository {
       return null;
     }
 
-    return metadataDatasource.getVideoMetadata(file);
+    return metadataDatasource.getVideoMetadata(file.path!);
   }
 
   @override
