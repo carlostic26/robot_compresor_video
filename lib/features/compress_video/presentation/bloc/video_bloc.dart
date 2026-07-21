@@ -59,9 +59,12 @@ Future<void> _onCompressVideoRequested(
     CompressVideoRequested event,
     Emitter<VideoState> emit,
   ) async {
+
+      debugPrint("STATUS 1. Entró al evento");
     final video = state.video;
 
     if (video == null) {
+         debugPrint("STATUS 2. Video nulo");
       emit(
         state.copyWith(
           status: VideoStatus.failure,
@@ -71,13 +74,21 @@ Future<void> _onCompressVideoRequested(
       return;
     }
 
+     debugPrint("STATUS 3. Antes del emit compressing");
+
     emit(state.copyWith(status: VideoStatus.compressing, error: null));
 
+      debugPrint("STATUS 4. Después del emit compressing");
+
     try {
+          debugPrint("STATUS 5. Antes del usecase");
+
       final result = await compressVideoUseCase(
         video: video,
         config: event.config,
       );
+
+       debugPrint("STATUS 6. Terminó el usecase");
 
       emit(
         state.copyWith(
@@ -87,8 +98,12 @@ Future<void> _onCompressVideoRequested(
         ),
       );
 
+         debugPrint("STATUS 7. Emit success");
+
       debugPrint('COMPRESIÓN FINALIZADA');
     } catch (e) {
+      debugPrint("STATUS 8. ERROR $e");
+
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
 
       debugPrint(e.toString());

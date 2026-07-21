@@ -4,7 +4,6 @@ import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/sections/advanced_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/compressor_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/sections/result_section_widget.dart';
@@ -72,7 +71,41 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         body: BlocConsumer<VideoBloc, VideoState>(
-          listener: (context, state) {
+          listener: (context, state) async {
+            debugPrint("=================================");
+            debugPrint("LISTENER -> ${state.status}");
+
+            /// Cuando inicia la compresión
+            if (state.status == VideoStatus.compressing) {
+              debugPrint("Entró a compressing");
+              debugPrint("hasClients: ${_pageController.hasClients}");
+
+              if (_pageController.hasClients) {
+                debugPrint("Página actual: ${_pageController.page}");
+
+                if (_pageController.page?.round() != 1) {
+                  debugPrint("Moviendo a página Resultado...");
+
+                  await _pageController.animateToPage(
+                    1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+
+                  debugPrint("PageController terminó animación");
+
+                  _homeSectionBloc.add(const PageChanged(1));
+
+                  debugPrint("ANTES ${_pageController.page}");
+
+                  _pageController.jumpToPage(1);
+
+                  debugPrint("DESPUÉS ${_pageController.page}");
+                }
+              }
+            }
+
+            /// Cuando termina la compresión
             if (state.status == VideoStatus.success &&
                 state.compressionResult != null) {
               final result = state.compressionResult!;
@@ -91,33 +124,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
 
-              Future.delayed(const Duration(milliseconds: 3200), () {
-                if (!context.mounted) return;
+              await Future.delayed(const Duration(milliseconds: 3200));
 
-                messenger.showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    duration: const Duration(seconds: 3),
-                    content: Text(
-                      '🎉 Se redujo un ${result.savedPercentage.toStringAsFixed(1)}%',
-                    ),
+              if (!context.mounted) return;
+
+              messenger.showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 3),
+                  content: Text(
+                    '🎉 Se redujo un ${result.savedPercentage.toStringAsFixed(1)}%',
                   ),
-                );
-              });
+                ),
+              );
             }
           },
+
           builder: (context, videoState) {
             final sections = videoState.video == null
-                ? const ['Subir', 'Avanzado', 'Resultado']
-                : const ['Compresor', 'Avanzado', 'Resultado'];
-
-            /*          final isLoading =
-                videoState.status == VideoStatus.picking ||
-                videoState.status == VideoStatus.compressing; */
-
+                ? const ['Subir', 'Resultado']
+                : const ['Compresor', 'Resultado'];
             return Column(
               children: [
-                /// TABS DE SECCIONES
                 BlocBuilder<HomeSectionBloc, HomeSectionState>(
                   builder: (context, state) {
                     return AnimatedSectionTabs(
@@ -130,22 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
 
-                /// PAGEVIEW DE LAS 3 SECCIONES
                 Expanded(
                   child: PageView(
                     controller: _pageController,
-                    onPageChanged: _onPageChanged,
+                    onPageChanged: (index) {
+                      debugPrint("PAGEVIEW -> $index");
+                      _onPageChanged(index);
+                    },
                     children: videoState.video == null
-                        ? const [
-                            SubirSection(),
-                            AvanzadoSection(),
-                            ResultSection(),
-                          ]
-                        : const [
-                            CompressorSection(),
-                            AvanzadoSection(),
-                            ResultSection(),
-                          ],
+                        ? const [SubirSection(), ResultSection()]
+                        : const [CompressorSection(), ResultSection()],
                   ),
                 ),
               ],
