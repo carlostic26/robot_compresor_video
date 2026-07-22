@@ -5,10 +5,10 @@ import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/sections/animated_section_tabs.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/sections/compressor_section_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/sections/result_section_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/sections/subir_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/sections/animated_section_tabs.dart';
+import 'package:robot_compresor_video/features/home/presentation/sections/compressor_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/sections/result_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/sections/subir_section_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

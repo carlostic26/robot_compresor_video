@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 
-import '../video_info_table_widget.dart';
-import '../video_preview_widget.dart';
+import '../widgets/video_info_table_widget.dart';
+import '../widgets/video_preview_widget.dart';
 
 /// Pintor personalizado para crear un borde punteado
 class DashedBorderPainter extends CustomPainter {
