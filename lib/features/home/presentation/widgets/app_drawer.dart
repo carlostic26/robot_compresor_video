@@ -15,7 +15,7 @@ class AppDrawer extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(.08),
+                color: colorScheme.primary.withValues(alpha: .08),
               ),
               child: Column(
                 children: [
@@ -29,7 +29,7 @@ class AppDrawer extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           blurRadius: 12,
-                          color: Colors.black.withOpacity(.08),
+                          color: Colors.black.withValues(alpha: .08),
                           offset: const Offset(0, 4),
                         ),
                       ],

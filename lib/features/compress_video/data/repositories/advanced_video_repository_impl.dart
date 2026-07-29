@@ -21,4 +21,9 @@ class AdvancedVideoRepositoryImpl implements AdvancedVideoRepository {
   Future<VideoFile> getExtendedMetadata(String videoPath) {
     return ffmpegDatasource.getExtendedMetadata(videoPath);
   }
+
+  @override
+  Future<String> generateThumbnail(String videoPath) {
+    return ffmpegDatasource.generateThumbnail(videoPath);
+  }
 }

@@ -15,6 +15,7 @@ Welcome to the documentation for the Robot Video Compressor project, a Flutter-b
 7. **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Local environment setup, prerequisites, and build commands
 8. **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Code templates, utilities, and common terminal shortcuts
 9. **[SAVE_VIDEO.md](./SAVE_VIDEO.md)** - Diagnóstico y solución completa del botón "Guardar video"
+10. **[RESULT_SCREEN.md](./RESULT_SCREEN.md)** - Thumbnail, metadata (fecha/bitrate), "Subir otro video" y tab "Comprimir"
 
 ---
 

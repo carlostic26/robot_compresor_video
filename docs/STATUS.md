@@ -17,6 +17,7 @@ This document tracks the actual implementation progress of the Robot Video Compr
 | **Dynamic Tab Logic** | ✅ Implemented | Switches tabs from `['Subir', 'Avanzado', 'Resultado']` to `['Compresor', 'Avanzado', 'Resultado']` when a video is loaded. |
 | **Save to Gallery** | ✅ Implemented | `VideoStorageDatasource` usa `gal`. BLoC emite `saving → saved`. Botón con feedback visual completo. |
 | **Advanced Section UI** | ❌ Pending | Placeholder only. Will connect to `CompressVideoAdvancedRequested` in next iteration. |
+| **Advanced Section UI** | ❌ Pending | Placeholder only. Will connect to `CompressVideoAdvancedRequested` in next iteration. |
 | **Result Section UI** | ❌ Pending | Placeholder only. |
 
 ---

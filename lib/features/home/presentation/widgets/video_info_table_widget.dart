@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 
 import 'loading_placeholder_widget.dart';
@@ -60,7 +61,7 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.calendar_today,
                 label: 'Fecha',
-                value: '--',
+                value: _formatDate(videoFile.createdAt),
               ),
 
               _buildDivider(),
@@ -78,9 +79,7 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.speed,
                 label: 'Bit rate',
-                value: videoFile.bitrate == 0
-                    ? '--'
-                    : '${videoFile.bitrate} kbps',
+                value: _formatBitrate(videoFile.bitrate),
               ),
             ],
           ),
@@ -139,5 +138,24 @@ class VideoInfoTableWidget extends StatelessWidget {
       color: Colors.grey[800],
       margin: const EdgeInsets.symmetric(horizontal: 16),
     );
+  }
+
+  /// Formatea la fecha de procesamiento del video.
+  /// Muestra la fecha de modificación del archivo (= fecha de compresión).
+  String _formatDate(DateTime? date) {
+    if (date == null) return '--';
+    return DateFormat('dd/MM/yyyy').format(date);
+  }
+
+  /// Convierte bps a una representación legible:
+  /// ≥ 1 Mbps → "X.X Mbps", < 1 Mbps → "X kbps", 0 → "--"
+  String _formatBitrate(int bps) {
+    if (bps <= 0) return '--';
+    if (bps >= 1000000) {
+      final mbps = bps / 1000000;
+      return '${mbps.toStringAsFixed(1)} Mbps';
+    }
+    final kbps = bps ~/ 1000;
+    return '$kbps kbps';
   }
 }

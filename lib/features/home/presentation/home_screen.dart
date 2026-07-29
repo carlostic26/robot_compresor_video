@@ -80,31 +80,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
             /// Cuando inicia la compresión
             if (state.status == VideoStatus.compressing) {
-              debugPrint("Entró a compressing");
-              debugPrint("hasClients: ${_pageController.hasClients}");
-
-              if (_pageController.hasClients) {
-                debugPrint("Página actual: ${_pageController.page}");
-
-                if (_pageController.page?.round() != 1) {
-                  debugPrint("Moviendo a página Resultado...");
-
-                  await _pageController.animateToPage(
-                    1,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-
-                  debugPrint("PageController terminó animación");
-
-                  _homeSectionBloc.add(const PageChanged(1));
-
-                  debugPrint("ANTES ${_pageController.page}");
-
-                  _pageController.jumpToPage(1);
-
-                  debugPrint("DESPUÉS ${_pageController.page}");
-                }
+              if (_pageController.hasClients &&
+                  _pageController.page?.round() != 1) {
+                await _pageController.animateToPage(
+                  1,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+                _homeSectionBloc.add(const PageChanged(1));
+                _pageController.jumpToPage(1);
               }
             }
 
@@ -112,17 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
             if (state.status == VideoStatus.success &&
                 state.compressionResult != null) {
               final result = state.compressionResult!;
+
+              if (!context.mounted) return;
               final messenger = ScaffoldMessenger.of(context);
-
               messenger.clearSnackBars();
-
               messenger.showSnackBar(
                 SnackBar(
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 3),
                   content: Text(
-                    '✅ Video comprimido y guardado en\n'
-                    '${result.compressedVideo.path}',
+                    '✅ Video comprimido\n${result.compressedVideo.path}',
                   ),
                 ),
               );
@@ -130,8 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
               await Future.delayed(const Duration(milliseconds: 3200));
 
               if (!context.mounted) return;
-
-              messenger.showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 3),
@@ -146,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, videoState) {
             final sections = videoState.video == null
                 ? const ['Subir', 'Resultado']
-                : const ['Compresor', 'Resultado'];
+                : const ['Comprimir', 'Resultado'];
             return Column(
               children: [
                 BlocBuilder<HomeSectionBloc, HomeSectionState>(

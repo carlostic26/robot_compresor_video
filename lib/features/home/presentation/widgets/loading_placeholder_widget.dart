@@ -46,7 +46,7 @@ class _LoadingPlaceholderWidgetState extends State<LoadingPlaceholderWidget>
       borderRadius: borderRadius,
       child: AnimatedBuilder(
         animation: _controller,
-        builder: (_, __) {
+        builder: (context, snapshot) {
           return ShaderMask(
             shaderCallback: (bounds) {
               final width = bounds.width;

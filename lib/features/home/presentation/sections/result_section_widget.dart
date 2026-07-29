@@ -4,7 +4,6 @@ import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_info_table_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_preview_widget.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/video_summary_widget.dart';
 
 class ResultSection extends StatelessWidget {
   const ResultSection({super.key});
@@ -45,9 +44,7 @@ class ResultSection extends StatelessWidget {
       builder: (context, state) {
         final result = state.compressionResult;
 
-        /// ==========================
-        /// COMPRESIÓN EN PROCESO
-        /// ==========================
+        // ── Compresión en proceso ──────────────────────────────────────────
         if (state.status == VideoStatus.compressing && state.video != null) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -76,9 +73,7 @@ class ResultSection extends StatelessWidget {
           );
         }
 
-        /// ==========================
-        /// AÚN NO EXISTE RESULTADO
-        /// ==========================
+        // ── Sin resultado aún ──────────────────────────────────────────────
         if (result == null) {
           return Center(
             child: Column(
@@ -108,20 +103,55 @@ class ResultSection extends StatelessWidget {
           );
         }
 
-        /// ==========================
-        /// RESULTADO FINAL
-        /// ==========================
+        // ── Resultado final ────────────────────────────────────────────────
         final isSaving = state.status == VideoStatus.saving;
         final isSaved = state.status == VideoStatus.saved;
+        final isGeneratingThumb =
+            state.status == VideoStatus.generatingThumbnail;
+
+        // El video comprimido con el thumbnailPath actualizado desde el estado
+        final videoWithThumb = result.compressedVideo;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              VideoSummaryWidget(video: result.compressedVideo),
+              // Preview con thumbnail real (o placeholder si aún se genera)
+              Stack(
+                children: [
+                  VideoPreviewWidget(
+                    thumbnailPath: state.thumbnailPath,
+                    height: ScreenSizeService.heightPercent(context, 22),
+                  ),
+                  if (isGeneratingThumb)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.black.withValues(alpha: 0.4),
+                        ),
+                        child: const Center(
+                          child: SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
 
               const SizedBox(height: 24),
 
+              VideoInfoTableWidget(videoFile: videoWithThumb),
+
+              const SizedBox(height: 24),
+
+              // Botón Guardar video
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -149,6 +179,21 @@ class ResultSection extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Botón "Subir otro video" — solo visible tras guardado exitoso
+              if (isSaved) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context
+                        .read<VideoBloc>()
+                        .add(const ResetVideoRequested()),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Subir otro video'),
+                  ),
+                ),
+              ],
             ],
           ),
         );

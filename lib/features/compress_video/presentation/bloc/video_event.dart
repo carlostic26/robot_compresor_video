@@ -38,3 +38,17 @@ class CompressVideoAdvancedRequested extends VideoEvent {
 class LoadExtendedMetadataRequested extends VideoEvent {
   const LoadExtendedMetadataRequested();
 }
+
+/// Genera la miniatura del video en [videoPath].
+class GenerateThumbnailRequested extends VideoEvent {
+  final String videoPath;
+  const GenerateThumbnailRequested(this.videoPath);
+
+  @override
+  List<Object?> get props => [videoPath];
+}
+
+/// Reinicia el estado para permitir seleccionar un nuevo video.
+class ResetVideoRequested extends VideoEvent {
+  const ResetVideoRequested();
+}

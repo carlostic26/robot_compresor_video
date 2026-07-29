@@ -5,6 +5,7 @@ enum VideoStatus {
   picking,
   compressing,
   compressingAdvanced,
+  generatingThumbnail,
   loadingExtendedMetadata,
   success,
   saving,
@@ -21,12 +22,17 @@ class VideoState extends Equatable {
   final VideoStatus status;
   final String? error;
 
+  /// Ruta de la miniatura del video comprimido actual.
+  /// null mientras no se haya generado o si la generación falló.
+  final String? thumbnailPath;
+
   const VideoState({
     this.video,
     this.compressionResult,
     this.advancedCompressionResult,
     this.status = VideoStatus.initial,
     this.error,
+    this.thumbnailPath,
   });
 
   VideoState copyWith({
@@ -35,6 +41,7 @@ class VideoState extends Equatable {
     Object? advancedCompressionResult = _unset,
     VideoStatus? status,
     Object? error = _unset,
+    Object? thumbnailPath = _unset,
   }) {
     return VideoState(
       video: identical(video, _unset) ? this.video : video as VideoFile?,
@@ -46,6 +53,9 @@ class VideoState extends Equatable {
           : advancedCompressionResult as AdvancedCompressionResult?,
       status: status ?? this.status,
       error: identical(error, _unset) ? this.error : error as String?,
+      thumbnailPath: identical(thumbnailPath, _unset)
+          ? this.thumbnailPath
+          : thumbnailPath as String?,
     );
   }
 
@@ -56,5 +66,6 @@ class VideoState extends Equatable {
         advancedCompressionResult,
         status,
         error,
+        thumbnailPath,
       ];
 }

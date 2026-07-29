@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
+import 'package:robot_compresor_video/features/compress_video/data/datasources/ffmpeg_datasource.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_metadata_datasource.dart';
 import 'package:video_compress/video_compress.dart';
 
@@ -11,8 +12,9 @@ import '../../domain/entities/video_file.dart';
 
 class VideoCompressorDatasource {
   final VideoMetadataDatasource metadataDatasource;
+  final FfmpegDatasource ffmpegDatasource;
 
-  VideoCompressorDatasource(this.metadataDatasource);
+  VideoCompressorDatasource(this.metadataDatasource, this.ffmpegDatasource);
 
   Future<CompressionResult> compress({
     required VideoFile video,
@@ -57,8 +59,9 @@ class VideoCompressorDatasource {
     /// Renombrar el archivo
     final renamedFile = await tempFile.rename(newPath);
 
-    /// Leer metadata del nuevo archivo
-    final compressedVideo = await metadataDatasource.getVideoMetadata(
+    /// Leer metadata extendida del nuevo archivo via FFprobe
+    /// (obtiene bitrate real, fps y fecha de modificación)
+    final compressedVideo = await ffmpegDatasource.getExtendedMetadata(
       renamedFile.path,
     );
 

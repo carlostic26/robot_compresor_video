@@ -9,6 +9,7 @@ import 'package:robot_compresor_video/features/compress_video/domain/repositorie
 import 'package:robot_compresor_video/features/compress_video/domain/repositories/video_repository.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_advanced_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/use_cases/generate_thumbnail_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/get_extended_metadata_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
@@ -29,14 +30,6 @@ Future<void> setupDependencies() async {
     () => VideoMetadataDatasource(),
   );
 
-  getIt.registerLazySingleton<VideoCompressorDatasource>(
-    () => VideoCompressorDatasource(getIt()),
-  );
-
-  getIt.registerLazySingleton<VideoStorageDatasource>(
-    () => VideoStorageDatasource(),
-  );
-
   getIt.registerLazySingleton<FfmpegCommandBuilder>(
     () => FfmpegCommandBuilder(),
   );
@@ -46,6 +39,15 @@ Future<void> setupDependencies() async {
       commandBuilder: getIt(),
       metadataDatasource: getIt(),
     ),
+  );
+
+  // VideoCompressorDatasource ahora recibe FfmpegDatasource para metadata extendida
+  getIt.registerLazySingleton<VideoCompressorDatasource>(
+    () => VideoCompressorDatasource(getIt(), getIt()),
+  );
+
+  getIt.registerLazySingleton<VideoStorageDatasource>(
+    () => VideoStorageDatasource(),
   );
 
   /// Repositories
@@ -63,6 +65,7 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => SaveVideoUseCase(getIt()));
   getIt.registerLazySingleton(() => CompressVideoAdvancedUseCase(getIt()));
   getIt.registerLazySingleton(() => GetExtendedMetadataUseCase(getIt()));
+  getIt.registerLazySingleton(() => GenerateThumbnailUseCase(getIt()));
 
   /// Bloc
   getIt.registerFactory(
@@ -72,6 +75,7 @@ Future<void> setupDependencies() async {
       saveVideoUseCase: getIt(),
       compressVideoAdvancedUseCase: getIt(),
       getExtendedMetadataUseCase: getIt(),
+      generateThumbnailUseCase: getIt(),
     ),
   );
 }

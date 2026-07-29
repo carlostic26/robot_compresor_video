@@ -7,6 +7,7 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/co
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_advanced_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/use_cases/generate_thumbnail_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/get_extended_metadata_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
@@ -17,6 +18,7 @@ class MockCompressVideoUseCase extends Mock implements CompressVideoUseCase {}
 class MockSaveVideoUseCase extends Mock implements SaveVideoUseCase {}
 class MockCompressVideoAdvancedUseCase extends Mock implements CompressVideoAdvancedUseCase {}
 class MockGetExtendedMetadataUseCase extends Mock implements GetExtendedMetadataUseCase {}
+class MockGenerateThumbnailUseCase extends Mock implements GenerateThumbnailUseCase {}
 
 const _compressedVideo = VideoFile(
   path: '/tmp/compressed_video.mp4',
@@ -45,6 +47,7 @@ VideoBloc _buildBloc({
     saveVideoUseCase: saveUseCase ?? MockSaveVideoUseCase(),
     compressVideoAdvancedUseCase: MockCompressVideoAdvancedUseCase(),
     getExtendedMetadataUseCase: MockGetExtendedMetadataUseCase(),
+    generateThumbnailUseCase: MockGenerateThumbnailUseCase(),
   );
 }
 

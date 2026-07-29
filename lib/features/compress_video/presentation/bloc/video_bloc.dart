@@ -8,6 +8,7 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/co
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_advanced_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/compress_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/use_cases/generate_thumbnail_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/get_extended_metadata_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
@@ -21,6 +22,7 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
   final SaveVideoUseCase saveVideoUseCase;
   final CompressVideoAdvancedUseCase compressVideoAdvancedUseCase;
   final GetExtendedMetadataUseCase getExtendedMetadataUseCase;
+  final GenerateThumbnailUseCase generateThumbnailUseCase;
 
   VideoBloc({
     required this.pickVideoUseCase,
@@ -28,12 +30,15 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     required this.saveVideoUseCase,
     required this.compressVideoAdvancedUseCase,
     required this.getExtendedMetadataUseCase,
+    required this.generateThumbnailUseCase,
   }) : super(const VideoState()) {
     on<PickVideoRequested>(_onPickVideoRequested);
     on<CompressVideoRequested>(_onCompressVideoRequested);
     on<SaveVideoRequested>(_onSaveVideoRequested);
     on<CompressVideoAdvancedRequested>(_onCompressVideoAdvancedRequested);
     on<LoadExtendedMetadataRequested>(_onLoadExtendedMetadataRequested);
+    on<GenerateThumbnailRequested>(_onGenerateThumbnailRequested);
+    on<ResetVideoRequested>(_onResetVideoRequested);
   }
   Future<void> _onPickVideoRequested(
     PickVideoRequested event,
@@ -78,48 +83,35 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
 
     if (video == null) {
       debugPrint("STATUS 2. Video nulo");
-      emit(
-        state.copyWith(
-          status: VideoStatus.failure,
-          error: 'No hay un video seleccionado.',
-        ),
-      );
+      emit(state.copyWith(
+        status: VideoStatus.failure,
+        error: 'No hay un video seleccionado.',
+      ));
       return;
     }
 
-    debugPrint("STATUS 3. Antes del emit compressing");
-
     emit(state.copyWith(status: VideoStatus.compressing, error: null));
 
-    debugPrint("STATUS 4. Después del emit compressing");
-
     try {
-      debugPrint("STATUS 5. Antes del usecase");
-
       final result = await compressVideoUseCase(
         video: video,
         config: event.config,
       );
 
-      debugPrint("STATUS 6. Terminó el usecase");
-
-      emit(
-        state.copyWith(
-          compressionResult: result,
-          status: VideoStatus.success,
-          error: null,
-        ),
-      );
-
-      debugPrint("STATUS 7. Emit success");
-
       debugPrint('COMPRESIÓN FINALIZADA');
+
+      // Emitir resultado y luego generar thumbnail automáticamente
+      emit(state.copyWith(
+        compressionResult: result,
+        status: VideoStatus.success,
+        error: null,
+      ));
+
+      // Disparar generación de thumbnail sin bloquear el estado de éxito
+      add(GenerateThumbnailRequested(result.compressedVideo.path));
     } catch (e) {
-      debugPrint("STATUS 8. ERROR $e");
-
+      debugPrint("ERROR COMPRESIÓN: $e");
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
-
-      debugPrint(e.toString());
     }
   }
 
@@ -191,6 +183,41 @@ Future<void> _onSaveVideoRequested(
       debugPrint('ERROR COMPRESIÓN AVANZADA: $e');
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
     }
+  }
+
+  /// Genera la miniatura del video comprimido.
+  /// No falla la operación principal si el thumbnail no se puede generar.
+  Future<void> _onGenerateThumbnailRequested(
+    GenerateThumbnailRequested event,
+    Emitter<VideoState> emit,
+  ) async {
+    emit(state.copyWith(status: VideoStatus.generatingThumbnail));
+
+    try {
+      final thumbPath = await generateThumbnailUseCase(event.videoPath);
+      debugPrint('THUMBNAIL GENERADO: $thumbPath');
+      emit(state.copyWith(
+        thumbnailPath: thumbPath,
+        status: VideoStatus.success,
+      ));
+    } catch (e) {
+      debugPrint('ERROR THUMBNAIL (no crítico): $e');
+      // El thumbnail es opcional — volver a success sin romper el flujo
+      emit(state.copyWith(
+        thumbnailPath: null,
+        status: VideoStatus.success,
+      ));
+    }
+  }
+
+  /// Reinicia el estado completamente para iniciar un nuevo flujo.
+  Future<void> _onResetVideoRequested(
+    ResetVideoRequested event,
+    Emitter<VideoState> emit,
+  ) async {
+    emit(const VideoState());
+    // Abrir el selector de video inmediatamente
+    add(const PickVideoRequested());
   }
 
   /// Carga la metadata extendida del video actual usando FFprobe.
