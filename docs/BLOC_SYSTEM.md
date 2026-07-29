@@ -33,20 +33,27 @@ Responsible for tracking which segment of the application the user is currently 
 
 ## 2. VideoBloc (Video File Processing)
 
-Responsible for coordinating file picking and video parsing metadata.
+Responsible for coordinating file picking, metadata extraction, basic compression, and advanced FFmpeg compression.
 
 - **Files**:
-  - [video_bloc.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_bloc.dart)
-  - [video_event.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_event.dart)
-  - [video_state.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_state.dart)
+  - [video_bloc.dart](file:///c:/projects/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_bloc.dart)
+  - [video_event.dart](file:///c:/projects/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_event.dart)
+  - [video_state.dart](file:///c:/projects/robot_compresor_video/lib/features/compress_video/presentation/bloc/video_state.dart)
 
 ### Events
-- `PickVideoRequested`: Dispatched when the user taps the upload area on `SubirSection`. Triggers the picker sequence, retrieves metadata, and loads it into the state.
+- `PickVideoRequested`: Opens the file picker and loads basic metadata into state.
+- `CompressVideoRequested(CompressionConfig)`: Triggers basic compression via `video_compress`.
+- `CompressVideoAdvancedRequested(AdvancedCompressionConfig)`: Triggers advanced compression via FFmpeg. Accepts `targetVideoBitrate`, `targetFps`, and any future parameters added to `AdvancedCompressionConfig`.
+- `LoadExtendedMetadataRequested`: Enriches `state.video` with real bitrate and fps via FFprobe. Should be dispatched when the Advanced Section becomes visible.
+- `SaveVideoRequested`: Saves the basic compression result to the device gallery.
 
 ### States
-- `VideoState`: Contains:
-  - `video` (`VideoFile?`): The selected video metadata object, or `null` if no file has been successfully picked.
-  - `isLoading` (`bool`): Flag to display fullscreen progress overlays during picking or initialization.
+- `VideoState` contains:
+  - `video` (`VideoFile?`): Selected video. After `LoadExtendedMetadataRequested`, includes real `bitrate` and `fps`.
+  - `compressionResult` (`CompressionResult?`): Result from the basic engine.
+  - `advancedCompressionResult` (`AdvancedCompressionResult?`): Result from the FFmpeg engine. Includes `ffmpegCommand` for debugging.
+  - `status` (`VideoStatus`): One of `initial`, `picking`, `compressing`, `compressingAdvanced`, `loadingExtendedMetadata`, `success`, `saving`, `saved`, `failure`.
+  - `error` (`String?`): Error message when `status == VideoStatus.failure`.
 
 ---
 

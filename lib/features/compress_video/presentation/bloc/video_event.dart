@@ -23,3 +23,18 @@ class CompressVideoRequested extends VideoEvent {
 class SaveVideoRequested extends VideoEvent {
   const SaveVideoRequested();
 }
+
+/// Inicia la compresión avanzada con FFmpeg usando [config].
+class CompressVideoAdvancedRequested extends VideoEvent {
+  final AdvancedCompressionConfig config;
+
+  const CompressVideoAdvancedRequested({required this.config});
+
+  @override
+  List<Object?> get props => [config];
+}
+
+/// Solicita la metadata extendida (bitrate real, fps) del video actual via FFprobe.
+class LoadExtendedMetadataRequested extends VideoEvent {
+  const LoadExtendedMetadataRequested();
+}

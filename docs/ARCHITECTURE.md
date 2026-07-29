@@ -6,48 +6,141 @@ Robot Video Compressor follows the **Clean Architecture** paradigm combined with
 
 ## 📐 Directory & Layer Architecture
 
-The codebase is organized into features under the [lib/features/](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/) folder. The shared configurations, common errors, themes, and services are located under [lib/core/](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/).
+The codebase is organized into features under the [lib/features/](file:///c:/projects/robot_compresor_video/lib/features/) folder. The shared configurations, common errors, themes, and services are located under [lib/core/](file:///c:/projects/robot_compresor_video/lib/core/).
 
 ```
 lib/
-├── main.dart                          # Application entry point
-├── core/                              # Shared cross-cutting concerns
-│   ├── constants/                     # Global constants (colors, layouts)
-│   ├── errors/                        # Custom exception & failure definitions
-│   ├── routes/                        # Route setup and appRouter configuration
-│   ├── services/                      # Services (e.g., ScreenSizeService for responsive calculation)
-│   ├── theme/                         # UI Theme files (dark/light themes)
-│   └── utils/                         # Global helpers and utility extension methods
+├── main.dart
+├── core/
+│   ├── constants/
+│   ├── errors/
+│   ├── routes/
+│   ├── services/
+│   └── theme/
 │
-├── features/                          # Domain-scoped app features
-│   ├── home/                          # High-level container orchestration
-│   │   └── presentation/              # Tab UI and PageView animations
-│   │       ├── bloc/                  # HomeSectionBloc (tab state management)
-│   │       ├── widgets/               # AnimatedSectionTabs, section pages wrappers
-│   │       ├── home_screen.dart       # Main tab scaffold
-│   │       └── loading_screen.dart    # Intro splash loader with progress meter
+├── features/
+│   ├── home/
+│   │   └── presentation/
+│   │       ├── bloc/                  # HomeSectionBloc
+│   │       ├── widgets/
+│   │       ├── home_screen.dart
+│   │       └── loading_screen.dart
 │   │
-│   └── compress_video/                # Main feature area (Video Picking & Compressing)
-│       ├── data/                      # Data layer (fetching, external APIs, plugins)
-│       │   ├── datasources/           # File Pickers, Metadata extraction, compression plugin wrappers
-│       │   └── repositories/          # Implementations of domain repository interfaces
-│       ├── domain/                    # Pure business logic (Independent of UI or external packages)
-│       │   ├── entities/              # Business data models (VideoFile, CompressionConfig, etc.)
-│       │   ├── repositories/          # Abstraction contracts for data access
-│       │   └── use_cases/             # Single-purpose orchestrator classes (PickVideo, CompressVideo)
-│       └── presentation/              # Video presentation components
-│           └── bloc/                  # VideoBloc (tracks video loading, selection state)
+│   └── compress_video/
+│       ├── data/
+│       │   ├── datasources/
+│       │   │   ├── video_picker_datasource.dart
+│       │   │   ├── video_metadata_datasource.dart    # Metadata básica (video_player)
+│       │   │   ├── video_compressor_datasource.dart  # Motor básico (video_compress)
+│       │   │   ├── video_storage_datasource.dart
+│       │   │   ├── ffmpeg_datasource.dart            # Motor avanzado (FFmpeg)
+│       │   │   └── ffmpeg_command_builder.dart       # Constructor de comandos FFmpeg
+│       │   └── repositories/
+│       │       ├── video_repository_impl.dart        # Implementa VideoRepository
+│       │       └── advanced_video_repository_impl.dart # Implementa AdvancedVideoRepository
+│       ├── domain/
+│       │   ├── entities/
+│       │   │   ├── video_file.dart
+│       │   │   ├── compression_config.dart           # Config motor básico
+│       │   │   ├── compression_result.dart
+│       │   │   ├── advanced_compression_config.dart  # Config motor avanzado (FFmpeg)
+│       │   │   └── advanced_compression_result.dart
+│       │   ├── repositories/
+│       │   │   ├── video_repository.dart             # Contrato motor básico
+│       │   │   └── advanced_video_repository.dart    # Contrato motor avanzado
+│       │   └── use_cases/
+│       │       ├── pick_video_use_case.dart
+│       │       ├── compress_video_use_case.dart      # Usa video_compress
+│       │       ├── compress_video_advanced_use_case.dart # Usa FFmpeg
+│       │       ├── get_extended_metadata_use_case.dart   # Metadata via FFprobe
+│       │       └── save_video_use_case.dart
+│       └── presentation/
+│           └── bloc/
+│               ├── video_bloc.dart
+│               ├── video_event.dart
+│               └── video_state.dart
 │
-└── shared/                            # Widgets and extensions shared across multiple features
+└── shared/
     ├── extensions/
     └── widgets/
 ```
 
 ---
 
-## 🔄 Data Flow
+## 🎬 Dual Compression Engine
 
-When a user triggers an action (like selecting a file or tapping compress), data travels through the layers as follows:
+The application has two independent compression engines that coexist without interfering with each other.
+
+### Engine 1 — Basic (video_compress)
+
+| Aspect | Detail |
+|---|---|
+| Library | `video_compress: 3.1.4` |
+| Entry point | `VideoCompressorDatasource` |
+| Repository | `VideoRepository` / `VideoRepositoryImpl` |
+| Use case | `CompressVideoUseCase` |
+| Config entity | `CompressionConfig` (quality: low/medium/high) |
+| Result entity | `CompressionResult` |
+| BLoC event | `CompressVideoRequested` |
+| BLoC status | `VideoStatus.compressing` |
+| When to use | Quick compression with preset quality levels, no fine-grained control needed |
+
+### Engine 2 — Advanced (FFmpeg)
+
+| Aspect | Detail |
+|---|---|
+| Library | `ffmpeg_kit_flutter_new: ^4.6.0` |
+| Entry point | `FfmpegDatasource` |
+| Command builder | `FfmpegCommandBuilder` |
+| Repository | `AdvancedVideoRepository` / `AdvancedVideoRepositoryImpl` |
+| Use case | `CompressVideoAdvancedUseCase` |
+| Config entity | `AdvancedCompressionConfig` (bitrate, fps, extensible) |
+| Result entity | `AdvancedCompressionResult` (includes `ffmpegCommand` for debugging) |
+| BLoC event | `CompressVideoAdvancedRequested` |
+| BLoC status | `VideoStatus.compressingAdvanced` |
+| When to use | Advanced section: user controls specific output parameters (bitrate, fps, etc.) |
+
+Both engines always operate on the **original video** (`state.video`), never on a previously compressed result.
+
+---
+
+## 🔧 Why ffmpeg_kit_flutter_new
+
+`ffmpeg_kit_flutter_new` is the most actively maintained fork of the original `ffmpeg_kit_flutter` package (archived in 2024). It was selected because:
+
+- Compatible with Flutter 3.x and Dart SDK ^3.x
+- Supports Android API 36 and current iOS targets
+- Actively maintained with Play Store compatible builds
+- Includes both `FFmpegKit` (execution) and `FFprobeKit` (metadata extraction)
+- No breaking API changes from the original — migration path is straightforward
+
+---
+
+## 🏗️ FfmpegCommandBuilder — Extensibility Design
+
+`FfmpegCommandBuilder` is the single point of truth for FFmpeg command construction. Its design allows adding new compression parameters without modifying any other class:
+
+```dart
+// To add CRF support in a future iteration:
+// 1. Add field to AdvancedCompressionConfig:
+//    final int? crf;
+//
+// 2. Add one block in FfmpegCommandBuilder.build():
+//    if (config.crf != null) args.addAll(['-crf', config.crf.toString()]);
+//
+// 3. Done. No changes needed in repository, use case, or BLoC.
+```
+
+Parameters already prepared (commented in code, ready to uncomment):
+- `videoCodec` — e.g. `libx264`, `libx265`
+- `crf` — Constant Rate Factor (0–51)
+- `preset` — e.g. `fast`, `medium`, `slow`
+- `width` / `height` — output resolution (preserves aspect ratio)
+- `targetAudioBitrate` — audio bitrate in bps
+
+---
+
+## 🔄 Data Flow
 
 ```mermaid
 graph TD
@@ -56,8 +149,8 @@ graph TD
     UseCase -->|3. Calls Abstract Method| RepoInterface[Domain Layer: Repository Interfaces]
     RepoImpl[Data Layer: Repository Implementation] -.->|Implements| RepoInterface
     RepoImpl -->|4. Requests Data| DataSource[Data Layer: Data Sources]
-    DataSource -->|5. Calls SDK/Library| External[External: file_picker, video_player, video_compress, ffmpeg_kit_flutter]
-    
+    DataSource -->|5. Calls SDK/Library| External[External: file_picker · video_player · video_compress · ffmpeg_kit_flutter_new]
+
     %% Return flow
     External -->|6. Raw Data| DataSource
     DataSource -->|7. Model / Entity| RepoImpl
@@ -70,38 +163,32 @@ graph TD
 
 ## 🎯 Architecture Principles Applied
 
-### 1. Separation of Concerns (Clean Architecture Layers)
-- **Domain Layer**: The heart of the application. It contains pure Dart entities and use cases. It has *zero* dependencies on UI widgets, database plugins, or external packages (like `file_picker` or `video_player`). It depends solely on abstractions.
-- **Data Layer**: Responsible for retrieving raw data from device services and mapping them to domain entities. It contains the concrete implementations of the repositories defined in the domain layer.
-- **Presentation Layer**: Handles UI components and BLoC state managers. It listens to the streams exposed by the BLoC and displays the states accordingly.
+### 1. Separation of Concerns
+- **Domain Layer**: Pure Dart. Zero dependencies on Flutter widgets or external packages. Defines entities, repository contracts, and use cases.
+- **Data Layer**: Integrates external libraries (`video_compress`, `ffmpeg_kit_flutter_new`). Implements repository contracts.
+- **Presentation Layer**: BLoC + UI. Dispatches events, consumes states.
 
 ### 2. Dependency Inversion
-- Classes depend on abstract contracts rather than concrete implementations. For instance, `PickVideoUseCase` depends on `VideoRepository` (an abstract interface inside `domain/repositories/`).
-- The concrete instance `VideoRepositoryImpl` is registered and injected globally using **GetIt** service locator during application startup ([injection_container.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/injection_container.dart)).
+- `CompressVideoUseCase` depends on `VideoRepository` (abstract).
+- `CompressVideoAdvancedUseCase` depends on `AdvancedVideoRepository` (abstract).
+- Concrete implementations are injected via `get_it` in [injection_container.dart](file:///c:/projects/robot_compresor_video/lib/core/services/injection_container.dart).
 
-### 3. Feature-Based Organization
-- Instead of grouping everything by layer type (`models/`, `views/`, `controllers/` at the root), code is grouped by feature.
-- This creates clear boundaries: the `home` feature remains agnostic of how videos are read or compressed, focusing only on page transitions. The `compress_video` feature encapsulates all business logic regarding video processing.
+### 3. Engine Independence
+- The two engines share `VideoFile` as input and produce separate result entities.
+- Replacing or upgrading either engine only requires changes in its datasource and repository implementation — domain and BLoC remain untouched.
 
 ---
 
 ## 🔌 Service Locator & Dependency Injection
 
-Dependency injection is managed inside [injection_container.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/injection_container.dart) using the `get_it` package. 
+Managed in [injection_container.dart](file:///c:/projects/robot_compresor_video/lib/core/services/injection_container.dart):
 
-- **Singletons (`registerLazySingleton`)** are used for data sources, repositories, and use cases to maintain a single memory space.
-- **Factories (`registerFactory`)** are used for BLoCs to ensure that a fresh, disposable instance is created whenever a screen initializes.
-
----
-
-## ✅ Architectural Benefits
-
-1. **Testability**: Because the domain logic is decoupled from Flutter widgets and plugins, write unit tests for Use Cases without mock-initializing the Flutter SDK environment.
-2. **Framework Independence**: If we decide to swap out `file_picker` for a different selection package, we only need to write a new implementation in the data layer datasource. The domain use cases and UI screens will require zero modifications.
-3. **High Cohesion & Low Coupling**: Code changes in the Video Picker implementation will not break layout components in tab structures.
+- `registerLazySingleton` — datasources, repositories, use cases, `FfmpegCommandBuilder`
+- `registerFactory` — BLoCs (fresh instance per screen)
 
 ---
 
 *Related Documentation*:
 - State management details: [BLOC_SYSTEM.md](./BLOC_SYSTEM.md)
 - Complete directory listing: [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)
+- Feature status: [STATUS.md](./STATUS.md)

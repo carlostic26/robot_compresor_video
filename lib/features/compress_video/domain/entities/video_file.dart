@@ -4,11 +4,16 @@ class VideoFile {
   final int size;
   final Duration duration;
 
-  //Resolution
+  // Resolution
   final int width;
   final int height;
 
   final int bitrate;
+
+  /// FPS real del video. 0 si no fue posible extraerlo.
+  /// Disponible tras llamar a [GetExtendedMetadataUseCase].
+  final double fps;
+
   final DateTime? createdAt;
   final String? thumbnailPath;
 
@@ -20,6 +25,7 @@ class VideoFile {
     required this.width,
     required this.height,
     required this.bitrate,
+    this.fps = 0,
     required this.createdAt,
     required this.thumbnailPath,
   });

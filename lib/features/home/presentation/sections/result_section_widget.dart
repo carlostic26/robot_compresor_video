@@ -11,7 +11,37 @@ class ResultSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<VideoBloc, VideoState>(
+    return BlocConsumer<VideoBloc, VideoState>(
+      listenWhen: (previous, current) =>
+          previous.status != current.status &&
+          (current.status == VideoStatus.saved ||
+              current.status == VideoStatus.failure),
+      listener: (context, state) {
+        if (state.status == VideoStatus.saved) {
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('✅ Video guardado en la galería'),
+                behavior: SnackBarBehavior.floating,
+                duration: Duration(seconds: 3),
+              ),
+            );
+        }
+
+        if (state.status == VideoStatus.failure && state.error != null) {
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Text('❌ Error al guardar: ${state.error}'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+        }
+      },
       builder: (context, state) {
         final result = state.compressionResult;
 
@@ -28,13 +58,9 @@ class ResultSection extends StatelessWidget {
                   mode: PreviewMode.processing,
                   height: ScreenSizeService.heightPercent(context, 22),
                 ),
-
                 const SizedBox(height: 24),
-
                 VideoInfoTableWidget(videoFile: state.video!, isLoading: true),
-
                 const SizedBox(height: 24),
-
                 const Column(
                   children: [
                     CircularProgressIndicator(),
@@ -72,24 +98,22 @@ class ResultSection extends StatelessWidget {
                 Text(
                   'Cuando finalice la compresión\nel resultado aparecerá aquí.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
           );
         }
 
-        if (state.status == VideoStatus.saved) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('✅ Video guardado correctamente')),
-          );
-        }
-
         /// ==========================
         /// RESULTADO FINAL
         /// ==========================
+        final isSaving = state.status == VideoStatus.saving;
+        final isSaved = state.status == VideoStatus.saved;
+
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -101,12 +125,29 @@ class ResultSection extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
-                  onPressed: () {
-                    context.read<VideoBloc>().add(const SaveVideoRequested());
-                  },
-                  icon: const Icon(Icons.save_alt),
-                  label: const Text('Guardar video'),
-                )
+                  onPressed: (isSaving || isSaved)
+                      ? null
+                      : () => context
+                          .read<VideoBloc>()
+                          .add(const SaveVideoRequested()),
+                  icon: isSaving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(isSaved ? Icons.check : Icons.save_alt),
+                  label: Text(
+                    isSaving
+                        ? 'Guardando...'
+                        : isSaved
+                            ? 'Guardado'
+                            : 'Guardar video',
+                  ),
+                ),
               ),
             ],
           ),

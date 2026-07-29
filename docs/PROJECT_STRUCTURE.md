@@ -59,23 +59,33 @@ robot_compresor_video/
 │   │   └── compress_video/             # Main video parsing feature
 │   │       ├── data/                   # Data layer implementation
 │   │       │   ├── datasources/        # Low-level external library managers
-│   │       │   │   ├── video_compressor_datasource.dart # Video compressor stub
-│   │       │   │   ├── video_metadata_datasource.dart   # Reads size/resolution
-│   │       │   │   └── video_picker_datasource.dart     # Triggers file picking
+│   │       │   │   ├── video_compressor_datasource.dart  # Basic engine (video_compress)
+│   │       │   │   ├── video_metadata_datasource.dart    # Basic metadata (video_player)
+│   │       │   │   ├── video_picker_datasource.dart      # File picker
+│   │       │   │   ├── video_storage_datasource.dart     # Save to gallery
+│   │       │   │   ├── ffmpeg_datasource.dart            # Advanced engine (FFmpeg + FFprobe)
+│   │       │   │   └── ffmpeg_command_builder.dart       # Builds FFmpeg argument lists
 │   │       │   └── repositories/       # Implementing domain interfaces
-│   │       │       └── video_repository_impl.dart
+│   │       │       ├── video_repository_impl.dart        # Basic engine repository
+│   │       │       └── advanced_video_repository_impl.dart # Advanced engine repository
 │   │       ├── domain/                 # Domain logic layer
 │   │       │   ├── entities/           # Pure entity models
-│   │       │   │   ├── compression_config.dart
+│   │       │   │   ├── video_file.dart                   # Video metadata (includes fps)
+│   │       │   │   ├── compression_config.dart           # Basic engine config
 │   │       │   │   ├── compression_result.dart
-│   │       │   │   └── video_file.dart
+│   │       │   │   ├── advanced_compression_config.dart  # FFmpeg config (bitrate, fps, extensible)
+│   │       │   │   └── advanced_compression_result.dart  # FFmpeg result (includes ffmpegCommand)
 │   │       │   ├── repositories/       # Abstract repository interfaces
-│   │       │   │   └── video_repository.dart
+│   │       │   │   ├── video_repository.dart             # Basic engine contract
+│   │       │   │   └── advanced_video_repository.dart    # Advanced engine contract
 │   │       │   └── use_cases/          # Business logic coordinators
-│   │       │       ├── compress_video_use_case.dart
-│   │       │       └── pick_video_use_case.dart
+│   │       │       ├── pick_video_use_case.dart
+│   │       │       ├── compress_video_use_case.dart      # Basic compression
+│   │       │       ├── compress_video_advanced_use_case.dart # FFmpeg compression
+│   │       │       ├── get_extended_metadata_use_case.dart   # FFprobe metadata
+│   │       │       └── save_video_use_case.dart
 │   │       └── presentation/           # UI elements & BLoC state managers
-│   │           └── bloc/               # VideoBloc (handles file select status)
+│   │           └── bloc/               # VideoBloc (basic + advanced compression states)
 │   │
 │   └── shared/                         # Common UI elements shared across features
 │       ├── extensions/                 # Utility extensions (e.g. padding/string extensions)

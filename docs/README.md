@@ -14,6 +14,7 @@ Welcome to the documentation for the Robot Video Compressor project, a Flutter-b
 6. **[COLOR_PALETTE.md](./COLOR_PALETTE.md)** - Dark mode guidelines, hex colors, and design tokens
 7. **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Local environment setup, prerequisites, and build commands
 8. **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Code templates, utilities, and common terminal shortcuts
+9. **[SAVE_VIDEO.md](./SAVE_VIDEO.md)** - Diagnóstico y solución completa del botón "Guardar video"
 
 ---
 
@@ -54,9 +55,9 @@ flutter run
 - **go_router**: Route-based declarative navigation.
 - **get_it**: Service locator for dependency injection.
 - **equatable**: Object-level value equality helper.
-- **video_player**: Extracting video metadata (resolution, duration).
-- **video_compress**: Native video compression engine (primary compressor).
-- **ffmpeg_kit_flutter** *(planned)*: Advanced compression via FFmpeg commands.
+- **video_player**: Extracting basic video metadata (resolution, duration).
+- **video_compress**: Basic compression engine — quality presets (low/medium/high).
+- **ffmpeg_kit_flutter_new**: Advanced compression engine — full FFmpeg/FFprobe control (bitrate, fps, and more).
 
 ---
 
