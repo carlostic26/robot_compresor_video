@@ -3,4 +3,5 @@ class AppRoutes {
 
   static const String loading = '/';
   static const String home = '/home';
+  static const String advanced = '/advanced';
 }

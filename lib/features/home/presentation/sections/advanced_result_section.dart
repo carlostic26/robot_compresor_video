@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/video_info_table_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_video_info_table.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_preview_widget.dart';
 
-class ResultSection extends StatelessWidget {
-  const ResultSection({super.key});
+/// Sección "Resultado" del modo avanzado (FFmpeg).
+///
+/// Muestra el video comprimido con:
+/// - Preview con thumbnail real.
+/// - Tabla con loading granular SOLO en el campo Peso mientras FFmpeg procesa.
+/// - Botón Guardar con estados saving/saved.
+/// - Botón "Subir otro video" tras guardado exitoso.
+class AdvancedResultSection extends StatelessWidget {
+  const AdvancedResultSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +34,6 @@ class ResultSection extends StatelessWidget {
               ),
             );
         }
-
         if (state.status == VideoStatus.failure && state.error != null) {
           ScaffoldMessenger.of(context)
             ..clearSnackBars()
@@ -42,12 +48,11 @@ class ResultSection extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        final result = state.activeCompressedVideo;
+        final result = state.advancedCompressionResult;
 
         // ── Compresión en proceso ──────────────────────────────────────────
-        final isProcessing = state.status == VideoStatus.compressing ||
-            state.status == VideoStatus.compressingAdvanced;
-        if (isProcessing && state.video != null) {
+        if (state.status == VideoStatus.compressingAdvanced &&
+            state.video != null) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -58,14 +63,19 @@ class ResultSection extends StatelessWidget {
                   height: ScreenSizeService.heightPercent(context, 22),
                 ),
                 const SizedBox(height: 24),
-                VideoInfoTableWidget(videoFile: state.video!, isLoading: true),
+                // Tabla con shimmer en Peso (tamaño aún desconocido)
+                AdvancedVideoInfoTable(
+                  videoFile: state.video!,
+                  onBitrateChanged: (_) {},
+                  isSizeLoading: true,
+                ),
                 const SizedBox(height: 24),
                 const Column(
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
                     Text(
-                      'Comprimiendo video...',
+                      'Comprimiendo con FFmpeg...',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -81,11 +91,8 @@ class ResultSection extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.video_library_outlined,
-                  size: 64,
-                  color: Colors.grey.shade500,
-                ),
+                Icon(Icons.video_library_outlined,
+                    size: 64, color: Colors.grey.shade500),
                 const SizedBox(height: 16),
                 Text(
                   'Aún no hay un video comprimido',
@@ -111,14 +118,16 @@ class ResultSection extends StatelessWidget {
         final isGeneratingThumb =
             state.status == VideoStatus.generatingThumbnail;
 
-        // El video comprimido con el thumbnailPath actualizado desde el estado
-        final videoWithThumb = result;
+        // El peso es conocido una vez que FFmpeg terminó y tenemos el resultado.
+        // Durante generatingThumbnail el archivo ya existe → peso disponible.
+        final compressedVideo = result.compressedVideo;
+        final finalSizeMB = compressedVideo.sizeMB;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Preview con thumbnail real (o placeholder si aún se genera)
+              // Preview con thumbnail real
               Stack(
                 children: [
                   VideoPreviewWidget(
@@ -149,11 +158,16 @@ class ResultSection extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              VideoInfoTableWidget(videoFile: videoWithThumb),
+              // Tabla con peso real (no loading)
+              AdvancedVideoInfoTable(
+                videoFile: compressedVideo,
+                onBitrateChanged: (_) {},
+                finalSizeMB: finalSizeMB,
+              ),
 
               const SizedBox(height: 24),
 
-              // Botón Guardar video
+              // Botón Guardar
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -182,7 +196,7 @@ class ResultSection extends StatelessWidget {
                 ),
               ),
 
-              // Botón "Subir otro video" — solo visible tras guardado exitoso
+              // Botón "Subir otro video" — solo tras guardado exitoso
               if (isSaved) ...[
                 const SizedBox(height: 12),
                 SizedBox(

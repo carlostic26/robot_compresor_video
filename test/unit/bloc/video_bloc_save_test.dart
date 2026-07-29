@@ -99,6 +99,7 @@ void main() {
       },
       seed: () => const VideoState(
         compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
         status: VideoStatus.success,
       ),
       act: (bloc) => bloc.add(const SaveVideoRequested()),
@@ -118,6 +119,7 @@ void main() {
       },
       seed: () => const VideoState(
         compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
         status: VideoStatus.success,
       ),
       act: (bloc) => bloc.add(const SaveVideoRequested()),
@@ -138,6 +140,7 @@ void main() {
       },
       seed: () => const VideoState(
         compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
         status: VideoStatus.saving,
       ),
       act: (bloc) => bloc.add(const SaveVideoRequested()),
@@ -153,6 +156,7 @@ void main() {
       },
       seed: () => const VideoState(
         compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
         status: VideoStatus.saved,
       ),
       act: (bloc) => bloc.add(const SaveVideoRequested()),

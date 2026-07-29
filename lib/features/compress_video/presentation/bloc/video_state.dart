@@ -13,6 +13,9 @@ enum VideoStatus {
   failure,
 }
 
+/// Indica si el resultado activo proviene de compresión básica o avanzada.
+enum ActiveResult { none, basic, advanced }
+
 class VideoState extends Equatable {
   static const _unset = Object();
 
@@ -21,6 +24,7 @@ class VideoState extends Equatable {
   final AdvancedCompressionResult? advancedCompressionResult;
   final VideoStatus status;
   final String? error;
+  final ActiveResult activeResult;
 
   /// Ruta de la miniatura del video comprimido actual.
   /// null mientras no se haya generado o si la generación falló.
@@ -33,6 +37,7 @@ class VideoState extends Equatable {
     this.status = VideoStatus.initial,
     this.error,
     this.thumbnailPath,
+    this.activeResult = ActiveResult.none,
   });
 
   VideoState copyWith({
@@ -42,6 +47,7 @@ class VideoState extends Equatable {
     VideoStatus? status,
     Object? error = _unset,
     Object? thumbnailPath = _unset,
+    ActiveResult? activeResult,
   }) {
     return VideoState(
       video: identical(video, _unset) ? this.video : video as VideoFile?,
@@ -56,7 +62,16 @@ class VideoState extends Equatable {
       thumbnailPath: identical(thumbnailPath, _unset)
           ? this.thumbnailPath
           : thumbnailPath as String?,
+      activeResult: activeResult ?? this.activeResult,
     );
+  }
+
+  /// El video comprimido activo (básico o avanzado), según [activeResult].
+  VideoFile? get activeCompressedVideo {
+    if (activeResult == ActiveResult.advanced) {
+      return advancedCompressionResult?.compressedVideo;
+    }
+    return compressionResult?.compressedVideo;
   }
 
   @override
@@ -67,5 +82,6 @@ class VideoState extends Equatable {
         status,
         error,
         thumbnailPath,
+        activeResult,
       ];
 }

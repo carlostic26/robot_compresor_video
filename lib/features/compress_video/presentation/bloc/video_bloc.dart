@@ -103,6 +103,7 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
       // Emitir resultado y luego generar thumbnail automáticamente
       emit(state.copyWith(
         compressionResult: result,
+        activeResult: ActiveResult.basic,
         status: VideoStatus.success,
         error: null,
       ));
@@ -125,7 +126,7 @@ Future<void> _onSaveVideoRequested(
       return;
     }
 
-    final result = state.compressionResult;
+    final result = state.activeCompressedVideo;
 
     if (result == null) {
       emit(state.copyWith(
@@ -138,7 +139,7 @@ Future<void> _onSaveVideoRequested(
     emit(state.copyWith(status: VideoStatus.saving, error: null));
 
     try {
-      await saveVideoUseCase(result.compressedVideo);
+      await saveVideoUseCase(result);
       emit(state.copyWith(status: VideoStatus.saved, error: null));
     } catch (e) {
       debugPrint('ERROR AL GUARDAR: $e');
@@ -176,9 +177,13 @@ Future<void> _onSaveVideoRequested(
 
       emit(state.copyWith(
         advancedCompressionResult: result,
+        activeResult: ActiveResult.advanced,
         status: VideoStatus.success,
         error: null,
       ));
+
+      // Generar thumbnail del video comprimido por FFmpeg
+      add(GenerateThumbnailRequested(result.compressedVideo.path));
     } catch (e) {
       debugPrint('ERROR COMPRESIÓN AVANZADA: $e');
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));

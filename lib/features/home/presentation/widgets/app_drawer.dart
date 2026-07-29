@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:robot_compresor_video/core/routes/app_routes.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -75,18 +77,10 @@ class AppDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.auto_awesome),
               title: const Text('Compresión avanzada'),
-              subtitle: const Text('FFmpeg (Próximamente)'),
-              trailing: const Icon(Icons.lock_outline),
+              subtitle: const Text('FFmpeg'),
               onTap: () {
                 Navigator.pop(context);
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Próximamente estará disponible la compresión avanzada.',
-                    ),
-                  ),
-                );
+                context.push(AppRoutes.advanced);
               },
             ),
 
