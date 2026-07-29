@@ -10,7 +10,7 @@ This document tracks the actual implementation progress of the Robot Video Compr
 |---|---|---|
 | **Video Picking** | ✅ Implemented | Uses `file_picker` package to select a single video file. |
 | **Metadata Extraction** | 🟡 Partial | Extracts video resolution and duration using `video_player`. Bitrate, creation date, and thumbnails are mocked. |
-| **Video Compression** | ❌ Pending | Uses a repository interface, but datasource throws `UnimplementedError`. |
+| **Video Compression** | 🟡 Partial | `VideoCompressorDatasource` implementado con `video_compress`. FFmpeg pendiente de integrar. |
 | **Home Navigation** | ✅ Implemented | Sliding `PageView` with synchronized dynamic section tabs. |
 | **Dynamic Tab Logic** | ✅ Implemented | Transitions tabs from `['Subir', 'Avanzado', 'Resultado']` to `['Compresor', 'Avanzado', 'Resultado']` when a video is loaded. |
 | **Advanced Section** | ❌ Pending | Currently exists only as a static visual placeholder. |
@@ -39,12 +39,15 @@ This document tracks the actual implementation progress of the Robot Video Compr
     - In [video_info_table_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/video_info_table_widget.dart), fields for creation date and bitrate fall back to showing `--`.
 
 ### 3. Video Compression Engine
-- **Location**: [video_compressor_datasource.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/compress_video/data/datasources/video_compressor_datasource.dart)
-- **Status**: **Unimplemented**
-- **Details**:
-  - The implementation throws `UnimplementedError()`.
-  - In [injection_container.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/core/services/injection_container.dart), `CompressVideoUseCase` is not registered, and `VideoBloc` has no implementation for calling the compression repository.
-  - In [compressor_section_widget.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/widgets/compressor_section_widget.dart), the action button (`Comprimir`) has an empty `onPressed` handler.
+- **Location**: [video_compressor_datasource.dart](file:///c:/projects/robot_compresor_video/lib/features/compress_video/data/datasources/video_compressor_datasource.dart)
+- **Status**: **Parcialmente implementado**
+- **Libraries**:
+  - **`video_compress`** (activa): Compresión nativa mediante `VideoCompress.compressVideo()`. Soporta calidades `Low`, `Medium` y `Highest`. Es la implementación actual en `VideoCompressorDatasource`.
+  - **`ffmpeg_kit_flutter`** (pendiente): Integración planificada para compresión avanzada con control total de parámetros (bitrate, codec, resolución, etc.) mediante comandos FFmpeg.
+- **Pending**:
+  - `CompressVideoUseCase` aún no está registrado en `injection_container.dart`.
+  - El botón `Comprimir` en `compressor_section_widget.dart` tiene el handler `onPressed` vacío.
+  - La integración con FFmpeg está pendiente de implementación.
 
 ### 4. Dynamic tab system & screens
 - **Location**: [home_screen.dart](file:///c:/projects/play_console_2/robot_compresor_video/lib/features/home/presentation/home_screen.dart)

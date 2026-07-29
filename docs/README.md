@@ -54,7 +54,9 @@ flutter run
 - **go_router**: Route-based declarative navigation.
 - **get_it**: Service locator for dependency injection.
 - **equatable**: Object-level value equality helper.
-- **video_player**: Extracting metadata parameters.
+- **video_player**: Extracting video metadata (resolution, duration).
+- **video_compress**: Native video compression engine (primary compressor).
+- **ffmpeg_kit_flutter** *(planned)*: Advanced compression via FFmpeg commands.
 
 ---
 

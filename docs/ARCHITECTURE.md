@@ -56,7 +56,7 @@ graph TD
     UseCase -->|3. Calls Abstract Method| RepoInterface[Domain Layer: Repository Interfaces]
     RepoImpl[Data Layer: Repository Implementation] -.->|Implements| RepoInterface
     RepoImpl -->|4. Requests Data| DataSource[Data Layer: Data Sources]
-    DataSource -->|5. Calls SDK/Library| External[External: file_picker, video_player]
+    DataSource -->|5. Calls SDK/Library| External[External: file_picker, video_player, video_compress, ffmpeg_kit_flutter]
     
     %% Return flow
     External -->|6. Raw Data| DataSource
