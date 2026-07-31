@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/compression_dialog.dart';
+import 'package:robot_compresor_video/features/home/presentation/dialogs/compression_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_summary_widget.dart';
 
 class CompressorSection extends StatelessWidget {
