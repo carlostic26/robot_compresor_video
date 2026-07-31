@@ -14,6 +14,11 @@ class VideoMetadataDatasource {
 
     final value = controller.value;
 
+    // Fecha de modificación del archivo como fallback básico.
+    // La metadata extendida (FFprobe) sobreescribirá este valor con
+    // la fecha real cuando se llame a LoadExtendedMetadataRequested.
+    final createdAt = await file.lastModified();
+
     final video = VideoFile(
       path: videoPath,
       name: path.basename(videoPath),
@@ -21,10 +26,8 @@ class VideoMetadataDatasource {
       duration: value.duration,
       width: value.size.width.toInt(),
       height: value.size.height.toInt(),
-
-      // Los completaremos más adelante
       bitrate: 0,
-      createdAt: null,
+      createdAt: createdAt,
       thumbnailPath: null,
     );
 

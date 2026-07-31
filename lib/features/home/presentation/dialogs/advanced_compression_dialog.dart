@@ -4,29 +4,28 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/vi
 
 /// Diálogo "Antes vs Después" para la compresión avanzada con FFmpeg.
 ///
-/// Muestra una comparación de bitrate, FPS y peso estimado (si es calculable).
+/// Muestra una comparación de bitrate, FPS y peso estimado.
 /// Devuelve [AdvancedCompressionConfig] al confirmar, o null al cancelar.
-///
-/// Unidades:
-///   - UI muestra kbps (ej. 2500 kbps)
-///   - [AdvancedCompressionConfig.targetVideoBitrate] recibe bps (ej. 2500000)
-///   - Estimación de peso: tamaño_original × (bitrate_objetivo / bitrate_original)
 class AdvancedCompressionDialog extends StatelessWidget {
   final VideoFile video;
 
-  /// Bitrate objetivo en bps (ya convertido desde kbps por el caller).
+  /// Bitrate objetivo en kbps introducido por el usuario.
   final int targetBitrateKbps;
+
+  /// FPS objetivo introducido por el usuario. Null = conservar original.
+  final int? targetFps;
 
   const AdvancedCompressionDialog({
     super.key,
     required this.video,
     required this.targetBitrateKbps,
+    this.targetFps,
   });
 
   @override
   Widget build(BuildContext context) {
     final originalKbps = video.bitrate ~/ 1000;
-    final fps = video.fps > 0 ? video.fps : null;
+    final originalFps = video.fps > 0 ? video.fps : null;
     final estimatedMB = _estimateSize();
 
     return AlertDialog(
@@ -37,7 +36,8 @@ class AdvancedCompressionDialog extends StatelessWidget {
           _ComparisonTable(
             originalKbps: originalKbps,
             targetKbps: targetBitrateKbps,
-            fps: fps,
+            originalFps: originalFps,
+            targetFps: targetFps != null ? targetFps!.toDouble() : originalFps,
             originalMB: video.sizeMB,
             estimatedMB: estimatedMB,
           ),
@@ -53,6 +53,7 @@ class AdvancedCompressionDialog extends StatelessWidget {
             context,
             AdvancedCompressionConfig(
               targetVideoBitrate: targetBitrateKbps * 1000,
+              targetFps: targetFps,
             ),
           ),
           child: const Text('Comprimir'),
@@ -61,11 +62,6 @@ class AdvancedCompressionDialog extends StatelessWidget {
     );
   }
 
-  /// Estimación: tamaño_original × (bitrate_objetivo / bitrate_original).
-  /// Devuelve null si el bitrate original es 0 (no se puede calcular).
-  ///
-  /// NOTA: es una aproximación — el audio permanece constante y el codec
-  /// puede producir variaciones. Se presenta como "Peso estimado".
   double? _estimateSize() {
     if (video.bitrate <= 0) return null;
     final ratio = targetBitrateKbps * 1000 / video.bitrate;
@@ -76,14 +72,16 @@ class AdvancedCompressionDialog extends StatelessWidget {
 class _ComparisonTable extends StatelessWidget {
   final int originalKbps;
   final int targetKbps;
-  final double? fps;
+  final double? originalFps;
+  final double? targetFps;
   final double originalMB;
   final double? estimatedMB;
 
   const _ComparisonTable({
     required this.originalKbps,
     required this.targetKbps,
-    required this.fps,
+    required this.originalFps,
+    required this.targetFps,
     required this.originalMB,
     required this.estimatedMB,
   });
@@ -91,7 +89,8 @@ class _ComparisonTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final labelStyle = textTheme.bodySmall?.copyWith(color: Colors.grey);
+    // Mismo tamaño para etiquetas y valores — equilibrio visual
+    final cellStyle = textTheme.bodySmall?.copyWith(color: Colors.grey[300]);
     final headerStyle = textTheme.labelSmall?.copyWith(
       color: Colors.grey,
       letterSpacing: 1.2,
@@ -104,7 +103,6 @@ class _ComparisonTable extends StatelessWidget {
         2: FlexColumnWidth(2),
       },
       children: [
-        // Cabecera
         TableRow(
           children: [
             const SizedBox.shrink(),
@@ -118,31 +116,25 @@ class _ComparisonTable extends StatelessWidget {
             ),
           ],
         ),
-        // Bitrate
         _buildRow(
           label: 'Bit rate',
           before: '$originalKbps kbps',
           after: '$targetKbps kbps',
-          labelStyle: labelStyle,
-          context: context,
+          cellStyle: cellStyle,
         ),
-        // FPS
-        if (fps != null)
+        if (originalFps != null)
           _buildRow(
             label: 'FPS',
-            before: _formatFps(fps!),
-            after: _formatFps(fps!),
-            labelStyle: labelStyle,
-            context: context,
+            before: _formatFps(originalFps!),
+            after: _formatFps(targetFps ?? originalFps!),
+            cellStyle: cellStyle,
           ),
-        // Peso estimado — solo si es calculable
         if (estimatedMB != null)
           _buildRow(
             label: 'Peso est.',
-            before: '${originalMB.toStringAsFixed(2)} MB',
-            after: '${estimatedMB!.toStringAsFixed(2)} MB',
-            labelStyle: labelStyle,
-            context: context,
+            before: '${originalMB.toStringAsFixed(1)} MB',
+            after: '${estimatedMB!.toStringAsFixed(1)} MB',
+            cellStyle: cellStyle,
           ),
       ],
     );
@@ -152,25 +144,21 @@ class _ComparisonTable extends StatelessWidget {
     required String label,
     required String before,
     required String after,
-    required TextStyle? labelStyle,
-    required BuildContext context,
+    required TextStyle? cellStyle,
   }) {
-    final valueStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        );
     return TableRow(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(label, style: labelStyle),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          child: Text(label, style: cellStyle),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(before, style: valueStyle, textAlign: TextAlign.center),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          child: Text(before, style: cellStyle, textAlign: TextAlign.center),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(after, style: valueStyle, textAlign: TextAlign.center),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          child: Text(after, style: cellStyle, textAlign: TextAlign.center),
         ),
       ],
     );
@@ -178,6 +166,6 @@ class _ComparisonTable extends StatelessWidget {
 
   String _formatFps(double fps) {
     if (fps == fps.roundToDouble()) return '${fps.round()} fps';
-    return '${fps.toStringAsFixed(2)} fps';
+    return '${fps.toStringAsFixed(1)} fps';
   }
 }

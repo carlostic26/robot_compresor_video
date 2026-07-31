@@ -5,6 +5,7 @@ import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
+import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/compressor_section_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/result_section_widget.dart';
@@ -70,13 +71,25 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           actions: [
-            IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () => AppInfoDialog.show(context),
+            ),
           ],
         ),
         body: BlocConsumer<VideoBloc, VideoState>(
           listener: (context, state) async {
             debugPrint("=================================");
             debugPrint("LISTENER -> ${state.status}");
+
+            // Cargar metadata extendida (bitrate real, fps) tras seleccionar video
+            if (state.status == VideoStatus.success &&
+                state.video != null &&
+                state.video!.bitrate == 0 &&
+                state.compressionResult == null &&
+                state.advancedCompressionResult == null) {
+              context.read<VideoBloc>().add(const LoadExtendedMetadataRequested());
+            }
 
             /// Cuando inicia la compresión
             if (state.status == VideoStatus.compressing) {

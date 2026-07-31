@@ -7,11 +7,14 @@ import 'package:robot_compresor_video/features/home/presentation/widgets/video_p
 
 /// Sección "Resultado" del modo avanzado (FFmpeg).
 ///
-/// Muestra el video comprimido con:
-/// - Preview con thumbnail real.
-/// - Tabla con loading granular SOLO en el campo Peso mientras FFmpeg procesa.
-/// - Botón Guardar con estados saving/saved.
-/// - Botón "Subir otro video" tras guardado exitoso.
+/// Durante la compresión:
+/// - Preview con modo processing.
+/// - Tabla con shimmer en Peso, Bit rate y FPS (valores aún desconocidos).
+///
+/// Al terminar:
+/// - Preview con thumbnail del archivo comprimido.
+/// - Tabla con valores reales del archivo final (via FFprobe).
+/// - Botón Guardar / Subir otro video.
 class AdvancedResultSection extends StatelessWidget {
   const AdvancedResultSection({super.key});
 
@@ -51,6 +54,7 @@ class AdvancedResultSection extends StatelessWidget {
         final result = state.advancedCompressionResult;
 
         // ── Compresión en proceso ──────────────────────────────────────────
+        // Shimmer en Peso, Bit rate y FPS — valores del archivo final aún desconocidos.
         if (state.status == VideoStatus.compressingAdvanced &&
             state.video != null) {
           return SingleChildScrollView(
@@ -63,11 +67,10 @@ class AdvancedResultSection extends StatelessWidget {
                   height: ScreenSizeService.heightPercent(context, 22),
                 ),
                 const SizedBox(height: 24),
-                // Tabla con shimmer en Peso (tamaño aún desconocido)
                 AdvancedVideoInfoTable(
                   videoFile: state.video!,
                   onBitrateChanged: (_) {},
-                  isSizeLoading: true,
+                  isResultLoading: true,
                 ),
                 const SizedBox(height: 24),
                 const Column(
@@ -113,21 +116,20 @@ class AdvancedResultSection extends StatelessWidget {
         }
 
         // ── Resultado final ────────────────────────────────────────────────
+        // compressedVideo contiene los valores reales del archivo final
+        // obtenidos via FFprobe en FfmpegDatasource.compress().
         final isSaving = state.status == VideoStatus.saving;
         final isSaved = state.status == VideoStatus.saved;
         final isGeneratingThumb =
             state.status == VideoStatus.generatingThumbnail;
-
-        // El peso es conocido una vez que FFmpeg terminó y tenemos el resultado.
-        // Durante generatingThumbnail el archivo ya existe → peso disponible.
         final compressedVideo = result.compressedVideo;
-        final finalSizeMB = compressedVideo.sizeMB;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Preview con thumbnail real
+              // Thumbnail del archivo comprimido (state.thumbnailPath se actualiza
+              // tras GenerateThumbnailRequested sobre el output de FFmpeg).
               Stack(
                 children: [
                   VideoPreviewWidget(
@@ -158,16 +160,16 @@ class AdvancedResultSection extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Tabla con peso real (no loading)
+              // Tabla con valores reales del archivo comprimido.
+              // finalSizeMB fuerza mostrar el peso real (no shimmer).
               AdvancedVideoInfoTable(
                 videoFile: compressedVideo,
                 onBitrateChanged: (_) {},
-                finalSizeMB: finalSizeMB,
+                finalSizeMB: compressedVideo.sizeMB,
               ),
 
               const SizedBox(height: 24),
 
-              // Botón Guardar
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -196,7 +198,6 @@ class AdvancedResultSection extends StatelessWidget {
                 ),
               ),
 
-              // Botón "Subir otro video" — solo tras guardado exitoso
               if (isSaved) ...[
                 const SizedBox(height: 12),
                 SizedBox(

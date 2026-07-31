@@ -9,7 +9,7 @@ This document tracks the actual implementation progress of the Robot Video Compr
 | Feature / Component | Status | Description / Notes |
 |---|---|---|
 | **Video Picking** | ✅ Implemented | Uses `file_picker` to select a single video file. |
-| **Metadata Extraction (basic)** | 🟡 Partial | Extracts resolution and duration via `video_player`. Bitrate and fps return `0` until extended metadata is loaded. |
+| **Metadata Extraction (basic)** | ✅ Implemented | Extracts resolution, duration and `createdAt` via `video_player` + `file.lastModified()`. Bitrate/fps enriched via FFprobe automatically after video selection in both modes. |
 | **Metadata Extraction (extended)** | ✅ Implemented | `GetExtendedMetadataUseCase` uses FFprobe to extract real bitrate, fps, resolution and duration. |
 | **Video Compression (basic)** | ✅ Implemented | `VideoCompressorDatasource` uses `video_compress`. Supports low/medium/high quality presets. |
 | **Video Compression (advanced)** | ✅ Implemented | Full UI + FFmpeg engine. Bitrate editable, diálogo Antes vs Después, resultado con peso granular. |
@@ -45,3 +45,21 @@ This document tracks the actual implementation progress of the Robot Video Compr
 
 ### 4. Documentación
 - `docs/ADVANCED_COMPRESSION.md` — documentación completa del flujo avanzado
+- `docs/NAVIGATION_HUB.md` — Hub, navegación, diálogos, aislamiento de estado y metadata
+
+---
+
+## 🆕 Hub & Navegación
+
+| Componente | Estado | Descripción |
+|---|---|---|
+| **AppHubScreen** | ✅ Implementado | Pantalla principal con cards de compresión básica y avanzada. Ruta `/hub`. |
+| **AppInfoDialog** | ✅ Implementado | Diálogo de información reutilizable. Accesible desde Drawer y AppBar. |
+| **_RateDialog** | ✅ Implementado | Diálogo motivacional de calificación. Abre Play Store via `url_launcher`. |
+| **AdvancedModeDialog** | ✅ Implementado | Aparece al pulsar "Comprimir" (no al navegar). Punto de extensión para anuncios. |
+| **Drawer actualizado** | ✅ Implementado | Todas las rutas con `context.go`. Opciones: Inicio, Básica, Avanzada, Información. |
+| **Aislamiento de estado** | ✅ Corregido | `context.go` garantiza bloc nuevo en cada navegación. Sin contaminación entre modos. |
+| **Metadata básica (createdAt)** | ✅ Corregido | `VideoMetadataDatasource` obtiene `createdAt` desde `file.lastModified()`. |
+| **Metadata extendida en básica** | ✅ Implementado | `HomeScreen` dispara `LoadExtendedMetadataRequested` al seleccionar video. |
+| **Preparación anuncios** | ✅ Preparado | `onContinue` callback en `AdvancedModeDialog`. Sin SDK de anuncios aún. |
+| **url_launcher** | ✅ Agregado | Dependencia para abrir Play Store. URL configurable en `AppConstants`. |

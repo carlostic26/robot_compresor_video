@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -65,12 +66,23 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(height: 12),
 
             ListTile(
+              leading: const Icon(Icons.home_rounded),
+              title: const Text('Inicio'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.hub);
+              },
+            ),
+
+            const Divider(height: 8),
+
+            ListTile(
               leading: const Icon(Icons.bolt_rounded),
               title: const Text('Compresión básica'),
               subtitle: const Text('video_compress'),
-              selected: true,
               onTap: () {
                 Navigator.pop(context);
+                context.go(AppRoutes.home);
               },
             ),
 
@@ -80,7 +92,7 @@ class AppDrawer extends StatelessWidget {
               subtitle: const Text('FFmpeg'),
               onTap: () {
                 Navigator.pop(context);
-                context.push(AppRoutes.advanced);
+                context.go(AppRoutes.advanced);
               },
             ),
 
@@ -91,18 +103,7 @@ class AppDrawer extends StatelessWidget {
               title: const Text('Información'),
               onTap: () {
                 Navigator.pop(context);
-
-                /// TODO: Abrir pantalla de información.
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.star_rate_rounded),
-              title: const Text('Calificar aplicación'),
-              onTap: () {
-                Navigator.pop(context);
-
-                /// TODO: Abrir Play Store.
+                AppInfoDialog.show(context);
               },
             ),
 

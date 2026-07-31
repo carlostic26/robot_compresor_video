@@ -8,6 +8,8 @@ import 'package:robot_compresor_video/features/home/presentation/sections/advanc
 import 'package:robot_compresor_video/features/home/presentation/sections/advanced_result_section.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/subir_section_widget.dart';
+import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
+import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
 /// Pantalla de compresión avanzada con FFmpeg.
 ///
@@ -69,7 +71,20 @@ class _AdvancedCompressionScreenState
           backgroundColor: Colors.transparent,
           centerTitle: true,
           title: const Text('Compresión avanzada'),
+          leading: Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(ctx).openDrawer(),
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () => AppInfoDialog.show(context),
+            ),
+          ],
         ),
+        drawer: const AppDrawer(),
         body: BlocConsumer<VideoBloc, VideoState>(
           listener: (context, state) async {
             // Navegar a Resultado cuando inicia la compresión avanzada
@@ -95,6 +110,19 @@ class _AdvancedCompressionScreenState
               context
                   .read<VideoBloc>()
                   .add(const LoadExtendedMetadataRequested());
+            }
+
+            // Generar thumbnail del video original tras cargar metadata extendida
+            if (state.status == VideoStatus.success &&
+                state.video != null &&
+                state.video!.bitrate > 0 &&
+                state.video!.thumbnailPath == null &&
+                state.advancedCompressionResult == null &&
+                state.thumbnailPath == null) {
+              if (!context.mounted) return;
+              context
+                  .read<VideoBloc>()
+                  .add(GenerateThumbnailRequested(state.video!.path));
             }
           },
           builder: (context, videoState) {

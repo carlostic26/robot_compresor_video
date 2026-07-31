@@ -23,12 +23,11 @@ class _CompressionDialogState extends State<CompressionDialog> {
 
           const SizedBox(height: 20),
 
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Column(
+        
             children: [
               ChoiceChip(
-                label: const Text('Bajo'),
+                label: const Text('Alto'),
                 selected: _selectedQuality == CompressionQuality.low,
                 onSelected: (_) {
                   setState(() {
@@ -48,7 +47,7 @@ class _CompressionDialogState extends State<CompressionDialog> {
               ),
 
               ChoiceChip(
-                label: const Text('Alto'),
+                label: const Text('Bajo'),
                 selected: _selectedQuality == CompressionQuality.high,
                 onSelected: (_) {
                   setState(() {
