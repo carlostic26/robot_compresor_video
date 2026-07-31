@@ -15,77 +15,82 @@ class SubirSection extends StatelessWidget {
     return BlocBuilder<VideoBloc, VideoState>(
       builder: (context, state) {
         final screenHeight = MediaQuery.of(context).size.height;
+        final screenWidth = MediaQuery.of(context).size.width;
         final isLoading = state.status == VideoStatus.picking ||
             state.status == VideoStatus.loadingExtendedMetadata;
 
         return Stack(
           children: [
             Column(
+            
               children: [
-                Container(
-                  color: Colors.blueGrey[900],
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.95,
-                    height: screenHeight * 0.3,
-                    child: GestureDetector(
-                      onTap: isLoading ? null : () => _onUploadPressed(context),
-                      child: CustomPaint(
-                        painter: DashedBorderPainter(
-                          color: Colors.blue.withValues(alpha: 0.5),
-                          strokeWidth: 2,
-                          dashWidth: 10,
-                          dashSpace: 8,
-                          borderRadius: 12,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 24,
-                            horizontal: 32,
+                Padding(
+                  padding: EdgeInsets.all(screenWidth*0.1),
+                  child: Container(
+                    color: Colors.blueGrey[900],
+                    child: SizedBox(
+                      width: screenWidth * 0.8,
+                      height: screenHeight * 0.4,
+                      child: GestureDetector(
+                        onTap: isLoading ? null : () => _onUploadPressed(context),
+                        child: CustomPaint(
+                          painter: DashedBorderPainter(
+                            color: Colors.blue.withValues(alpha: 0.5),
+                            strokeWidth: 4,
+                            dashWidth: 10,
+                            dashSpace: 8,
+                            borderRadius: 12,
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 80,
-                                color: Colors.blue,
-                              ),
-                              SizedBox(height: screenHeight * 0.015),
-                              Text(
-                                'Sube tu video',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                              ),
-                              SizedBox(height: screenHeight * 0.005),
-                              Text(
-                                'Toca para seleccionar',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(color: Colors.grey[400]),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'MP4, MOV, AVI, MKV',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey[500]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Tamaño máximo: 2 GB',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey[500]),
-                              ),
-                            ],
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 32,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 80,
+                                  color: Colors.blue,
+                                ),
+                                SizedBox(height: screenHeight * 0.015),
+                                Text(
+                                  'Sube tu video',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                ),
+                                SizedBox(height: screenHeight * 0.005),
+                                Text(
+                                  'Toca para seleccionar',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(color: Colors.grey[400]),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'MP4, MOV, AVI, MKV',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: Colors.grey[500]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tamaño máximo: 2 GB',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: Colors.grey[500]),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

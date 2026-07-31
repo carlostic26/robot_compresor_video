@@ -50,8 +50,6 @@ class AppDrawer extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 6),
-
                   Text(
                     'Compresión inteligente de videos',
                     textAlign: TextAlign.center,
@@ -73,8 +71,6 @@ class AppDrawer extends StatelessWidget {
                 context.go(AppRoutes.hub);
               },
             ),
-
-            const Divider(height: 8),
 
             ListTile(
               leading: const Icon(Icons.bolt_rounded),
