@@ -151,7 +151,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           ),
                         ),
                         Text(
-                          'Conversor de Video',
+                          'Compresor de Video',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
