@@ -1,4 +1,4 @@
-package com.example.robot_compresor_video
+package com.blogspot.robotcompresorvideo
 
 import io.flutter.embedding.android.FlutterActivity
 

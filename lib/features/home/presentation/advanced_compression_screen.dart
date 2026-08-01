@@ -8,6 +8,7 @@ import 'package:robot_compresor_video/features/home/presentation/sections/advanc
 import 'package:robot_compresor_video/features/home/presentation/sections/advanced_result_section.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/animated_section_tabs.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/subir_section_widget.dart';
+import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
@@ -141,8 +142,7 @@ class _AdvancedCompressionScreenState
                     );
                   },
                 ),
-                SizedBox(
-                    height: ScreenSizeService.heightPercent(context, 2)),
+                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
                 Expanded(
                   child: PageView(
                     controller: _pageController,
@@ -159,6 +159,7 @@ class _AdvancedCompressionScreenState
             );
           },
         ),
+        bottomNavigationBar: const BannerAdWidget(),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -29,7 +30,7 @@ class _LoadingScreenState extends State<LoadingScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        context.go(AppRoutes.home);
+        _onLoadingComplete();
       }
     });
   }
@@ -38,6 +39,17 @@ class _LoadingScreenState extends State<LoadingScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _onLoadingComplete() async {
+    try {
+      await AdService.showAppOpenAd();
+    } catch (_) {
+      // Ignorar fallos de anuncio y seguir con la navegación.
+    }
+
+    if (!mounted) return;
+    context.go(AppRoutes.home);
   }
 
   @override
@@ -84,12 +96,12 @@ class _LoadingScreenState extends State<LoadingScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00D9FF).withOpacity(0.30),
+                            color: const Color(0xFF00D9FF).withValues(alpha: .30),
                           blurRadius: 100,
                           spreadRadius: 35,
                         ),
                         BoxShadow(
-                          color: const Color(0xFF00B8D9).withOpacity(0.20),
+                          color: const Color(0xFF00B8D9).withValues(alpha: .20),
                           blurRadius: 180,
                           spreadRadius: 60,
                         ),
@@ -110,7 +122,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                         borderRadius: BorderRadius.circular(40),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00D9FF).withOpacity(0.30),
+                            color: const Color(0xFF00D9FF).withValues(alpha: .30),
                             blurRadius: 35,
                             spreadRadius: 5,
                           ),
@@ -139,7 +151,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                           ),
                         ),
                         Text(
-                          'Video Converter',
+                          'Conversor de Video',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/advanced_compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
@@ -30,6 +31,9 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
 
   /// FPS objetivo. Null si el campo es inválido.
   int? _targetFps;
+
+  /// Contador de intentos de compresión avanzada.
+  int _advancedCompressionAttempts = 0;
 
   /// Indica si los valores iniciales ya fueron cargados desde el video.
   bool _initialized = false;
@@ -144,14 +148,31 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
     final video = context.read<VideoBloc>().state.video;
     if (video == null || _targetBitrateKbps == null) return;
 
+    _advancedCompressionAttempts += 1;
+    final isRewardRequired = _advancedCompressionAttempts > 1;
+
     // Paso 1: Diálogo informativo / punto de extensión para anuncios.
-    var shouldProceed = false;
-    await AdvancedModeDialog.showAsync(
+    final shouldProceed = await AdvancedModeDialog.showAsync(
       context,
-      onContinue: () => shouldProceed = true,
+      onContinue: () async {
+        if (!isRewardRequired) {
+          return true;
+        }
+
+        final rewarded = await AdService.showRewardedAd();
+        if (!rewarded && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Debes ver el anuncio para continuar con la compresión avanzada.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return rewarded;
+      },
     );
 
-    if (!mounted || !shouldProceed) return;
+    if (!mounted || shouldProceed != true) return;
 
     // Paso 2: Diálogo de confirmación Antes vs Después.
     final config = await showDialog<AdvancedCompressionConfig>(

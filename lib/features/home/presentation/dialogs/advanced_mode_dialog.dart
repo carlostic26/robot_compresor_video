@@ -21,25 +21,25 @@ import 'package:flutter/material.dart';
 /// ```
 class AdvancedModeDialog extends StatelessWidget {
   /// Acción ejecutada al pulsar "Continuar".
-  /// Punto de extensión para mostrar un anuncio antes de continuar.
-  final VoidCallback onContinue;
+  /// Debe devolver true para avanzar y false para quedarse en el diálogo.
+  final Future<bool> Function() onContinue;
 
   const AdvancedModeDialog({super.key, required this.onContinue});
 
   /// Muestra el diálogo sin esperar resultado (uso en navegación).
-  static void show(BuildContext context, {required VoidCallback onContinue}) {
-    showDialog(
+  static void show(BuildContext context, {required Future<bool> Function() onContinue}) {
+    showDialog<bool>(
       context: context,
       builder: (_) => AdvancedModeDialog(onContinue: onContinue),
     );
   }
 
   /// Muestra el diálogo y espera a que se cierre (uso en flujo de compresión).
-  static Future<void> showAsync(
+  static Future<bool?> showAsync(
     BuildContext context, {
-    required VoidCallback onContinue,
+    required Future<bool> Function() onContinue,
   }) {
-    return showDialog(
+    return showDialog<bool>(
       context: context,
       builder: (_) => AdvancedModeDialog(onContinue: onContinue),
     );
@@ -97,11 +97,12 @@ class AdvancedModeDialog extends StatelessWidget {
             backgroundColor: colorScheme.secondary,
             foregroundColor: colorScheme.onSecondary,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-            // Punto de extensión: aquí se mostrará el anuncio en el futuro.
-            // Por ahora simula anuncio visto y ejecuta onContinue directamente.
-            onContinue();
+          onPressed: () async {
+            final canContinue = await onContinue();
+            if (!context.mounted) return;
+            if (canContinue) {
+              Navigator.pop(context, true);
+            }
           },
         ),
       ],
