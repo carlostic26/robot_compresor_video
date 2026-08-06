@@ -70,7 +70,7 @@ class AppHubScreen extends StatelessWidget {
                       description:
                           'Mayor control utilizando FFmpeg. Permite ajustar parámetros como Bit Rate y FPS.',
                       color: colorScheme.primary,
-                      onTap: () => context.go(AppRoutes.advanced),
+                      onTap: () => context.push(AppRoutes.advanced),
                     ),
                   ],
                 ),
