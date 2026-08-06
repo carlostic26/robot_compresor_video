@@ -95,6 +95,15 @@ class AppDrawer extends StatelessWidget {
             const Divider(height: 28),
 
             ListTile(
+              leading: const Icon(Icons.school_rounded),
+              title: const Text('Tutorial'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.tutorial);
+              },
+            ),
+
+            ListTile(
               leading: const Icon(Icons.privacy_tip_outlined),
               title: const Text('Política de privacidad'),
               onTap: () {

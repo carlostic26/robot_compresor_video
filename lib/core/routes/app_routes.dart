@@ -5,5 +5,6 @@ class AppRoutes {
   static const String hub = '/hub';
   static const String home = '/home';
   static const String advanced = '/advanced';
+  static const String tutorial = '/tutorial';
   static const String privacy = '/privacy';
 }

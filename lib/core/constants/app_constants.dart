@@ -5,6 +5,6 @@ class AppConstants {
   static const Duration loadingDuration = Duration(seconds: 2);
 
   /// URL de la app en Play Store.
-  /// Reemplazar con la URL real antes de publicar.
-  static const String playStoreUrl = '';
+  static const String playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.blogspot.robotcompresorvideo';
 }

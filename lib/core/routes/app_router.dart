@@ -4,6 +4,7 @@ import 'package:robot_compresor_video/features/home/presentation/app_hub_screen.
 import 'package:robot_compresor_video/features/home/presentation/home_screen.dart';
 import 'package:robot_compresor_video/features/home/presentation/loading_screen.dart';
 import 'package:robot_compresor_video/features/home/presentation/privacy_policy_screen.dart';
+import 'package:robot_compresor_video/features/home/presentation/tutorial_screen.dart';
 
 import 'app_routes.dart';
 
@@ -25,6 +26,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.advanced,
       builder: (context, state) => const AdvancedCompressionScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.tutorial,
+      builder: (context, state) => const TutorialScreen(),
     ),
     GoRoute(
       path: AppRoutes.privacy,
