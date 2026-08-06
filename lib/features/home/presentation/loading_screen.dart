@@ -188,9 +188,10 @@ class _LoadingScreenState extends State<LoadingScreen>
 
                     // Estado de carga
                     const Text(
-                      'Cargando recursos...',
+                      'reducimos tus videos hasta un 60% sin perder calidad.',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w400,
                         letterSpacing: 0.3,
                         color: Color(0xFFA9C0D2),

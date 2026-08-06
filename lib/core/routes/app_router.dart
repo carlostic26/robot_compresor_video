@@ -8,7 +8,7 @@ import 'package:robot_compresor_video/features/home/presentation/privacy_policy_
 import 'app_routes.dart';
 
 final appRouter = GoRouter(
-  initialLocation: AppRoutes.loading,
+  initialLocation: AppRoutes.home,
   routes: [
     GoRoute(
       path: AppRoutes.loading,
