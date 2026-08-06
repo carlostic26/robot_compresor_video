@@ -95,6 +95,15 @@ class AppDrawer extends StatelessWidget {
             const Divider(height: 28),
 
             ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('Política de privacidad'),
+              onTap: () {
+                Navigator.pop(context);
+                context.go(AppRoutes.privacy);
+              },
+            ),
+
+            ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('Información'),
               onTap: () {
