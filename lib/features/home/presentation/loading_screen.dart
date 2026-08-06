@@ -16,6 +16,8 @@ class LoadingScreen extends StatefulWidget {
 class _LoadingScreenState extends State<LoadingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  bool _isReadyToContinue = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -30,7 +32,9 @@ class _LoadingScreenState extends State<LoadingScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        _onLoadingComplete();
+        setState(() {
+          _isReadyToContinue = true;
+        });
       }
     });
   }
@@ -42,6 +46,12 @@ class _LoadingScreenState extends State<LoadingScreen>
   }
 
   Future<void> _onLoadingComplete() async {
+    if (_isNavigating) return;
+
+    setState(() {
+      _isNavigating = true;
+    });
+
     try {
       await AdService.showAppOpenAd();
     } catch (_) {
@@ -49,13 +59,14 @@ class _LoadingScreenState extends State<LoadingScreen>
     }
 
     if (!mounted) return;
-    context.go(AppRoutes.home);
+    context.go(AppRoutes.hub);
   }
 
   @override
   Widget build(BuildContext context) {
     final logoSize = ScreenSizeService.shortestSidePercent(context, 48);
     final progressWidth = ScreenSizeService.widthPercent(context, 60);
+    final buttonWidth = ScreenSizeService.widthPercent(context, 40);
 
     return Scaffold(
       body: AnimatedBuilder(
@@ -113,6 +124,8 @@ class _LoadingScreenState extends State<LoadingScreen>
                 // Contenido principal
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+
                   children: [
                     // Logo
                     Container(
@@ -162,8 +175,21 @@ class _LoadingScreenState extends State<LoadingScreen>
                       ],
                     ),
 
+               
+
+                    const Text(
+                      'reducimos tus videos hasta un 60% sin perder calidad.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.3,
+                        color: Color(0xFFA9C0D2),
+                      ),
+                    ),
+
                     SizedBox(
-                      height: ScreenSizeService.heightPercent(context, 8),
+                      height: ScreenSizeService.heightPercent(context, 4),
                     ),
 
                     // Barra de progreso
@@ -182,19 +208,36 @@ class _LoadingScreenState extends State<LoadingScreen>
                       ),
                     ),
 
+                   
+
                     SizedBox(
-                      height: ScreenSizeService.heightPercent(context, 1),
+                      height: ScreenSizeService.heightPercent(context, 9),
                     ),
 
-                    // Estado de carga
-                    const Text(
-                      'reducimos tus videos hasta un 60% sin perder calidad.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.3,
-                        color: Color(0xFFA9C0D2),
+                    SizedBox(
+                      width: buttonWidth,
+                      child: ElevatedButton(
+                        onPressed: _isReadyToContinue && !_isNavigating
+                            ? _onLoadingComplete
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00D9FF),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: const Text(
+                          'Continuar',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],

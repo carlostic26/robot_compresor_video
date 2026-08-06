@@ -68,7 +68,7 @@ class AppDrawer extends StatelessWidget {
               title: const Text('Inicio'),
               onTap: () {
                 Navigator.pop(context);
-                context.go(AppRoutes.hub);
+                context.go(AppRoutes.home);
               },
             ),
 

@@ -39,17 +39,19 @@ class AppHubScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              
+                 const SizedBox(height: 16),
              
               Text(
                 'Selecciona el método que mejor se adapte a tus necesidades.',
                 style: textTheme.bodyMedium?.copyWith(color: AppColors.grey),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+
+              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+           
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     _CompressionCard(
                       icon: Icons.bolt_rounded,
