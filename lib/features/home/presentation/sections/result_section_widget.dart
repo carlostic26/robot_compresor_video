@@ -149,7 +149,10 @@ class ResultSection extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              VideoInfoTableWidget(videoFile: videoWithThumb),
+              VideoInfoTableWidget(
+                videoFile: videoWithThumb,
+                thumbnailPath: state.thumbnailPath,
+              ),
 
               const SizedBox(height: 24),
 

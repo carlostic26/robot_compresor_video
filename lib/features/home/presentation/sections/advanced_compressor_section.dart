@@ -116,6 +116,7 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
               // Tabla con bitrate y FPS editables
               AdvancedVideoInfoTable(
                 videoFile: video,
+                thumbnailPath: video.thumbnailPath,
                 onBitrateChanged: (kbps) {
                   setState(() => _targetBitrateKbps = kbps);
                 },

@@ -164,6 +164,7 @@ class AdvancedResultSection extends StatelessWidget {
               // finalSizeMB fuerza mostrar el peso real (no shimmer).
               AdvancedVideoInfoTable(
                 videoFile: compressedVideo,
+                thumbnailPath: state.thumbnailPath,
                 onBitrateChanged: (_) {},
                 finalSizeMB: compressedVideo.sizeMB,
               ),

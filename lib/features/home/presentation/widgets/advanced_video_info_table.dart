@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'loading_placeholder_widget.dart';
+import 'video_preview_widget.dart';
 
 /// Tabla de información del video para el modo avanzado.
 ///
@@ -19,6 +20,7 @@ import 'loading_placeholder_widget.dart';
 ///   - [onFpsChanged] devuelve fps (int?). Null si inválido.
 class AdvancedVideoInfoTable extends StatefulWidget {
   final VideoFile videoFile;
+  final String? thumbnailPath;
 
   /// Callback cuando el usuario cambia el bitrate (kbps). Null si inválido.
   final ValueChanged<int?> onBitrateChanged;
@@ -36,6 +38,7 @@ class AdvancedVideoInfoTable extends StatefulWidget {
   const AdvancedVideoInfoTable({
     super.key,
     required this.videoFile,
+    this.thumbnailPath,
     required this.onBitrateChanged,
     this.onFpsChanged,
     this.isResultLoading = false,
@@ -145,6 +148,15 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                     color: Colors.grey[500],
                     fontStyle: FontStyle.italic,
                   ),
+            ),
+          ),
+        if (widget.thumbnailPath != null || widget.videoFile.thumbnailPath != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: VideoPreviewWidget(
+              thumbnailPath: widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
+              height: 180,
+              mode: PreviewMode.play,
             ),
           ),
         Container(
