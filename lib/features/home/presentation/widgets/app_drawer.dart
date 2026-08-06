@@ -78,7 +78,7 @@ class AppDrawer extends StatelessWidget {
               subtitle: const Text('video_compress'),
               onTap: () {
                 Navigator.pop(context);
-                context.go(AppRoutes.home);
+                context.push(AppRoutes.home);
               },
             ),
 

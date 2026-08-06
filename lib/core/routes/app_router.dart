@@ -16,11 +16,11 @@ final appRouter = GoRouter(
       builder: (context, state) => const LoadingScreen(),
     ),
     GoRoute(
-      path: AppRoutes.hub,
+      path: AppRoutes.home,
       builder: (context, state) => const AppHubScreen(),
     ),
     GoRoute(
-      path: AppRoutes.home,
+      path: AppRoutes.basic,
       builder: (context, state) => const HomeScreen(),
     ),
     GoRoute(

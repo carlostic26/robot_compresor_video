@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/core/services/ad_service.dart';
@@ -23,6 +24,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late PageController _pageController;
   late HomeSectionBloc _homeSectionBloc;
+
+  bool get _showBackButton => GoRouter.of(context).canPop();
 
   @override
   void initState() {
@@ -64,14 +67,19 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.transparent,
           centerTitle: true,
           title: const Text('Compresor de video'),
-          leading: Builder(
-            builder: (context) {
-              return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => Scaffold.of(context).openDrawer(),
-              );
-            },
-          ),
+          leading: _showBackButton
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  onPressed: () => GoRouter.of(context).pop(),
+                )
+              : Builder(
+                  builder: (context) {
+                    return IconButton(
+                      icon: const Icon(Icons.menu),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    );
+                  },
+                ),
           actions: [
             IconButton(
               icon: const Icon(Icons.info_outline),

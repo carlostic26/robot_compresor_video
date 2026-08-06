@@ -59,7 +59,7 @@ class _LoadingScreenState extends State<LoadingScreen>
     }
 
     if (!mounted) return;
-    context.go(AppRoutes.hub);
+    context.go(AppRoutes.home);
   }
 
   @override

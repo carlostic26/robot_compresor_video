@@ -18,7 +18,7 @@ class AppHubScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         centerTitle: true,
-        title: const Text('Robot Compresor Video'),
+        title: const Text('Home'),
         leading: Builder(
           builder: (ctx) => IconButton(
             icon: const Icon(Icons.menu),
@@ -59,8 +59,8 @@ class AppHubScreen extends StatelessWidget {
                       subtitle: 'video_compress',
                       description:
                           'Rápida y sencilla. Elige entre presets de calidad para reducir el tamaño de tus videos.',
-                      color:colorScheme.primary,
-                      onTap: () => context.go(AppRoutes.home),
+                      color: colorScheme.primary,
+                      onTap: () => context.push(AppRoutes.basic),
                     ),
                     const SizedBox(height: 50),
                     _CompressionCard(
