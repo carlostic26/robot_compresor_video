@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/core/theme/app_colors.dart';
 import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_mode_dialog.dart';
@@ -40,7 +41,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-                 const SizedBox(height: 16),
+                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
              
               Text(
                 'Selecciona el método que mejor se adapte a tus necesidades.',
@@ -48,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
 
-              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+              SizedBox(height: ScreenSizeService.heightPercent(context, 5)),
            
               Expanded(
                 child: Column(
@@ -63,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                       color: colorScheme.primary,
                       onTap: () => context.push(AppRoutes.basic),
                     ),
-                    const SizedBox(height: 50),
+                    SizedBox(height: ScreenSizeService.heightPercent(context, 6)),
                     _CompressionCard(
                       icon: Icons.auto_awesome,
                       title: 'Compresión avanzada',
@@ -80,6 +81,15 @@ class HomeScreen extends StatelessWidget {
                           },
                         );
                       },
+                    ),
+                    SizedBox(height: ScreenSizeService.heightPercent(context, 5)),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push(AppRoutes.tutorial),
+                        icon: const Icon(Icons.school_rounded),
+                        label: const Text('Ver Tutorial'),
+                      ),
                     ),
                   ],
                 ),

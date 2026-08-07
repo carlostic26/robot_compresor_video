@@ -183,6 +183,16 @@ width: ScreenSizeService.widthPercent(context, 90)
 height: ScreenSizeService.heightPercent(context, 2)
 ```
 
+Home screen rule:
+```dart
+// ✅ Use ScreenSizeService for vertical spacing
+SizedBox(height: ScreenSizeService.heightPercent(context, 5))
+
+// ❌ Avoid MediaQuery/hardcoded values for this layout
+SizedBox(height: MediaQuery.of(context).size.height * 0.05)
+SizedBox(height: 50)
+```
+
 ---
 
 ## 🎯 Pre-Commit Checklist
