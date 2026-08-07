@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:robot_compresor_video/core/services/screen_size_service.dart';
+import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_video_info_table.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_preview_widget.dart';
@@ -57,31 +57,20 @@ class AdvancedResultSection extends StatelessWidget {
         // Shimmer en Peso, Bit rate y FPS — valores del archivo final aún desconocidos.
         if (state.status == VideoStatus.compressingAdvanced &&
             state.video != null) {
+          final sourceVideo = state.video!;
+          final processingVideo = _buildProcessingDisplayVideo(sourceVideo);
+          final processingThumb = state.thumbnailPath ?? sourceVideo.thumbnailPath;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                VideoPreviewWidget(
-                  thumbnailPath: state.video!.thumbnailPath,
-                  mode: PreviewMode.processing,
-                  height: ScreenSizeService.heightPercent(context, 22),
-                ),
-                const SizedBox(height: 24),
                 AdvancedVideoInfoTable(
-                  videoFile: state.video!,
+                  videoFile: processingVideo,
+                  thumbnailPath: processingThumb,
+                  previewMode: PreviewMode.processing,
                   onBitrateChanged: (_) {},
                   isResultLoading: true,
-                ),
-                const SizedBox(height: 24),
-                const Column(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text(
-                      'Comprimiendo con FFmpeg...',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -120,45 +109,25 @@ class AdvancedResultSection extends StatelessWidget {
         // obtenidos via FFprobe en FfmpegDatasource.compress().
         final isSaving = state.status == VideoStatus.saving;
         final isSaved = state.status == VideoStatus.saved;
-        final isGeneratingThumb =
-            state.status == VideoStatus.generatingThumbnail;
         final compressedVideo = result.compressedVideo;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Thumbnail del archivo comprimido (state.thumbnailPath se actualiza
-              // tras GenerateThumbnailRequested sobre el output de FFmpeg).
-              Stack(
-                children: [
-                  VideoPreviewWidget(
-                    thumbnailPath: state.thumbnailPath,
-                    height: ScreenSizeService.heightPercent(context, 22),
+              if (isSaved) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context
+                        .read<VideoBloc>()
+                        .add(const ResetVideoRequested()),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Subir otro video'),
                   ),
-                  if (isGeneratingThumb)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.black.withValues(alpha: 0.4),
-                        ),
-                        child: const Center(
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Tabla con valores reales del archivo comprimido.
               // finalSizeMB fuerza mostrar el peso real (no shimmer).
@@ -198,24 +167,30 @@ class AdvancedResultSection extends StatelessWidget {
                   ),
                 ),
               ),
-
-              if (isSaved) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => context
-                        .read<VideoBloc>()
-                        .add(const ResetVideoRequested()),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Subir otro video'),
-                  ),
-                ),
-              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  VideoFile _buildProcessingDisplayVideo(VideoFile source) {
+    final name = source.name.startsWith('compress_') ||
+            source.name.startsWith('compressed_')
+        ? source.name
+        : 'compress_${source.name}';
+
+    return VideoFile(
+      path: source.path,
+      name: name,
+      size: source.size,
+      duration: source.duration,
+      width: source.width,
+      height: source.height,
+      bitrate: source.bitrate,
+      fps: source.fps,
+      createdAt: source.createdAt,
+      thumbnailPath: source.thumbnailPath,
     );
   }
 }

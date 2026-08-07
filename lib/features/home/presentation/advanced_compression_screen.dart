@@ -96,6 +96,20 @@ class _AdvancedCompressionScreenState
         drawer: const AppDrawer(),
         body: BlocConsumer<VideoBloc, VideoState>(
           listener: (context, state) async {
+            // Volver a la primera página al reiniciar/subir otro video.
+            if ((state.status == VideoStatus.initial ||
+                    state.status == VideoStatus.picking) &&
+                _pageController.hasClients &&
+                _pageController.page?.round() != 0) {
+              await _pageController.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+              );
+              _homeSectionBloc.add(const PageChanged(0));
+              _pageController.jumpToPage(0);
+            }
+
             // Navegar a Resultado cuando inicia la compresión avanzada
             if (state.status == VideoStatus.compressingAdvanced) {
               if (_pageController.hasClients &&

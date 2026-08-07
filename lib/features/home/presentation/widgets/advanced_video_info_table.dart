@@ -22,6 +22,7 @@ import 'video_preview_widget.dart';
 class AdvancedVideoInfoTable extends StatefulWidget {
   final VideoFile videoFile;
   final String? thumbnailPath;
+  final PreviewMode previewMode;
 
   /// Callback cuando el usuario cambia el bitrate (kbps). Null si inválido.
   final ValueChanged<int?> onBitrateChanged;
@@ -40,6 +41,7 @@ class AdvancedVideoInfoTable extends StatefulWidget {
     super.key,
     required this.videoFile,
     this.thumbnailPath,
+    this.previewMode = PreviewMode.play,
     required this.onBitrateChanged,
     this.onFpsChanged,
     this.isResultLoading = false,
@@ -138,13 +140,15 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
        
-        if (widget.thumbnailPath != null || widget.videoFile.thumbnailPath != null)
+        if (widget.previewMode == PreviewMode.processing ||
+            widget.thumbnailPath != null ||
+            widget.videoFile.thumbnailPath != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: VideoPreviewWidget(
               thumbnailPath: widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
               height: 180,
-              mode: PreviewMode.play,
+              mode: widget.previewMode,
             ),
           ),
 

@@ -216,8 +216,7 @@ class FfmpegDatasource {
   String _buildOutputPath(String inputPath) {
     final dir = path.dirname(inputPath);
     final originalName = path.basename(inputPath);
-    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    return path.join(dir, 'ffmpeg_${timestamp}_$originalName');
+    return path.join(dir, 'compressed_$originalName');
   }
 
   double _parseFps(String? rawFps) {
