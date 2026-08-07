@@ -61,6 +61,8 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   String? _fpsError;
   bool _bitrateTouched = false;
   bool _fpsTouched = false;
+  bool _isEditingBitrate = false;
+  bool _isEditingFps = false;
 
   @override
   void initState() {
@@ -328,7 +330,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       );
     }
 
-    // Modo edición: TextField
+    // Modo edición: texto + lápiz para activar input
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -351,10 +353,41 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildTextField(
-                      controller: _bitrateController,
-                      suffix: 'kbps',
-                      onChanged: _onBitrateInput,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          color: Colors.blue,
+                          splashRadius: 18,
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.only(right: 8),
+                          onPressed: () {
+                            setState(() {
+                              _isEditingBitrate = !_isEditingBitrate;
+                            });
+                          },
+                        ),
+                        if (_isEditingBitrate)
+                          _buildTextField(
+                            controller: _bitrateController,
+                            suffix: 'kbps',
+                            onChanged: _onBitrateInput,
+                            autofocus: true,
+                          )
+                        else
+                          Text(
+                            _formatBitrateFromInput(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                      ],
                     ),
                     if (_bitrateError != null)
                       _buildFieldError(_bitrateError!),
@@ -408,7 +441,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       );
     }
 
-    // Modo edición: TextField
+    // Modo edición: texto + lápiz para activar input
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -431,10 +464,41 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildTextField(
-                      controller: _fpsController,
-                      suffix: 'fps',
-                      onChanged: _onFpsInput,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          color: Colors.blue,
+                          splashRadius: 18,
+                          constraints: const BoxConstraints(),
+                          padding: const EdgeInsets.only(right: 8),
+                          onPressed: () {
+                            setState(() {
+                              _isEditingFps = !_isEditingFps;
+                            });
+                          },
+                        ),
+                        if (_isEditingFps)
+                          _buildTextField(
+                            controller: _fpsController,
+                            suffix: 'fps',
+                            onChanged: _onFpsInput,
+                            autofocus: true,
+                          )
+                        else
+                          Text(
+                            _formatFpsFromInput(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                      ],
                     ),
                     if (_fpsError != null) _buildFieldError(_fpsError!),
                   ],
@@ -451,12 +515,14 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     required TextEditingController controller,
     required String suffix,
     required ValueChanged<String> onChanged,
+    bool autofocus = false,
   }) {
     return SizedBox(
       width: 110,
       height: 36,
       child: TextField(
         controller: controller,
+        autofocus: autofocus,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         textAlign: TextAlign.right,
@@ -510,6 +576,18 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     if ((force || !_fpsTouched) && defaultFps.isNotEmpty) {
       _fpsController.text = defaultFps;
     }
+  }
+
+  String _formatBitrateFromInput() {
+    final text = _bitrateController.text.trim();
+    if (text.isEmpty) return '--';
+    return '$text kbps';
+  }
+
+  String _formatFpsFromInput() {
+    final text = _fpsController.text.trim();
+    if (text.isEmpty) return '--';
+    return '$text fps';
   }
 
   Widget _buildDivider() => Container(
