@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                     _CompressionCard(
                       icon: Icons.bolt_rounded,
                       title: 'Compresión básica',
-                      subtitle: 'video_compress',
+                      subtitle: 'No contiene anuncio',
                       description:
                           'Rápida y sencilla. Elige entre presets de calidad para reducir el tamaño de tus videos.',
                       color: colorScheme.primary,
@@ -67,9 +67,9 @@ class HomeScreen extends StatelessWidget {
                     _CompressionCard(
                       icon: Icons.auto_awesome,
                       title: 'Compresión avanzada',
-                      subtitle: 'FFmpeg',
+                      subtitle: 'Contiene anuncio',
                       description:
-                          'Mayor control utilizando FFmpeg. Permite ajustar parámetros como Bit Rate y FPS.',
+                        'Mayor control utilizando FFmpeg. Permite modificar y ajustar bitrate, FPS y dimensión del video.',
                       color: colorScheme.primary,
                       onTap: () {
                         AdvancedModeDialog.show(

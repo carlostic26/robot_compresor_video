@@ -25,12 +25,12 @@ class SubirSection extends StatelessWidget {
             
               children: [
                 Padding(
-                  padding: EdgeInsets.all(screenWidth*0.1),
+                  padding: EdgeInsets.all(screenWidth*0.03),
                   child: Container(
                     color: Colors.blueGrey[900],
                     child: SizedBox(
-                      width: screenWidth * 0.8,
-                      height: screenHeight * 0.4,
+                      width: screenWidth * 0.95,
+                      height: screenHeight * 0.35,
                       child: GestureDetector(
                         onTap: isLoading ? null : () => _onUploadPressed(context),
                         child: CustomPaint(

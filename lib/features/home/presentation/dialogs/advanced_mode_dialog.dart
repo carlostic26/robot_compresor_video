@@ -51,7 +51,7 @@ class AdvancedModeDialog extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return AlertDialog(
-      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       title: Row(
         children: [
           Container(
@@ -76,10 +76,10 @@ class AdvancedModeDialog extends StatelessWidget {
           children: [
             const SizedBox(height: 8),
             Text(
-              'Este modo utiliza FFmpeg, una de las herramientas más potentes para procesamiento multimedia.',
-              style: textTheme.bodyMedium,
+              'Este modo utiliza FFmpeg, una de las herramientas más potentes para procesamiento multimedia. Verás un corto anuncio para continuar.',
+              style: textTheme.bodyMedium?.copyWith(fontSize: 14),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
             ..._features(colorScheme, textTheme),
             const SizedBox(height: 16),
           ],
@@ -125,7 +125,12 @@ class AdvancedModeDialog extends StatelessWidget {
               children: [
                 Icon(e.$1, color: cs.secondary, size: 18),
                 const SizedBox(width: 10),
-                Expanded(child: Text(e.$2, style: tt.bodyMedium)),
+                Expanded(
+                  child: Text(
+                    e.$2,
+                    style: tt.bodyMedium?.copyWith(fontSize: 14),
+                  ),
+                ),
               ],
             ),
           ),
