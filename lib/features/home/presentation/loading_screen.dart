@@ -134,9 +134,12 @@ class _LoadingScreenState extends State<LoadingScreen>
                           ),
                         ],
                       ),
-                      child: Image.asset(
-                        'assets/logo.png',
-                        fit: BoxFit.contain,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
 

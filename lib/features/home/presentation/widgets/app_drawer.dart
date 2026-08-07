@@ -27,10 +27,12 @@ class AppDrawer extends StatelessWidget {
                   Container(
                     width: 90,
                     height: 90,
-                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: colorScheme.primary.withValues(alpha: .20),
+                        width: 1.2,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           blurRadius: 12,
@@ -39,7 +41,10 @@ class AppDrawer extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset('assets/logo.png', fit: BoxFit.cover),
+                    ),
                   ),
 
                   const SizedBox(height: 18),
