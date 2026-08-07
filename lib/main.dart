@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/routes/app_router.dart';
@@ -17,13 +19,6 @@ Future<void> main() async {
 
   await setupDependencies();
 
-  try {
-    await AdService.initialize();
-  } catch (error, stackTrace) {
-    debugPrint('AdService initialization failed: $error');
-    debugPrint('$stackTrace');
-  }
-
   FlutterError.onError = (details) {
     debugPrint('Flutter framework error: ${details.exceptionAsString()}');
     debugPrint(details.stack.toString());
@@ -31,6 +26,17 @@ Future<void> main() async {
   };
 
   runApp(const App());
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(() async {
+      try {
+        await AdService.initializeAndLoadAppOpenAd(showOnLoad: true);
+      } catch (error, stackTrace) {
+        debugPrint('AppOpenAd startup flow failed: $error');
+        debugPrint('$stackTrace');
+      }
+    }());
+  });
 }
 
 class App extends StatelessWidget {

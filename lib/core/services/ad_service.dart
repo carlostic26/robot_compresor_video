@@ -7,42 +7,52 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdService {
   AdService._();
 
+  // Cambiar a true para usar IDs de produccion en pruebas locales.
+  static bool isProd = true;
+
   static bool _initialized = false;
+  static bool _isShowingAppOpenAd = false;
 
   static bool get shouldLoadAds {
-    return const bool.fromEnvironment('dart.vm.product') &&
-        !const bool.fromEnvironment('flutter.test');
+    final adsEnabled =
+        (dotenv.env['ads_enabled'] ?? 'true').toLowerCase() != 'false';
+    return adsEnabled && !const bool.fromEnvironment('flutter.test');
   }
+
   static RewardedAd? _rewardedAd;
   static InterstitialAd? _interstitialAd;
   static AppOpenAd? _appOpenAd;
 
   static String get bannerUnitId {
     if (!shouldLoadAds) return '';
-    return _isProduction
+    return _shouldUseProdAds
         ? dotenv.env['banner_prod'] ?? ''
         : dotenv.env['banner_test'] ?? '';
   }
 
   static String get interstitialUnitId {
     if (!shouldLoadAds) return '';
-    return _isProduction
+    return _shouldUseProdAds
         ? dotenv.env['interstitial_prod'] ?? ''
         : dotenv.env['interstitial_test'] ?? '';
   }
 
   static String get rewardedUnitId {
     if (!shouldLoadAds) return '';
-    return _isProduction
+    return _shouldUseProdAds
         ? dotenv.env['rewarded_prod'] ?? ''
         : dotenv.env['rewarded_test'] ?? '';
   }
 
   static String get appOpenUnitId {
     if (!shouldLoadAds) return '';
-    return _isProduction
+    return _shouldUseProdAds
         ? dotenv.env['app_open_prod'] ?? ''
         : dotenv.env['app_open_test'] ?? '';
+  }
+
+  static bool get _shouldUseProdAds {
+    return _isProduction || isProd;
   }
 
   static bool get _isProduction {
@@ -60,6 +70,13 @@ class AdService {
     _loadInterstitialAd();
     _loadRewardedAd();
     _loadAppOpenAd();
+  }
+
+  static Future<void> initializeAndLoadAppOpenAd({
+    bool showOnLoad = true,
+  }) async {
+    await initialize();
+    _loadAppOpenAd(showOnLoad: showOnLoad);
   }
 
   static void _loadInterstitialAd() {
@@ -100,7 +117,7 @@ class AdService {
     );
   }
 
-  static void _loadAppOpenAd() {
+  static void _loadAppOpenAd({bool showOnLoad = false}) {
     final adUnitId = appOpenUnitId;
     if (adUnitId.isEmpty) {
       debugPrint('AppOpenAd unit ID is empty. Skipping load.');
@@ -111,11 +128,15 @@ class AdService {
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
+      orientation: AppOpenAd.orientationPortrait,
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
           _appOpenAd?.dispose();
           _appOpenAd = ad;
           debugPrint('AppOpenAd loaded successfully.');
+          if (showOnLoad) {
+            unawaited(showAppOpenAd());
+          }
         },
         onAdFailedToLoad: (error) {
           debugPrint('AppOpenAd failed to load: $error');
@@ -128,24 +149,36 @@ class AdService {
     final ad = _interstitialAd;
     if (ad == null) {
       debugPrint('No interstitial ad ready');
+      _loadInterstitialAd();
       return;
     }
+
+    final completer = Completer<void>();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _interstitialAd = null;
         _loadInterstitialAd();
+        if (!completer.isCompleted) completer.complete();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _interstitialAd = null;
         _loadInterstitialAd();
         debugPrint('InterstitialAd failed to show: $error');
+        if (!completer.isCompleted) completer.complete();
       },
     );
 
-    await ad.show();
+    ad.show();
+
+    await completer.future.timeout(
+      const Duration(seconds: 20),
+      onTimeout: () {
+        return;
+      },
+    );
   }
 
   static Future<bool> showRewardedAd() async {
@@ -185,26 +218,32 @@ class AdService {
   }
 
   static Future<void> showAppOpenAd() async {
+    if (_isShowingAppOpenAd) return;
+
     final ad = _appOpenAd;
     if (ad == null) {
       debugPrint('No AppOpenAd ready');
       return;
     }
 
+    _isShowingAppOpenAd = true;
+
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _appOpenAd = null;
+        _isShowingAppOpenAd = false;
         _loadAppOpenAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _appOpenAd = null;
+        _isShowingAppOpenAd = false;
         _loadAppOpenAd();
         debugPrint('AppOpenAd failed to show: $error');
       },
     );
 
-    await ad.show();
+    ad.show();
   }
 }

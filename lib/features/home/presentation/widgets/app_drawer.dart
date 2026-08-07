@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_mode_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
@@ -92,6 +93,8 @@ class AppDrawer extends StatelessWidget {
                 AdvancedModeDialog.show(
                   context,
                   onContinue: () async {
+                    await AdService.showInterstitialAd();
+                    if (!context.mounted) return false;
                     context.go(AppRoutes.advanced);
                     return true;
                   },

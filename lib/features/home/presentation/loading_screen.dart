@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
-import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -51,12 +50,6 @@ class _LoadingScreenState extends State<LoadingScreen>
     setState(() {
       _isNavigating = true;
     });
-
-    try {
-      await AdService.showAppOpenAd();
-    } catch (_) {
-      // Ignorar fallos de anuncio y seguir con la navegación.
-    }
 
     if (!mounted) return;
     context.go(AppRoutes.home);
