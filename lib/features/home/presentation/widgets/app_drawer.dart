@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_mode_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -88,7 +89,13 @@ class AppDrawer extends StatelessWidget {
               subtitle: const Text('FFmpeg'),
               onTap: () {
                 Navigator.pop(context);
-                context.go(AppRoutes.advanced);
+                AdvancedModeDialog.show(
+                  context,
+                  onContinue: () async {
+                    context.go(AppRoutes.advanced);
+                    return true;
+                  },
+                );
               },
             ),
 

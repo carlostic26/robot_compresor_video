@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/advanced_compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_compression_dialog.dart';
-import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_mode_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_video_info_table.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/video_preview_widget.dart';
 
 /// Sección "Comprimir" del modo avanzado (FFmpeg).
 ///
 /// Flujo al pulsar "Comprimir":
-/// 1. [AdvancedModeDialog] — explica FFmpeg, punto de extensión para anuncios.
-/// 2. [AdvancedCompressionDialog] — tabla Antes vs Después para confirmar config.
-/// 3. Dispatch [CompressVideoAdvancedRequested] con bitrate Y fps del usuario.
+/// 1. [AdvancedCompressionDialog] — tabla Antes vs Después para confirmar config.
+/// 2. Dispatch [CompressVideoAdvancedRequested] con bitrate Y fps del usuario.
 ///
 /// Si el usuario cancela en cualquier paso, la compresión no se inicia.
 class AdvancedCompressorSection extends StatefulWidget {
@@ -31,9 +28,6 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
 
   /// FPS objetivo. Null si el campo es inválido.
   int? _targetFps;
-
-  /// Contador de intentos de compresión avanzada.
-  int _advancedCompressionAttempts = 0;
 
   /// Indica si los valores iniciales ya fueron cargados desde el video.
   bool _initialized = false;
@@ -142,40 +136,13 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
   }
 
   /// Flujo al pulsar "Comprimir":
-  /// 1. Diálogo informativo FFmpeg (punto de extensión para anuncios).
-  /// 2. Diálogo de confirmación Antes vs Después.
-  /// 3. Dispatch compresión con bitrate Y fps del usuario.
+  /// 1. Diálogo de confirmación Antes vs Después.
+  /// 2. Dispatch compresión con bitrate Y fps del usuario.
   Future<void> _onCompress() async {
     final video = context.read<VideoBloc>().state.video;
     if (video == null || _targetBitrateKbps == null) return;
 
-    _advancedCompressionAttempts += 1;
-    final isRewardRequired = _advancedCompressionAttempts > 1;
-
-    // Paso 1: Diálogo informativo / punto de extensión para anuncios.
-    final shouldProceed = await AdvancedModeDialog.showAsync(
-      context,
-      onContinue: () async {
-        if (!isRewardRequired) {
-          return true;
-        }
-
-        final rewarded = await AdService.showRewardedAd();
-        if (!rewarded && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Debes ver el anuncio para continuar con la compresión avanzada.'),
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
-        return rewarded;
-      },
-    );
-
-    if (!mounted || shouldProceed != true) return;
-
-    // Paso 2: Diálogo de confirmación Antes vs Después.
+    // Paso 1: Diálogo de confirmación Antes vs Después.
     final config = await showDialog<AdvancedCompressionConfig>(
       context: context,
       builder: (_) => AdvancedCompressionDialog(
@@ -187,7 +154,7 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
 
     if (!mounted || config == null) return;
 
-    // Paso 3: Ejecutar compresión con bitrate y fps del usuario.
+    // Paso 2: Ejecutar compresión con bitrate y fps del usuario.
     context.read<VideoBloc>().add(
           CompressVideoAdvancedRequested(config: config),
         );
