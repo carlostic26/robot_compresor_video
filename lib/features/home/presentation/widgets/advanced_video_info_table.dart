@@ -175,6 +175,13 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               _buildDivider(),
               _buildRow(
                 context,
+                icon: Icons.calendar_today,
+                label: 'Fecha',
+                value: _formatDate(widget.videoFile.createdAt),
+              ),
+              _buildDivider(),
+              _buildRow(
+                context,
                 icon: Icons.schedule,
                 label: 'Duración',
                 value: widget.videoFile.formattedDuration,
@@ -182,9 +189,9 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               _buildDivider(),
               _buildRow(
                 context,
-                icon: Icons.calendar_today,
-                label: 'Fecha',
-                value: _formatDate(widget.videoFile.createdAt),
+                icon: Icons.photo_size_select_large,
+                label: 'Dimensión',
+                value: '${widget.videoFile.width}x${widget.videoFile.height}p',
               ),
               _buildDivider(),
               _buildSizeRow(context),
@@ -261,7 +268,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                   const LoadingPlaceholderWidget(width: 80, height: 14)
                 else
                   Text(
-                    '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
+                    '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(1)} MB',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 14,
                           color: Colors.white,

@@ -63,15 +63,6 @@ class VideoInfoTableWidget extends StatelessWidget {
 
               _buildInfoRow(
                 context,
-                icon: Icons.schedule,
-                label: 'Duración',
-                value: videoFile.formattedDuration,
-              ),
-
-              _buildDivider(),
-
-              _buildInfoRow(
-                context,
                 icon: Icons.calendar_today,
                 label: 'Fecha',
                 value: _formatDate(videoFile.createdAt),
@@ -81,9 +72,27 @@ class VideoInfoTableWidget extends StatelessWidget {
 
               _buildInfoRow(
                 context,
+                icon: Icons.schedule,
+                label: 'Duración',
+                value: videoFile.formattedDuration,
+              ),
+
+              _buildDivider(),
+
+              _buildInfoRow(
+                context,
+                icon: Icons.photo_size_select_large,
+                label: 'Dimensión',
+                value: '${videoFile.width}x${videoFile.height}p',
+              ),
+
+              _buildDivider(),
+
+              _buildInfoRow(
+                context,
                 icon: Icons.storage,
                 label: 'Peso',
-                value: '${videoFile.sizeMB.toStringAsFixed(2)} MB',
+                value: '${videoFile.sizeMB.toStringAsFixed(1)} MB',
               ),
 
               _buildDivider(),
@@ -93,6 +102,15 @@ class VideoInfoTableWidget extends StatelessWidget {
                 icon: Icons.speed,
                 label: 'Bit rate',
                 value: _formatBitrate(videoFile.bitrate),
+              ),
+
+              _buildDivider(),
+
+              _buildInfoRow(
+                context,
+                icon: Icons.show_chart,
+                label: 'FPS',
+                value: _formatFps(videoFile.fps),
               ),
             ],
           ),
@@ -170,5 +188,11 @@ class VideoInfoTableWidget extends StatelessWidget {
     }
     final kbps = bps ~/ 1000;
     return '$kbps kbps';
+  }
+
+  String _formatFps(double fps) {
+    if (fps <= 0) return '--';
+    if (fps == fps.roundToDouble()) return '${fps.round()} fps';
+    return '${fps.toStringAsFixed(2)} fps';
   }
 }

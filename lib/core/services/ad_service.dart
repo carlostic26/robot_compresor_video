@@ -8,29 +8,38 @@ class AdService {
   AdService._();
 
   static bool _initialized = false;
+
+  static bool get shouldLoadAds {
+    return const bool.fromEnvironment('dart.vm.product') &&
+        !const bool.fromEnvironment('flutter.test');
+  }
   static RewardedAd? _rewardedAd;
   static InterstitialAd? _interstitialAd;
   static AppOpenAd? _appOpenAd;
 
   static String get bannerUnitId {
+    if (!shouldLoadAds) return '';
     return _isProduction
         ? dotenv.env['banner_prod'] ?? ''
         : dotenv.env['banner_test'] ?? '';
   }
 
   static String get interstitialUnitId {
+    if (!shouldLoadAds) return '';
     return _isProduction
         ? dotenv.env['interstitial_prod'] ?? ''
         : dotenv.env['interstitial_test'] ?? '';
   }
 
   static String get rewardedUnitId {
+    if (!shouldLoadAds) return '';
     return _isProduction
         ? dotenv.env['rewarded_prod'] ?? ''
         : dotenv.env['rewarded_test'] ?? '';
   }
 
   static String get appOpenUnitId {
+    if (!shouldLoadAds) return '';
     return _isProduction
         ? dotenv.env['app_open_prod'] ?? ''
         : dotenv.env['app_open_test'] ?? '';
@@ -43,6 +52,8 @@ class AdService {
   static Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
+
+    if (!shouldLoadAds) return;
 
     await MobileAds.instance.initialize();
 
