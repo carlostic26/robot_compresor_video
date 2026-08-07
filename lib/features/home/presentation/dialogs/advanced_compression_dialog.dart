@@ -11,6 +11,7 @@ class AdvancedCompressionDialog extends StatelessWidget {
   // Ajusta estos porcentajes para cambiar el tamaño del diálogo.
   static const double _dialogWidthPercent = 92;
   static const double _dialogHeightPercent = 32;
+  static const double _muxOverheadFactor = 1.03;
 
   final VideoFile video;
 
@@ -78,9 +79,23 @@ class AdvancedCompressionDialog extends StatelessWidget {
   }
 
   double? _estimateSize() {
-    if (video.bitrate <= 0) return null;
-    final ratio = targetBitrateKbps * 1000 / video.bitrate;
-    return video.sizeMB * ratio;
+    final durationSeconds = video.duration.inMilliseconds / 1000.0;
+    if (durationSeconds <= 0) return null;
+
+    final targetVideoBps = targetBitrateKbps * 1000.0;
+
+    // Total bitrate original real a partir de tamaño/duración.
+    final originalTotalBps = (video.size * 8) / durationSeconds;
+
+    // Si video.bitrate es stream bitrate, diferencia ~= audio+overhead.
+    // Si video.bitrate es total bitrate, esta diferencia tenderá a 0.
+    final estimatedAudioBps = (originalTotalBps - video.bitrate).clamp(0, double.infinity);
+
+    final estimatedTotalBps = targetVideoBps + estimatedAudioBps;
+    final estimatedBytes = (estimatedTotalBps * durationSeconds) / 8.0;
+    final estimatedMb = (estimatedBytes / (1024 * 1024)) * _muxOverheadFactor;
+
+    return estimatedMb;
   }
 }
 
