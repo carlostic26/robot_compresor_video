@@ -59,18 +59,21 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   late final TextEditingController _fpsController;
   String? _bitrateError;
   String? _fpsError;
+  bool _bitrateTouched = false;
+  bool _fpsTouched = false;
 
   @override
   void initState() {
     super.initState();
-    final initialKbps = widget.videoFile.bitrate ~/ 1000;
-    _bitrateController = TextEditingController(
-      text: initialKbps > 0 ? initialKbps.toString() : '',
-    );
-    final initialFps = widget.videoFile.fps > 0
-        ? widget.videoFile.fps.round().toString()
-        : '';
-    _fpsController = TextEditingController(text: initialFps);
+    _bitrateController = TextEditingController();
+    _fpsController = TextEditingController();
+    _syncDefaultValues(force: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant AdvancedVideoInfoTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncDefaultValues();
   }
 
   @override
@@ -81,6 +84,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }
 
   void _onBitrateInput(String value) {
+    _bitrateTouched = true;
     if (value.isEmpty) {
       setState(() => _bitrateError = 'Introduce un bit rate válido');
       widget.onBitrateChanged(null);
@@ -102,6 +106,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }
 
   void _onFpsInput(String value) {
+    _fpsTouched = true;
     if (value.isEmpty) {
       setState(() => _fpsError = 'Introduce un valor de FPS');
       widget.onFpsChanged?.call(null);
@@ -489,6 +494,23 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
           style: const TextStyle(color: Colors.red, fontSize: 10),
         ),
       );
+
+  void _syncDefaultValues({bool force = false}) {
+    final defaultKbps = widget.videoFile.bitrate > 0
+        ? (widget.videoFile.bitrate ~/ 1000).toString()
+        : '';
+    final defaultFps = widget.videoFile.fps > 0
+        ? widget.videoFile.fps.round().toString()
+        : '';
+
+    if ((force || !_bitrateTouched) && defaultKbps.isNotEmpty) {
+      _bitrateController.text = defaultKbps;
+    }
+
+    if ((force || !_fpsTouched) && defaultFps.isNotEmpty) {
+      _fpsController.text = defaultFps;
+    }
+  }
 
   Widget _buildDivider() => Container(
         height: 1,
