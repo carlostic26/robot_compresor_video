@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
+import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/core/theme/app_colors.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 
 class TutorialScreen extends StatelessWidget {
   const TutorialScreen({super.key});
@@ -12,14 +15,11 @@ class TutorialScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         centerTitle: true,
         title: const Text('Tutorial'),
-        leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
+        leading: IconButton(
+          icon: const Icon(CupertinoIcons.back),
+          onPressed: () => context.go(AppRoutes.home),
         ),
       ),
-      drawer: const AppDrawer(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -45,6 +45,7 @@ class TutorialScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const BannerAdWidget(),
     );
   }
 }

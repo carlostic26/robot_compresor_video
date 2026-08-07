@@ -23,82 +23,105 @@ class AppInfoDialog extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return AlertDialog(
-      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-      title: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: .12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Robot Compresor Video',
+                  style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Robot Compresor Video',
-              style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  'Desarrollada por TICnoticos Apps',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Robot Compresor Video es una aplicación móvil que te permite reducir el tamaño de tus videos de forma rápida e inteligente, sin perder calidad innecesaria.',
+                  style: textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Modos de compresión',
+                  style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _ModeChip(
+                  icon: Icons.bolt_rounded,
+                  label: 'Compresión básica',
+                  sublabel: 'video_compress',
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(height: 8),
+                _ModeChip(
+                  icon: Icons.auto_awesome,
+                  label: 'Compresión avanzada',
+                  sublabel: 'FFmpeg',
+                  color: colorScheme.secondary,
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              'Desarrollada por TICnoticos Apps',
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w600,
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                icon: const Icon(Icons.star_rounded, size: 18),
+                label: const Text('Calificar'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _RateDialog.show(context);
+                },
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Robot Compresor Video es una aplicación móvil que te permite reducir el tamaño de tus videos de forma rápida e inteligente, sin perder calidad innecesaria.',
-              style: textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Modos de compresión',
-              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            _ModeChip(
-              icon: Icons.bolt_rounded,
-              label: 'Compresión básica',
-              sublabel: 'video_compress',
-              color: colorScheme.primary,
-            ),
-            const SizedBox(height: 8),
-            _ModeChip(
-              icon: Icons.auto_awesome,
-              label: 'Compresión avanzada',
-              sublabel: 'FFmpeg',
-              color: colorScheme.secondary,
-            ),
-            const SizedBox(height: 16),
           ],
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
-        ),
-        FilledButton.icon(
-          icon: const Icon(Icons.star_rounded, size: 18),
-          label: const Text('Calificar'),
-          onPressed: () {
-            Navigator.pop(context);
-            _RateDialog.show(context);
-          },
+        Positioned(
+          top: 10,
+          right: 10,
+          child: Material(
+            color: Colors.red,
+            shape: const CircleBorder(),
+            elevation: 4,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Navigator.pop(context),
+              child: const SizedBox(
+                width: 34,
+                height: 34,
+                child: Icon(Icons.close_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
         ),
       ],
     );
