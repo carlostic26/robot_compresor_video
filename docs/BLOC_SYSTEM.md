@@ -63,7 +63,7 @@ A key feature in the application is that the tabs change dynamically depending o
 - **No Video Loaded**: The tabs are `['Subir', 'Avanzado', 'Resultado']`.
 - **Video Loaded**: The tabs are `['Compresor', 'Avanzado', 'Resultado']`.
 
-Here is a step-by-step description of how the two BLoCs interact on the Home Screen:
+Here is a step-by-step description of how the two BLoCs interact on the Compressor Screen:
 
 ```
 1. USER INTERACTION
@@ -84,7 +84,7 @@ Here is a step-by-step description of how the two BLoCs interact on the Home Scr
    ├─> VideoBloc emits: VideoState(video: sampleVideo, isLoading: false)
    
 5. DYNAMIC TAB INTERPOLATION
-   ├─> HomeScreen's build() detects state.video != null
+  ├─> CompressorScreen's build() detects state.video != null
    ├─> Evaluates active tabs: const ['Compresor', 'Avanzado', 'Resultado']
    ├─> Rebuilds:
    │   ├─> AnimatedSectionTabs (with the new tabs list)
@@ -97,7 +97,7 @@ Here is a step-by-step description of how the two BLoCs interact on the Home Scr
 
 ```
                  +-------------------------------------------------+
-                 |                   HomeScreen                    |
+                 |                CompressorScreen                 |
                  +-----------------------+-------------------------+
                                          |
                        Registers & Injects BLoC Instances

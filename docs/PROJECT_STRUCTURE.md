@@ -53,7 +53,8 @@ robot_compresor_video/
 │   │   │       │   ├── subir_section_widget.dart      # File picker upload area
 │   │   │       │   ├── video_info_table_widget.dart   # Details table widget
 │   │   │       │   └── video_preview_widget.dart      # Video preview wrapper
-│   │   │       ├── home_screen.dart    # Coordinator screen scaffold
+│   │   │       ├── home_screen.dart    # Home screen with mode selection cards
+│   │   │       ├── compressor_screen.dart # Basic compression workflow screen
 │   │   │       └── loading_screen.dart # Startup linear loader overlay
 │   │   │
 │   │   └── compress_video/             # Main video parsing feature

@@ -179,7 +179,7 @@ Future<void> _onResetVideoRequested(...) async {
 
 ## 🏷️ Cambio de etiqueta: "Compresor" → "Comprimir"
 
-Cambio puramente de presentación en `home_screen.dart`:
+Cambio puramente de presentación en `compressor_screen.dart`:
 
 ```dart
 // Antes:

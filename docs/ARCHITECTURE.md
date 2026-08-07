@@ -23,7 +23,8 @@ lib/
 │   │   └── presentation/
 │   │       ├── bloc/                  # HomeSectionBloc
 │   │       ├── widgets/
-│   │       ├── home_screen.dart
+│   │       ├── home_screen.dart        # Pantalla Home (selector de modos)
+│   │       ├── compressor_screen.dart  # Pantalla de compresión básica
 │   │       └── loading_screen.dart
 │   │
 │   └── compress_video/

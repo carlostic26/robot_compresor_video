@@ -45,8 +45,8 @@ DATA
 | Diálogo              | `CompressionDialog`           | `AdvancedCompressionDialog`          |
 | Sección Comprimir    | `CompressorSection`           | `AdvancedCompressorSection`          |
 | Sección Resultado    | `ResultSection`               | `AdvancedResultSection`              |
-| Pantalla             | `HomeScreen`                  | `AdvancedCompressionScreen`          |
-| Ruta                 | `/home`                       | `/advanced`                          |
+| Pantalla             | `CompressorScreen`            | `AdvancedCompressionScreen`          |
+| Ruta                 | `/basic`                      | `/advanced`                          |
 | Metadata             | `video_player` (básica)       | FFprobe (bitrate real, fps)          |
 | `activeResult`       | `ActiveResult.basic`          | `ActiveResult.advanced`              |
 
@@ -252,7 +252,7 @@ El valor proviene de `AdvancedCompressionConfig.targetVideoBitrate` (bps) y se c
 
 - Ruta: `/advanced` → `AdvancedCompressionScreen`.
 - Drawer: "Compresión avanzada / FFmpeg" navega con `context.push(AppRoutes.advanced)`.
-- La pantalla avanzada tiene su propio `VideoBloc` independiente del de `HomeScreen`.
+- La pantalla avanzada tiene su propio `VideoBloc` independiente del de `CompressorScreen`.
 
 ---
 

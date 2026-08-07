@@ -45,21 +45,21 @@ This document tracks the actual implementation progress of the Robot Video Compr
 
 ### 4. Documentación
 - `docs/ADVANCED_COMPRESSION.md` — documentación completa del flujo avanzado
-- `docs/NAVIGATION_HUB.md` — Hub, navegación, diálogos, aislamiento de estado y metadata
+- `docs/NAVIGATION_HUB.md` — Home, navegación, diálogos, aislamiento de estado y metadata
 
 ---
 
-## 🆕 Hub & Navegación
+## 🆕 Home & Navegación
 
 | Componente | Estado | Descripción |
 |---|---|---|
-| **AppHubScreen** | ✅ Implementado | Pantalla principal con cards de compresión básica y avanzada. Ruta `/hub`. |
+| **HomeScreen** | ✅ Implementado | Pantalla principal con cards de compresión básica y avanzada. Ruta `/home`. |
 | **AppInfoDialog** | ✅ Implementado | Diálogo de información reutilizable. Accesible desde Drawer y AppBar. |
 | **_RateDialog** | ✅ Implementado | Diálogo motivacional de calificación. Abre Play Store via `url_launcher`. |
-| **AdvancedModeDialog** | ✅ Implementado | Aparece al pulsar "Comprimir" (no al navegar). Punto de extensión para anuncios. |
+| **AdvancedModeDialog** | ✅ Implementado | Aparece al entrar a la opción avanzada desde Home y Drawer. |
 | **Drawer actualizado** | ✅ Implementado | Todas las rutas con `context.go`. Opciones: Inicio, Básica, Avanzada, Información. |
 | **Aislamiento de estado** | ✅ Corregido | `context.go` garantiza bloc nuevo en cada navegación. Sin contaminación entre modos. |
 | **Metadata básica (createdAt)** | ✅ Corregido | `VideoMetadataDatasource` obtiene `createdAt` desde `file.lastModified()`. |
-| **Metadata extendida en básica** | ✅ Implementado | `HomeScreen` dispara `LoadExtendedMetadataRequested` al seleccionar video. |
+| **Metadata extendida en básica** | ✅ Implementado | `CompressorScreen` dispara `LoadExtendedMetadataRequested` al seleccionar video. |
 | **Preparación anuncios** | ✅ Preparado | `onContinue` callback en `AdvancedModeDialog`. Sin SDK de anuncios aún. |
 | **url_launcher** | ✅ Agregado | Dependencia para abrir Play Store. URL configurable en `AppConstants`. |
