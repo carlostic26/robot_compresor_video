@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/advanced_compression_config.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 
@@ -7,6 +8,10 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/vi
 /// Muestra una comparación de bitrate, FPS y peso estimado.
 /// Devuelve [AdvancedCompressionConfig] al confirmar, o null al cancelar.
 class AdvancedCompressionDialog extends StatelessWidget {
+  // Ajusta estos porcentajes para cambiar el tamaño del diálogo.
+  static const double _dialogWidthPercent = 92;
+  static const double _dialogHeightPercent = 32;
+
   final VideoFile video;
 
   /// Bitrate objetivo en kbps introducido por el usuario.
@@ -27,13 +32,23 @@ class AdvancedCompressionDialog extends StatelessWidget {
     final originalKbps = video.bitrate ~/ 1000;
     final originalFps = video.fps > 0 ? video.fps : null;
     final estimatedMB = _estimateSize();
+    final dialogWidth = ScreenSizeService.widthPercent(context, _dialogWidthPercent);
+    final dialogHeight = ScreenSizeService.heightPercent(context, _dialogHeightPercent);
 
     return AlertDialog(
-      title: const Text('Confirmar compresión'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ComparisonTable(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      title: const Center(
+        child: Text(
+          'Confirmar compresión',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
+      content: SizedBox(
+        width: dialogWidth,
+        height: dialogHeight*0.45,
+        child: Center(
+          child: _ComparisonTable(
             originalKbps: originalKbps,
             targetKbps: targetBitrateKbps,
             originalFps: originalFps,
@@ -41,7 +56,7 @@ class AdvancedCompressionDialog extends StatelessWidget {
             originalMB: video.sizeMB,
             estimatedMB: estimatedMB,
           ),
-        ],
+        ),
       ),
       actions: [
         TextButton(
@@ -90,13 +105,19 @@ class _ComparisonTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     // Mismo tamaño para etiquetas y valores — equilibrio visual
-    final cellStyle = textTheme.bodySmall?.copyWith(color: Colors.grey[300]);
+    final cellStyle = textTheme.bodySmall?.copyWith(
+      color: Colors.grey[300],
+      fontWeight: FontWeight.bold,
+    );
     final headerStyle = textTheme.labelSmall?.copyWith(
       color: Colors.grey,
       letterSpacing: 1.2,
+      fontWeight: FontWeight.bold,
     );
+    final borderColor = Colors.grey[700]!;
 
     return Table(
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       columnWidths: const {
         0: FlexColumnWidth(2),
         1: FlexColumnWidth(2),
@@ -105,14 +126,27 @@ class _ComparisonTable extends StatelessWidget {
       children: [
         TableRow(
           children: [
-            const SizedBox.shrink(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text('ANTES', style: headerStyle, textAlign: TextAlign.center),
+            _buildCell(
+              child: const SizedBox.shrink(),
             ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+            _buildCell(
+              child: Text('ANTES', style: headerStyle, textAlign: TextAlign.center),
+              isHeader: true,
+              border: Border(
+                top: BorderSide(color: borderColor, width: 1),
+                left: BorderSide(color: borderColor, width: 1),
+                right: BorderSide(color: borderColor, width: 1),
+                bottom: BorderSide(color: borderColor, width: 1),
+              ),
+            ),
+            _buildCell(
               child: Text('DESPUÉS', style: headerStyle, textAlign: TextAlign.center),
+              isHeader: true,
+              border: Border(
+                top: BorderSide(color: borderColor, width: 1),
+                right: BorderSide(color: borderColor, width: 1),
+                bottom: BorderSide(color: borderColor, width: 1),
+              ),
             ),
           ],
         ),
@@ -121,6 +155,7 @@ class _ComparisonTable extends StatelessWidget {
           before: '$originalKbps kbps',
           after: '$targetKbps kbps',
           cellStyle: cellStyle,
+          borderColor: borderColor,
         ),
         if (originalFps != null)
           _buildRow(
@@ -128,6 +163,7 @@ class _ComparisonTable extends StatelessWidget {
             before: _formatFps(originalFps!),
             after: _formatFps(targetFps ?? originalFps!),
             cellStyle: cellStyle,
+            borderColor: borderColor,
           ),
         if (estimatedMB != null)
           _buildRow(
@@ -135,6 +171,7 @@ class _ComparisonTable extends StatelessWidget {
             before: '${originalMB.toStringAsFixed(1)} MB',
             after: '${estimatedMB!.toStringAsFixed(1)} MB',
             cellStyle: cellStyle,
+            borderColor: borderColor,
           ),
       ],
     );
@@ -145,22 +182,57 @@ class _ComparisonTable extends StatelessWidget {
     required String before,
     required String after,
     required TextStyle? cellStyle,
+    required Color borderColor,
   }) {
     return TableRow(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7),
+        _buildCell(
           child: Text(label, style: cellStyle),
+          fillColor: Colors.white.withValues(alpha: 0.03),
+          border: Border(
+            left: BorderSide(color: borderColor, width: 1),
+            right: BorderSide(color: borderColor, width: 1),
+            bottom: BorderSide(color: borderColor, width: 1),
+          ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7),
+        _buildCell(
           child: Text(before, style: cellStyle, textAlign: TextAlign.center),
+          border: Border(
+            right: BorderSide(color: borderColor, width: 1),
+            bottom: BorderSide(color: borderColor, width: 1),
+          ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7),
+        _buildCell(
           child: Text(after, style: cellStyle, textAlign: TextAlign.center),
+          border: Border(
+            right: BorderSide(color: borderColor, width: 1),
+            bottom: BorderSide(color: borderColor, width: 1),
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCell({
+    required Widget child,
+    bool isHeader = false,
+    Border? border,
+    Color? fillColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: isHeader ? 10 : 9,
+        horizontal: 8,
+      ),
+      decoration: BoxDecoration(
+        border: border,
+        color: fillColor ??
+            (isHeader
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.transparent),
+      ),
+      alignment: Alignment.centerLeft,
+      child: child,
     );
   }
 

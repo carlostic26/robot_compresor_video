@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'loading_placeholder_widget.dart';
 import 'video_preview_widget.dart';
@@ -136,7 +137,18 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
+       
+        if (widget.thumbnailPath != null || widget.videoFile.thumbnailPath != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: VideoPreviewWidget(
+              thumbnailPath: widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
+              height: 180,
+              mode: PreviewMode.play,
+            ),
+          ),
+
+           Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'Información del vídeo',
@@ -157,15 +169,12 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                   ),
             ),
           ),
-        if (widget.thumbnailPath != null || widget.videoFile.thumbnailPath != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: VideoPreviewWidget(
-              thumbnailPath: widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
-              height: 180,
-              mode: PreviewMode.play,
-            ),
-          ),
+
+          const Divider(),
+
+          SizedBox(height: ScreenSizeService.heightPercent(context, 1)),
+
+          //table
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[900],
@@ -485,6 +494,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                             suffix: 'fps',
                             onChanged: _onFpsInput,
                             autofocus: true,
+                            width: ScreenSizeService.widthPercent(context, 17),
                           )
                         else
                           Text(
@@ -516,9 +526,10 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     required String suffix,
     required ValueChanged<String> onChanged,
     bool autofocus = false,
+    double width = 110,
   }) {
     return SizedBox(
-      width: 110,
+      width: width,
       height: 36,
       child: TextField(
         controller: controller,

@@ -5,7 +5,6 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/ad
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_compression_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_video_info_table.dart';
-import 'package:robot_compresor_video/features/home/presentation/widgets/video_preview_widget.dart';
 
 /// Sección "Comprimir" del modo avanzado (FFmpeg).
 ///
@@ -51,12 +50,11 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
     return BlocBuilder<VideoBloc, VideoState>(
       builder: (context, state) {
         final video = state.video;
+        final effectiveThumbnailPath = state.thumbnailPath ?? video?.thumbnailPath;
 
         if (video == null) {
           return const Center(child: Text('No hay video seleccionado'));
         }
-
-        final isLoading = state.status == VideoStatus.loadingExtendedMetadata;
 
         // Inicializar valores desde el video cuando la metadata esté lista
         _initFromVideo(state);
@@ -65,52 +63,10 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Preview con overlay de carga mientras se obtiene metadata
-              Stack(
-                children: [
-                  VideoPreviewWidget(
-                    thumbnailPath: video.thumbnailPath,
-                    height: ScreenSizeService.heightPercent(context, 22),
-                  ),
-                  if (isLoading)
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.black.withValues(alpha: 0.55),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Obteniendo información...',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 24),
-
               // Tabla con bitrate y FPS editables
               AdvancedVideoInfoTable(
                 videoFile: video,
-                thumbnailPath: video.thumbnailPath,
+                thumbnailPath: effectiveThumbnailPath,
                 onBitrateChanged: (kbps) {
                   setState(() => _targetBitrateKbps = kbps);
                 },

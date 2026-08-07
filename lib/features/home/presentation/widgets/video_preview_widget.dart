@@ -47,15 +47,6 @@ class VideoPreviewWidget extends StatelessWidget {
                     )
                   : null,
             ),
-            child: !hasThumbnail
-                ? const Center(
-                    child: Icon(
-                      Icons.video_library_rounded,
-                      size: 72,
-                      color: Colors.white54,
-                    ),
-                  )
-                : null,
           ),
 
           /// Oscurece ligeramente el preview
