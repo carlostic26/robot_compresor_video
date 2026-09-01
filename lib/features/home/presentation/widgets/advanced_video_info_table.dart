@@ -349,7 +349,6 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       );
     }
 
-    // Modo edición: texto + lápiz para activar input
     return SizedBox(
       height: 38,
       child: Padding(
@@ -417,7 +416,6 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   /// Fila de FPS: editable en modo compresión, shimmer/valor en resultado.
   Widget _buildFpsRow(BuildContext context, {required bool isEditable}) {
     if (!isEditable) {
-      // Modo resultado: shimmer o valor real
       return SizedBox(
         height: 38,
         child: Padding(
@@ -463,7 +461,6 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       );
     }
 
-    // Modo edición: texto + lápiz para activar input
     return SizedBox(
       height: 38,
       child: Padding(
