@@ -45,7 +45,8 @@ class ResultSection extends StatelessWidget {
         final result = state.activeCompressedVideo;
 
         // ── Compresión en proceso ──────────────────────────────────────────
-        final isProcessing = state.status == VideoStatus.compressing ||
+        final isProcessing =
+            state.status == VideoStatus.compressing ||
             state.status == VideoStatus.compressingAdvanced;
         if (isProcessing && state.video != null) {
           return SingleChildScrollView(
@@ -59,17 +60,6 @@ class ResultSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 VideoInfoTableWidget(videoFile: state.video!, isLoading: true),
-                const SizedBox(height: 24),
-                const Column(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text(
-                      'Comprimiendo video...',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
               ],
             ),
           );
@@ -95,10 +85,9 @@ class ResultSection extends StatelessWidget {
                 Text(
                   'Cuando finalice la compresión\nel resultado aparecerá aquí.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
@@ -162,9 +151,9 @@ class ResultSection extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: (isSaving || isSaved)
                       ? null
-                      : () => context
-                          .read<VideoBloc>()
-                          .add(const SaveVideoRequested()),
+                      : () => context.read<VideoBloc>().add(
+                          const SaveVideoRequested(),
+                        ),
                   icon: isSaving
                       ? const SizedBox(
                           width: 18,
@@ -179,8 +168,8 @@ class ResultSection extends StatelessWidget {
                     isSaving
                         ? 'Guardando...'
                         : isSaved
-                            ? 'Guardado'
-                            : 'Guardar video',
+                        ? 'Guardado'
+                        : 'Guardar video',
                   ),
                 ),
               ),
@@ -191,9 +180,9 @@ class ResultSection extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => context
-                        .read<VideoBloc>()
-                        .add(const ResetVideoRequested()),
+                    onPressed: () => context.read<VideoBloc>().add(
+                      const ResetVideoRequested(),
+                    ),
                     icon: const Icon(Icons.add_circle_outline),
                     label: const Text('Subir otro video'),
                   ),
