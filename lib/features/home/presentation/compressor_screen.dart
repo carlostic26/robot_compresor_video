@@ -115,17 +115,6 @@ class _CompressorScreenState extends State<CompressorScreen> {
               if (!context.mounted) return;
               final messenger = ScaffoldMessenger.of(context);
               messenger.clearSnackBars();
-              messenger.showSnackBar(
-                SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  duration: const Duration(seconds: 3),
-                  content: Text(
-                    '✅ Video comprimido\n${result.compressedVideo.path}',
-                  ),
-                ),
-              );
-
-              await Future.delayed(const Duration(milliseconds: 3200));
 
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(

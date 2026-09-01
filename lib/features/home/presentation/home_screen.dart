@@ -42,16 +42,26 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-                SizedBox(height: ScreenSizeService.heightPercent(context, 2)),
-             
+              SizedBox(height: ScreenSizeService.heightPercent(context, 2.5)),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.tutorial),
+                  icon: const Icon(Icons.school_rounded),
+                  label: const Text('Ver Tutorial'),
+                ),
+              ),
+
+              SizedBox(height: ScreenSizeService.heightPercent(context, 2.5)),
+
               Text(
                 'Selecciona el método que mejor se adapte a tus necesidades.',
                 style: textTheme.bodyMedium?.copyWith(color: AppColors.grey),
                 textAlign: TextAlign.center,
               ),
 
-              SizedBox(height: ScreenSizeService.heightPercent(context, 5)),
-           
+              SizedBox(height: ScreenSizeService.heightPercent(context, 4)),
+
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -65,13 +75,15 @@ class HomeScreen extends StatelessWidget {
                       color: colorScheme.primary,
                       onTap: () => context.push(AppRoutes.basic),
                     ),
-                    SizedBox(height: ScreenSizeService.heightPercent(context, 6)),
+                    SizedBox(
+                      height: ScreenSizeService.heightPercent(context, 4),
+                    ),
                     _CompressionCard(
                       icon: Icons.auto_awesome,
                       title: 'Compresión avanzada',
                       subtitle: 'Contiene anuncio',
                       description:
-                        'Mayor control utilizando FFmpeg. Permite modificar y ajustar bitrate, FPS y dimensión del video.',
+                          'Mayor control utilizando FFmpeg. Permite modificar y ajustar bitrate, FPS y dimensión del video.',
                       color: colorScheme.primary,
                       onTap: () {
                         AdvancedModeDialog.show(
@@ -84,15 +96,6 @@ class HomeScreen extends StatelessWidget {
                           },
                         );
                       },
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push(AppRoutes.tutorial),
-                        icon: const Icon(Icons.school_rounded),
-                        label: const Text('Ver Tutorial'),
-                      ),
                     ),
                   ],
                 ),
@@ -174,13 +177,18 @@ class _CompressionCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       description,
-                      style: textTheme.bodySmall?.copyWith(color: AppColors.grey),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.grey,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded, color: color.withValues(alpha: .6)),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: color.withValues(alpha: .6),
+              ),
             ],
           ),
         ),
