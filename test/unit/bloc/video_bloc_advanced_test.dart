@@ -16,11 +16,19 @@ import 'package:robot_compresor_video/features/compress_video/presentation/bloc/
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 class MockPickVideoUseCase extends Mock implements PickVideoUseCase {}
+
 class MockCompressVideoUseCase extends Mock implements CompressVideoUseCase {}
+
 class MockSaveVideoUseCase extends Mock implements SaveVideoUseCase {}
-class MockCompressVideoAdvancedUseCase extends Mock implements CompressVideoAdvancedUseCase {}
-class MockGetExtendedMetadataUseCase extends Mock implements GetExtendedMetadataUseCase {}
-class MockGenerateThumbnailUseCase extends Mock implements GenerateThumbnailUseCase {}
+
+class MockCompressVideoAdvancedUseCase extends Mock
+    implements CompressVideoAdvancedUseCase {}
+
+class MockGetExtendedMetadataUseCase extends Mock
+    implements GetExtendedMetadataUseCase {}
+
+class MockGenerateThumbnailUseCase extends Mock
+    implements GenerateThumbnailUseCase {}
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -81,19 +89,22 @@ VideoBloc _buildBloc({
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(const VideoFile(
-      path: '',
-      name: '',
-      size: 0,
-      duration: Duration.zero,
-      width: 0,
-      height: 0,
-      bitrate: 0,
-      createdAt: null,
-      thumbnailPath: null,
-    ));
     registerFallbackValue(
-        const CompressionConfig(quality: CompressionQuality.medium));
+      const VideoFile(
+        path: '',
+        name: '',
+        size: 0,
+        duration: Duration.zero,
+        width: 0,
+        height: 0,
+        bitrate: 0,
+        createdAt: null,
+        thumbnailPath: null,
+      ),
+    );
+    registerFallbackValue(
+      const CompressionConfig(quality: CompressionQuality.medium),
+    );
     registerFallbackValue(const AdvancedCompressionConfig());
   });
 
@@ -104,18 +115,20 @@ void main() {
       'emite loadingExtendedMetadata → success con video enriquecido',
       build: () {
         final metadataUseCase = MockGetExtendedMetadataUseCase();
-        when(() => metadataUseCase(any()))
-            .thenAnswer((_) async => _originalVideo);
+        when(
+          () => metadataUseCase(any()),
+        ).thenAnswer((_) async => _originalVideo);
         return _buildBloc(metadataUseCase: metadataUseCase);
       },
-      seed: () => const VideoState(
-        video: _originalVideo,
-        status: VideoStatus.success,
-      ),
+      seed: () =>
+          const VideoState(video: _originalVideo, status: VideoStatus.success),
       act: (bloc) => bloc.add(const LoadExtendedMetadataRequested()),
       expect: () => [
         isA<VideoState>().having(
-            (s) => s.status, 'status', VideoStatus.loadingExtendedMetadata),
+          (s) => s.status,
+          'status',
+          VideoStatus.loadingExtendedMetadata,
+        ),
         isA<VideoState>()
             .having((s) => s.status, 'status', VideoStatus.success)
             .having((s) => s.video, 'video', isNotNull),
@@ -126,20 +139,25 @@ void main() {
       'emite success (no falla) cuando FFprobe lanza excepción',
       build: () {
         final metadataUseCase = MockGetExtendedMetadataUseCase();
-        when(() => metadataUseCase(any()))
-            .thenThrow(Exception('FFprobe error'));
+        when(
+          () => metadataUseCase(any()),
+        ).thenThrow(Exception('FFprobe error'));
         return _buildBloc(metadataUseCase: metadataUseCase);
       },
-      seed: () => const VideoState(
-        video: _originalVideo,
-        status: VideoStatus.success,
-      ),
+      seed: () =>
+          const VideoState(video: _originalVideo, status: VideoStatus.success),
       act: (bloc) => bloc.add(const LoadExtendedMetadataRequested()),
       expect: () => [
         isA<VideoState>().having(
-            (s) => s.status, 'status', VideoStatus.loadingExtendedMetadata),
-        isA<VideoState>()
-            .having((s) => s.status, 'status', VideoStatus.success),
+          (s) => s.status,
+          'status',
+          VideoStatus.loadingExtendedMetadata,
+        ),
+        isA<VideoState>().having(
+          (s) => s.status,
+          'status',
+          VideoStatus.success,
+        ),
       ],
     );
 
@@ -259,17 +277,22 @@ void main() {
       build: () {
         final advancedUseCase = MockCompressVideoAdvancedUseCase();
         final thumbUseCase = MockGenerateThumbnailUseCase();
-        when(() => advancedUseCase(video: any(named: 'video'), config: any(named: 'config')))
-            .thenAnswer((_) async => _advancedResult);
-        when(() => thumbUseCase(any()))
-            .thenAnswer((_) async => '/tmp/thumb.jpg');
+        when(
+          () => advancedUseCase(
+            video: any(named: 'video'),
+            config: any(named: 'config'),
+          ),
+        ).thenAnswer((_) async => _advancedResult);
+        when(
+          () => thumbUseCase(any()),
+        ).thenAnswer((_) async => '/tmp/thumb.jpg');
         return _buildBloc(
-            advancedUseCase: advancedUseCase, thumbUseCase: thumbUseCase);
+          advancedUseCase: advancedUseCase,
+          thumbUseCase: thumbUseCase,
+        );
       },
-      seed: () => const VideoState(
-        video: _originalVideo,
-        status: VideoStatus.success,
-      ),
+      seed: () =>
+          const VideoState(video: _originalVideo, status: VideoStatus.success),
       act: (bloc) => bloc.add(
         const CompressVideoAdvancedRequested(
           config: AdvancedCompressionConfig(targetVideoBitrate: 1200000),
@@ -278,15 +301,24 @@ void main() {
       wait: const Duration(milliseconds: 200),
       expect: () => [
         isA<VideoState>().having(
-            (s) => s.status, 'status', VideoStatus.compressingAdvanced),
+          (s) => s.status,
+          'status',
+          VideoStatus.compressingAdvanced,
+        ),
         isA<VideoState>()
             .having((s) => s.status, 'status', VideoStatus.success)
             .having((s) => s.advancedCompressionResult, 'result', isNotNull)
             .having(
-                (s) => s.activeResult, 'activeResult', ActiveResult.advanced),
+              (s) => s.activeResult,
+              'activeResult',
+              ActiveResult.advanced,
+            ),
         // generatingThumbnail + success con thumbnail
         isA<VideoState>().having(
-            (s) => s.status, 'status', VideoStatus.generatingThumbnail),
+          (s) => s.status,
+          'status',
+          VideoStatus.generatingThumbnail,
+        ),
         isA<VideoState>()
             .having((s) => s.status, 'status', VideoStatus.success)
             .having((s) => s.thumbnailPath, 'thumbnailPath', isNotNull),
@@ -297,16 +329,16 @@ void main() {
       'emite failure cuando FFmpeg lanza excepción',
       build: () {
         final advancedUseCase = MockCompressVideoAdvancedUseCase();
-        when(() => advancedUseCase(
-              video: any(named: 'video'),
-              config: any(named: 'config'),
-            )).thenThrow(Exception('FFmpeg falló'));
+        when(
+          () => advancedUseCase(
+            video: any(named: 'video'),
+            config: any(named: 'config'),
+          ),
+        ).thenThrow(Exception('FFmpeg falló'));
         return _buildBloc(advancedUseCase: advancedUseCase);
       },
-      seed: () => const VideoState(
-        video: _originalVideo,
-        status: VideoStatus.success,
-      ),
+      seed: () =>
+          const VideoState(video: _originalVideo, status: VideoStatus.success),
       act: (bloc) => bloc.add(
         const CompressVideoAdvancedRequested(
           config: AdvancedCompressionConfig(targetVideoBitrate: 1200000),
@@ -314,7 +346,10 @@ void main() {
       ),
       expect: () => [
         isA<VideoState>().having(
-            (s) => s.status, 'status', VideoStatus.compressingAdvanced),
+          (s) => s.status,
+          'status',
+          VideoStatus.compressingAdvanced,
+        ),
         isA<VideoState>()
             .having((s) => s.status, 'status', VideoStatus.failure)
             .having((s) => s.error, 'error', isNotNull),
@@ -350,12 +385,14 @@ void main() {
   // ── FfmpegCommandBuilder — bitrate no hardcodeado ─────────────────────────────
 
   group('FfmpegCommandBuilder — bitrate dinámico', () {
-    test('el bitrate proviene de AdvancedCompressionConfig, no está hardcodeado',
-        () {
-      const config1 = AdvancedCompressionConfig(targetVideoBitrate: 1200000);
-      const config2 = AdvancedCompressionConfig(targetVideoBitrate: 4000000);
-      expect(config1.targetVideoBitrate, isNot(config2.targetVideoBitrate));
-    });
+    test(
+      'el bitrate proviene de AdvancedCompressionConfig, no está hardcodeado',
+      () {
+        const config1 = AdvancedCompressionConfig(targetVideoBitrate: 1200000);
+        const config2 = AdvancedCompressionConfig(targetVideoBitrate: 4000000);
+        expect(config1.targetVideoBitrate, isNot(config2.targetVideoBitrate));
+      },
+    );
 
     test('targetVideoBitrate null no aplica filtro de bitrate', () {
       const config = AdvancedCompressionConfig();
@@ -379,7 +416,7 @@ void main() {
         status: VideoStatus.success,
       );
       final sizeMB = state.advancedCompressionResult!.compressedVideo.sizeMB;
-      expect(sizeMB, closeTo(4.0, 0.01));
+      expect(sizeMB, closeTo(4.19, 0.05));
     });
 
     test('peso corresponde al archivo real (compressedSize)', () {

@@ -139,27 +139,26 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-       
         if (widget.previewMode == PreviewMode.processing ||
             widget.thumbnailPath != null ||
             widget.videoFile.thumbnailPath != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: VideoPreviewWidget(
-              thumbnailPath: widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
+              thumbnailPath:
+                  widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
               height: 180,
               mode: widget.previewMode,
             ),
           ),
 
-           Padding(
+        Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'Información del vídeo',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.blue,
-                  fontSize: 16,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: Colors.blue, fontSize: 16),
           ),
         ),
         if (isEditable)
@@ -168,17 +167,17 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
             child: Text(
               'Puedes modificar el Bit Rate y los FPS antes de comprimir.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                    fontStyle: FontStyle.italic,
-                  ),
+                color: Colors.grey[500],
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
 
-          const Divider(),
+        const Divider(),
 
-          SizedBox(height: ScreenSizeService.heightPercent(context, 1)),
+        SizedBox(height: ScreenSizeService.heightPercent(context, 1)),
 
-          //table
+        //table
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[900],
@@ -244,18 +243,17 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               children: [
                 Text(
                   label,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey[400]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                 ),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -279,21 +277,20 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               children: [
                 Text(
                   'Peso',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey[400]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                 ),
                 if (widget.isResultLoading)
                   const LoadingPlaceholderWidget(width: 80, height: 14)
                 else
                   Text(
-                    '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(1)} MB',
+                    '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      fontSize: 14,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
               ],
             ),
@@ -319,10 +316,9 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                 children: [
                   Text(
                     'Bit rate',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.grey[400]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
                   if (widget.isResultLoading)
                     const LoadingPlaceholderWidget(width: 80, height: 14)
@@ -330,10 +326,10 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                     Text(
                       _formatBitrate(widget.videoFile.bitrate),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                 ],
               ),
@@ -358,10 +354,9 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               children: [
                 Text(
                   'Bit rate',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey[400]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -391,9 +386,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                         else
                           Text(
                             _formatBitrateFromInput(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -402,8 +395,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                           ),
                       ],
                     ),
-                    if (_bitrateError != null)
-                      _buildFieldError(_bitrateError!),
+                    if (_bitrateError != null) _buildFieldError(_bitrateError!),
                   ],
                 ),
               ],
@@ -430,10 +422,9 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                 children: [
                   Text(
                     'FPS',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.grey[400]),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
                   if (widget.isResultLoading)
                     const LoadingPlaceholderWidget(width: 80, height: 14)
@@ -441,10 +432,10 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                     Text(
                       _formatFps(widget.videoFile.fps),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                 ],
               ),
@@ -469,10 +460,9 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               children: [
                 Text(
                   'FPS',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey[400]),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -503,9 +493,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                         else
                           Text(
                             _formatFpsFromInput(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -542,12 +530,15 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         textAlign: TextAlign.right,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 8,
+          ),
           suffixText: suffix,
           suffixStyle: TextStyle(color: Colors.grey[500], fontSize: 12),
           border: OutlineInputBorder(
@@ -569,12 +560,12 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }
 
   Widget _buildFieldError(String message) => Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          message,
-          style: const TextStyle(color: Colors.red, fontSize: 10),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 4),
+    child: Text(
+      message,
+      style: const TextStyle(color: Colors.red, fontSize: 10),
+    ),
+  );
 
   void _syncDefaultValues({bool force = false}) {
     final defaultKbps = widget.videoFile.bitrate > 0
@@ -606,10 +597,10 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }
 
   Widget _buildDivider() => Container(
-        height: 1,
-        color: Colors.grey[800],
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-      );
+    height: 1,
+    color: Colors.grey[800],
+    margin: const EdgeInsets.symmetric(horizontal: 16),
+  );
 
   String _formatDate(DateTime? date) {
     if (date == null) return '--';

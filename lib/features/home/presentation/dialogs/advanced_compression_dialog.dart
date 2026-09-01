@@ -33,8 +33,14 @@ class AdvancedCompressionDialog extends StatelessWidget {
     final originalKbps = video.bitrate ~/ 1000;
     final originalFps = video.fps > 0 ? video.fps : null;
     final estimatedMB = _estimateSize();
-    final dialogWidth = ScreenSizeService.widthPercent(context, _dialogWidthPercent);
-    final dialogHeight = ScreenSizeService.heightPercent(context, _dialogHeightPercent);
+    final dialogWidth = ScreenSizeService.widthPercent(
+      context,
+      _dialogWidthPercent,
+    );
+    final dialogHeight = ScreenSizeService.heightPercent(
+      context,
+      _dialogHeightPercent,
+    );
 
     return AlertDialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -47,7 +53,7 @@ class AdvancedCompressionDialog extends StatelessWidget {
       ),
       content: SizedBox(
         width: dialogWidth,
-        height: dialogHeight*0.45,
+        height: dialogHeight * 0.45,
         child: Center(
           child: _ComparisonTable(
             originalKbps: originalKbps,
@@ -89,11 +95,14 @@ class AdvancedCompressionDialog extends StatelessWidget {
 
     // Si video.bitrate es stream bitrate, diferencia ~= audio+overhead.
     // Si video.bitrate es total bitrate, esta diferencia tenderá a 0.
-    final estimatedAudioBps = (originalTotalBps - video.bitrate).clamp(0, double.infinity);
+    final estimatedAudioBps = (originalTotalBps - video.bitrate).clamp(
+      0,
+      double.infinity,
+    );
 
     final estimatedTotalBps = targetVideoBps + estimatedAudioBps;
     final estimatedBytes = (estimatedTotalBps * durationSeconds) / 8.0;
-    final estimatedMb = (estimatedBytes / (1024 * 1024)) * _muxOverheadFactor;
+    final estimatedMb = (estimatedBytes / (1000 * 1000)) * _muxOverheadFactor;
 
     return estimatedMb;
   }
@@ -141,11 +150,13 @@ class _ComparisonTable extends StatelessWidget {
       children: [
         TableRow(
           children: [
+            _buildCell(child: const SizedBox.shrink()),
             _buildCell(
-              child: const SizedBox.shrink(),
-            ),
-            _buildCell(
-              child: Text('ANTES', style: headerStyle, textAlign: TextAlign.center),
+              child: Text(
+                'ANTES',
+                style: headerStyle,
+                textAlign: TextAlign.center,
+              ),
               isHeader: true,
               border: Border(
                 top: BorderSide(color: borderColor, width: 1),
@@ -155,7 +166,11 @@ class _ComparisonTable extends StatelessWidget {
               ),
             ),
             _buildCell(
-              child: Text('DESPUÉS', style: headerStyle, textAlign: TextAlign.center),
+              child: Text(
+                'DESPUÉS',
+                style: headerStyle,
+                textAlign: TextAlign.center,
+              ),
               isHeader: true,
               border: Border(
                 top: BorderSide(color: borderColor, width: 1),
@@ -183,8 +198,8 @@ class _ComparisonTable extends StatelessWidget {
         if (estimatedMB != null)
           _buildRow(
             label: 'Peso est.',
-            before: '${originalMB.toStringAsFixed(1)} MB',
-            after: '${estimatedMB!.toStringAsFixed(1)} MB',
+            before: '${originalMB.toStringAsFixed(2)} MB',
+            after: '${estimatedMB!.toStringAsFixed(2)} MB',
             cellStyle: cellStyle,
             borderColor: borderColor,
           ),
@@ -235,13 +250,11 @@ class _ComparisonTable extends StatelessWidget {
     Color? fillColor,
   }) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: isHeader ? 10 : 9,
-        horizontal: 8,
-      ),
+      padding: EdgeInsets.symmetric(vertical: isHeader ? 10 : 9, horizontal: 8),
       decoration: BoxDecoration(
         border: border,
-        color: fillColor ??
+        color:
+            fillColor ??
             (isHeader
                 ? Colors.white.withValues(alpha: 0.03)
                 : Colors.transparent),

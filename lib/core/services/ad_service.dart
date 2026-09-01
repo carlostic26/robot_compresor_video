@@ -7,11 +7,13 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdService {
   AdService._();
 
-  // Cambiar a true para usar IDs de produccion en pruebas locales.
-  static bool isProd = true;
+  static bool isProd = false;
 
   static bool _initialized = false;
   static bool _isShowingAppOpenAd = false;
+  static bool _isLoadingAppOpenAd = false;
+  static bool _wasInBackground = false;
+  static final _AdLifecycleObserver _lifecycleObserver = _AdLifecycleObserver();
 
   static bool get shouldLoadAds {
     final adsEnabled =
@@ -66,10 +68,10 @@ class AdService {
     if (!shouldLoadAds) return;
 
     await MobileAds.instance.initialize();
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
 
     _loadInterstitialAd();
     _loadRewardedAd();
-    _loadAppOpenAd();
   }
 
   static Future<void> initializeAndLoadAppOpenAd({
@@ -123,14 +125,17 @@ class AdService {
       debugPrint('AppOpenAd unit ID is empty. Skipping load.');
       return;
     }
+    if (_isLoadingAppOpenAd || _appOpenAd != null) return;
+
+    _isLoadingAppOpenAd = true;
 
     debugPrint('Loading AppOpenAd with unit ID: $adUnitId');
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
-      orientation: AppOpenAd.orientationPortrait,
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
+          _isLoadingAppOpenAd = false;
           _appOpenAd?.dispose();
           _appOpenAd = ad;
           debugPrint('AppOpenAd loaded successfully.');
@@ -139,6 +144,7 @@ class AdService {
           }
         },
         onAdFailedToLoad: (error) {
+          _isLoadingAppOpenAd = false;
           debugPrint('AppOpenAd failed to load: $error');
         },
       ),
@@ -205,9 +211,11 @@ class AdService {
       },
     );
 
-    ad.show(onUserEarnedReward: (ad, reward) {
-      if (!completer.isCompleted) completer.complete(true);
-    });
+    ad.show(
+      onUserEarnedReward: (ad, reward) {
+        if (!completer.isCompleted) completer.complete(true);
+      },
+    );
 
     return completer.future.timeout(
       const Duration(seconds: 10),
@@ -244,6 +252,44 @@ class AdService {
       },
     );
 
-    ad.show();
+    try {
+      await ad.show();
+    } catch (error, stackTrace) {
+      ad.dispose();
+      if (identical(_appOpenAd, ad)) {
+        _appOpenAd = null;
+      }
+      _isShowingAppOpenAd = false;
+      debugPrint('AppOpenAd show failed: $error');
+      debugPrint('$stackTrace');
+      _loadAppOpenAd();
+    }
+  }
+
+  static void _handleAppLifecycleState(AppLifecycleState state) {
+    if (_isShowingAppOpenAd) return;
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _wasInBackground = true;
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed && _wasInBackground) {
+      _wasInBackground = false;
+      if (_appOpenAd == null) {
+        _loadAppOpenAd();
+      } else {
+        unawaited(showAppOpenAd());
+      }
+    }
+  }
+}
+
+class _AdLifecycleObserver with WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    AdService._handleAppLifecycleState(state);
   }
 }

@@ -63,6 +63,9 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
         ),
       );
 
+      // Disparar carga de metadata extendida (FFprobe) automáticamente
+      add(const LoadExtendedMetadataRequested());
+
       debugPrint('VIDEO SELECCIONADO');
       debugPrint(video.name);
       debugPrint(video.path);
@@ -83,10 +86,12 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
 
     if (video == null) {
       debugPrint("STATUS 2. Video nulo");
-      emit(state.copyWith(
-        status: VideoStatus.failure,
-        error: 'No hay un video seleccionado.',
-      ));
+      emit(
+        state.copyWith(
+          status: VideoStatus.failure,
+          error: 'No hay un video seleccionado.',
+        ),
+      );
       return;
     }
 
@@ -101,12 +106,14 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
       debugPrint('COMPRESIÓN FINALIZADA');
 
       // Emitir resultado y luego generar thumbnail automáticamente
-      emit(state.copyWith(
-        compressionResult: result,
-        activeResult: ActiveResult.basic,
-        status: VideoStatus.success,
-        error: null,
-      ));
+      emit(
+        state.copyWith(
+          compressionResult: result,
+          activeResult: ActiveResult.basic,
+          status: VideoStatus.success,
+          error: null,
+        ),
+      );
 
       // Disparar generación de thumbnail sin bloquear el estado de éxito
       add(GenerateThumbnailRequested(result.compressedVideo.path));
@@ -116,7 +123,7 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     }
   }
 
-Future<void> _onSaveVideoRequested(
+  Future<void> _onSaveVideoRequested(
     SaveVideoRequested event,
     Emitter<VideoState> emit,
   ) async {
@@ -129,10 +136,12 @@ Future<void> _onSaveVideoRequested(
     final result = state.activeCompressedVideo;
 
     if (result == null) {
-      emit(state.copyWith(
-        status: VideoStatus.failure,
-        error: 'No existe un video comprimido para guardar.',
-      ));
+      emit(
+        state.copyWith(
+          status: VideoStatus.failure,
+          error: 'No existe un video comprimido para guardar.',
+        ),
+      );
       return;
     }
 
@@ -155,17 +164,16 @@ Future<void> _onSaveVideoRequested(
     final video = state.video;
 
     if (video == null) {
-      emit(state.copyWith(
-        status: VideoStatus.failure,
-        error: 'No hay un video seleccionado.',
-      ));
+      emit(
+        state.copyWith(
+          status: VideoStatus.failure,
+          error: 'No hay un video seleccionado.',
+        ),
+      );
       return;
     }
 
-    emit(state.copyWith(
-      status: VideoStatus.compressingAdvanced,
-      error: null,
-    ));
+    emit(state.copyWith(status: VideoStatus.compressingAdvanced, error: null));
 
     try {
       final result = await compressVideoAdvancedUseCase(
@@ -175,12 +183,14 @@ Future<void> _onSaveVideoRequested(
 
       debugPrint('COMPRESIÓN AVANZADA FINALIZADA: ${result.ffmpegCommand}');
 
-      emit(state.copyWith(
-        advancedCompressionResult: result,
-        activeResult: ActiveResult.advanced,
-        status: VideoStatus.success,
-        error: null,
-      ));
+      emit(
+        state.copyWith(
+          advancedCompressionResult: result,
+          activeResult: ActiveResult.advanced,
+          status: VideoStatus.success,
+          error: null,
+        ),
+      );
 
       // Generar thumbnail del video comprimido por FFmpeg
       add(GenerateThumbnailRequested(result.compressedVideo.path));
@@ -201,17 +211,13 @@ Future<void> _onSaveVideoRequested(
     try {
       final thumbPath = await generateThumbnailUseCase(event.videoPath);
       debugPrint('THUMBNAIL GENERADO: $thumbPath');
-      emit(state.copyWith(
-        thumbnailPath: thumbPath,
-        status: VideoStatus.success,
-      ));
+      emit(
+        state.copyWith(thumbnailPath: thumbPath, status: VideoStatus.success),
+      );
     } catch (e) {
       debugPrint('ERROR THUMBNAIL (no crítico): $e');
       // El thumbnail es opcional — volver a success sin romper el flujo
-      emit(state.copyWith(
-        thumbnailPath: null,
-        status: VideoStatus.success,
-      ));
+      emit(state.copyWith(thumbnailPath: null, status: VideoStatus.success));
     }
   }
 
@@ -239,11 +245,13 @@ Future<void> _onSaveVideoRequested(
     try {
       final enrichedVideo = await getExtendedMetadataUseCase(video.path);
 
-      emit(state.copyWith(
-        video: enrichedVideo,
-        status: VideoStatus.success,
-        error: null,
-      ));
+      emit(
+        state.copyWith(
+          video: enrichedVideo,
+          status: VideoStatus.success,
+          error: null,
+        ),
+      );
     } catch (e) {
       // No es un error crítico: la UI puede funcionar con los datos básicos
       debugPrint('No se pudo cargar metadata extendida: $e');

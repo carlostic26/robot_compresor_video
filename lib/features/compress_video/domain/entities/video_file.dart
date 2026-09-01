@@ -30,7 +30,7 @@ class VideoFile {
     required this.thumbnailPath,
   });
 
-  double get sizeMB => size / (1024 * 1024);
+  double get sizeMB => size / (1000 * 1000);
   String get resolution => '$width x $height';
   String get extension => name.split('.').last.toUpperCase();
 

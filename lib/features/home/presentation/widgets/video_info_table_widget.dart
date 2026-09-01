@@ -92,7 +92,7 @@ class VideoInfoTableWidget extends StatelessWidget {
                 context,
                 icon: Icons.storage,
                 label: 'Peso',
-                value: '${videoFile.sizeMB.toStringAsFixed(1)} MB',
+                value: '${videoFile.sizeMB.toStringAsFixed(2)} MB',
               ),
 
               _buildDivider(),
@@ -179,12 +179,12 @@ class VideoInfoTableWidget extends StatelessWidget {
   }
 
   /// Convierte bps a una representación legible:
-  /// ≥ 1 Mbps → "X.X Mbps", < 1 Mbps → "X kbps", 0 → "--"
+  /// ≥ 1 Mbps → "X.XX Mbps", < 1 Mbps → "X kbps", 0 → "--"
   String _formatBitrate(int bps) {
     if (bps <= 0) return '--';
     if (bps >= 1000000) {
       final mbps = bps / 1000000;
-      return '${mbps.toStringAsFixed(1)} Mbps';
+      return '${mbps.toStringAsFixed(2)} Mbps';
     }
     final kbps = bps ~/ 1000;
     return '$kbps kbps';

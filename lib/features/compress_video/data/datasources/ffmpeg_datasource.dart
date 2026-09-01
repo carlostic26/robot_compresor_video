@@ -74,15 +74,15 @@ class FfmpegDatasource {
     final info = session.getMediaInformation();
 
     final file = File(videoPath);
-
-    // Fecha de modificación del archivo = fecha en que fue procesado/comprimido.
-    // Es la fuente más confiable porque el archivo comprimido siempre tiene
-    // una fecha de modificación real, independientemente del contenedor de video.
     final createdAt = await file.lastModified();
+    final fileLength = await file.length();
 
     if (info == null) {
       return metadataDatasource.getVideoMetadata(videoPath);
     }
+
+    final durationSecs = double.tryParse(info.getDuration() ?? '0') ?? 0.0;
+    final duration = Duration(milliseconds: (durationSecs * 1000).round());
 
     final streams = info.getStreams();
     final videoStream = _selectBestVideoStream(streams);
@@ -91,39 +91,43 @@ class FfmpegDatasource {
       // Fallback seguro si FFprobe no expone stream de video usable.
       final basic = await metadataDatasource.getVideoMetadata(videoPath);
       final fallbackBitrate = int.tryParse(info.getBitrate() ?? '0') ?? 0;
+      final finalBitrate = fallbackBitrate > 0
+          ? fallbackBitrate
+          : (duration.inMilliseconds > 0
+                ? ((fileLength * 8) / (duration.inMilliseconds / 1000.0))
+                      .round()
+                : basic.bitrate);
+
       return VideoFile(
         path: basic.path,
         name: basic.name,
-        size: basic.size,
-        duration: basic.duration,
+        size: fileLength > 0 ? fileLength : basic.size,
+        duration: duration.inMilliseconds > 0 ? duration : basic.duration,
         width: basic.width,
         height: basic.height,
-        bitrate: fallbackBitrate,
+        bitrate: finalBitrate,
         fps: 0,
         createdAt: createdAt,
         thumbnailPath: null,
       );
     }
 
-    // Preferir bitrate del stream de video para que coincida mejor con
-    // el valor objetivo ingresado por el usuario en compresión avanzada.
-    // Si no está disponible, usar el bitrate total del contenedor.
+    // Preferir bitrate del stream de video para mayor precisión.
+    // Si no está disponible, usar el bitrate total del contenedor o calcularlo a partir de peso y duración.
     final containerBitrate = int.tryParse(info.getBitrate() ?? '0') ?? 0;
     final streamBitrate =
         int.tryParse(_streamProp(videoStream, 'bit_rate') ?? '0') ?? 0;
-    final bitrate = streamBitrate > 0 ? streamBitrate : containerBitrate;
+    var bitrate = streamBitrate > 0 ? streamBitrate : containerBitrate;
 
-    final fps = _parseFps(videoStream.getRealFrameRate()) > 0
-        ? _parseFps(videoStream.getRealFrameRate())
-        : _parseFps(_streamProp(videoStream, 'avg_frame_rate')) > 0
-            ? _parseFps(_streamProp(videoStream, 'avg_frame_rate'))
-            : _parseFps(_streamProp(videoStream, 'r_frame_rate'));
+    if (bitrate <= 0 && fileLength > 0 && duration.inMilliseconds > 0) {
+      bitrate = ((fileLength * 8) / (duration.inMilliseconds / 1000.0)).round();
+    }
+
+    // Extraer FPS real del video descartando timebases de contenedor (como 90000)
+    final fps = _extractFps(videoStream, duration);
 
     var width = int.tryParse(videoStream.getWidth()?.toString() ?? '0') ?? 0;
     var height = int.tryParse(videoStream.getHeight()?.toString() ?? '0') ?? 0;
-
-    final durationSecs = double.tryParse(info.getDuration() ?? '0') ?? 0.0;
-    final duration = Duration(milliseconds: (durationSecs * 1000).round());
 
     // Fallback cuando FFprobe devuelve 0x0 (caso observado en algunos outputs).
     if (width <= 0 || height <= 0 || duration.inMilliseconds == 0) {
@@ -134,7 +138,7 @@ class FfmpegDatasource {
       return VideoFile(
         path: videoPath,
         name: path.basename(videoPath),
-        size: await file.length(),
+        size: fileLength,
         duration: duration.inMilliseconds > 0 ? duration : basic.duration,
         width: width,
         height: height,
@@ -148,7 +152,7 @@ class FfmpegDatasource {
     return VideoFile(
       path: videoPath,
       name: path.basename(videoPath),
-      size: await file.length(),
+      size: fileLength,
       duration: duration,
       width: width,
       height: height,
@@ -168,17 +172,23 @@ class FfmpegDatasource {
     final cacheDir = await getTemporaryDirectory();
     final videoName = path.basenameWithoutExtension(videoPath);
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final thumbnailPath =
-        path.join(cacheDir.path, 'thumb_${videoName}_$timestamp.jpg');
+    final thumbnailPath = path.join(
+      cacheDir.path,
+      'thumb_${videoName}_$timestamp.jpg',
+    );
 
     // Extraer el frame del segundo 1 (o el primero disponible si el video
     // es más corto). -vframes 1 asegura que solo se genera una imagen.
     final args = [
       '-y',
-      '-i', videoPath,
-      '-ss', '00:00:01',
-      '-vframes', '1',
-      '-q:v', '2', // calidad JPEG alta (1=mejor, 31=peor)
+      '-i',
+      videoPath,
+      '-ss',
+      '00:00:01',
+      '-vframes',
+      '1',
+      '-q:v',
+      '2', // calidad JPEG alta (1=mejor, 31=peor)
       thumbnailPath,
     ];
 
@@ -189,13 +199,17 @@ class FfmpegDatasource {
       // Intentar con el frame 0 si el video es muy corto
       final fallbackArgs = [
         '-y',
-        '-i', videoPath,
-        '-vframes', '1',
-        '-q:v', '2',
+        '-i',
+        videoPath,
+        '-vframes',
+        '1',
+        '-q:v',
+        '2',
         thumbnailPath,
       ];
-      final fallbackSession =
-          await FFmpegKit.executeWithArguments(fallbackArgs);
+      final fallbackSession = await FFmpegKit.executeWithArguments(
+        fallbackArgs,
+      );
       final fallbackCode = await fallbackSession.getReturnCode();
 
       if (!ReturnCode.isSuccess(fallbackCode)) {
@@ -217,6 +231,56 @@ class FfmpegDatasource {
     final dir = path.dirname(inputPath);
     final originalName = path.basename(inputPath);
     return path.join(dir, 'compressed_$originalName');
+  }
+
+  double _extractFps(dynamic videoStream, Duration duration) {
+    if (videoStream == null) return 0;
+
+    // 1. Intentar avg_frame_rate (tasa de cuadros promedio real del video)
+    final avgFps = _parseFps(_streamProp(videoStream, 'avg_frame_rate')) > 0
+        ? _parseFps(_streamProp(videoStream, 'avg_frame_rate'))
+        : _parseFps(videoStream.getAverageFrameRate()?.toString());
+    if (avgFps > 0 && avgFps <= 240) {
+      return avgFps;
+    }
+
+    // 2. Intentar r_frame_rate sólo si es un valor razonable (<= 240 fps)
+    // (Descarta 90000 u otros valores de timebase de contenedor como 90k)
+    final realFps = _parseFps(_streamProp(videoStream, 'r_frame_rate')) > 0
+        ? _parseFps(_streamProp(videoStream, 'r_frame_rate'))
+        : _parseFps(videoStream.getRealFrameRate()?.toString());
+    if (realFps > 0 && realFps <= 240) {
+      return realFps;
+    }
+
+    // 3. Fallback: calcular a partir de nb_frames y duración si está disponible
+    final nbFramesStr =
+        _streamProp(videoStream, 'nb_frames') ??
+        _streamProp(videoStream, 'nb_read_frames');
+    final nbFrames = int.tryParse(nbFramesStr ?? '');
+    final durationSecs = duration.inMilliseconds / 1000.0;
+    if (nbFrames != null && nbFrames > 0 && durationSecs > 0) {
+      final calculatedFps = nbFrames / durationSecs;
+      if (calculatedFps > 0 && calculatedFps <= 240) {
+        return calculatedFps;
+      }
+    }
+
+    // 4. Fallback: codec_time_base (ej. "1/60" -> 60 fps)
+    final codecTimeBase = _streamProp(videoStream, 'codec_time_base');
+    if (codecTimeBase != null && codecTimeBase.contains('/')) {
+      final parts = codecTimeBase.split('/');
+      final num = double.tryParse(parts[0]) ?? 0;
+      final den = double.tryParse(parts[1]) ?? 0;
+      if (num > 0 && den > 0) {
+        final fpsFromTimebase = den / num;
+        if (fpsFromTimebase > 0 && fpsFromTimebase <= 240) {
+          return fpsFromTimebase;
+        }
+      }
+    }
+
+    return 0;
   }
 
   double _parseFps(String? rawFps) {
