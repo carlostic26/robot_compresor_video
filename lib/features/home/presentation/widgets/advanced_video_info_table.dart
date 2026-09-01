@@ -576,14 +576,6 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     );
   }
 
-  Widget _buildFieldError(String message) => Padding(
-    padding: const EdgeInsets.only(top: 2),
-    child: Text(
-      message,
-      style: const TextStyle(color: Colors.red, fontSize: 10),
-    ),
-  );
-
   void _syncDefaultValues({bool force = false}) {
     final defaultKbps = widget.videoFile.bitrate > 0
         ? (widget.videoFile.bitrate ~/ 1000).toString()
