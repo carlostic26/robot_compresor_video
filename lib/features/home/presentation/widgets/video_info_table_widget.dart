@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 
 import 'loading_placeholder_widget.dart';
-import 'video_preview_widget.dart';
 
 /// Widget que muestra la información del video en forma de tabla
 class VideoInfoTableWidget extends StatelessWidget {
@@ -33,16 +32,6 @@ class VideoInfoTableWidget extends StatelessWidget {
             ).textTheme.titleLarge?.copyWith(color: Colors.blue, fontSize: 16),
           ),
         ),
-
-        if (thumbnailPath != null || videoFile.thumbnailPath != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: VideoPreviewWidget(
-              thumbnailPath: thumbnailPath ?? videoFile.thumbnailPath,
-              height: 180,
-              mode: PreviewMode.play,
-            ),
-          ),
 
         /// Tabla
         Container(
