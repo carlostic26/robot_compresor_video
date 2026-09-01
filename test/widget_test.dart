@@ -9,8 +9,9 @@ void main() {
     await tester.pumpWidget(const App());
     await tester.pump(const Duration(milliseconds: 200));
 
-    expect(find.text('Robot Compresor Video'), findsOneWidget);
+    expect(find.text('Robot'), findsOneWidget);
+    expect(find.text('Compresor de Video'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    expect(find.text('Comenzar'), findsOneWidget);
+    expect(find.text('Continuar'), findsOneWidget);
   });
 }

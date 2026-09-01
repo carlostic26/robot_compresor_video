@@ -60,8 +60,6 @@ class AdvancedVideoInfoTable extends StatefulWidget {
 class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   late final TextEditingController _bitrateController;
   late final TextEditingController _fpsController;
-  String? _bitrateError;
-  String? _fpsError;
   bool _bitrateTouched = false;
   bool _fpsTouched = false;
   bool _isEditingBitrate = false;
@@ -91,44 +89,28 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   void _onBitrateInput(String value) {
     _bitrateTouched = true;
     if (value.isEmpty) {
-      setState(() => _bitrateError = 'Introduce un bit rate válido');
       widget.onBitrateChanged(null);
       return;
     }
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed <= 0) {
-      setState(() => _bitrateError = 'Debe ser mayor que 0');
+    if (parsed == null || parsed <= 0 || parsed > 100000) {
       widget.onBitrateChanged(null);
       return;
     }
-    if (parsed > 100000) {
-      setState(() => _bitrateError = 'Máx. 100 000 kbps');
-      widget.onBitrateChanged(null);
-      return;
-    }
-    setState(() => _bitrateError = null);
     widget.onBitrateChanged(parsed);
   }
 
   void _onFpsInput(String value) {
     _fpsTouched = true;
     if (value.isEmpty) {
-      setState(() => _fpsError = 'Introduce un valor de FPS');
       widget.onFpsChanged?.call(null);
       return;
     }
     final parsed = int.tryParse(value);
-    if (parsed == null || parsed <= 0) {
-      setState(() => _fpsError = 'Debe ser mayor que 0');
+    if (parsed == null || parsed <= 0 || parsed > 240) {
       widget.onFpsChanged?.call(null);
       return;
     }
-    if (parsed > 240) {
-      setState(() => _fpsError = 'Máx. 240 fps');
-      widget.onFpsChanged?.call(null);
-      return;
-    }
-    setState(() => _fpsError = null);
     widget.onFpsChanged?.call(parsed);
   }
 
@@ -231,71 +213,89 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     required String label,
     required String value,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.blue, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
-                ),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+    return SizedBox(
+      height: 38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.blue, size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
-                ),
-              ],
+                  Flexible(
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   /// Fila de Peso: shimmer durante compresión, valor real al terminar.
   Widget _buildSizeRow(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.storage, color: Colors.blue, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Peso',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
-                ),
-                if (widget.isResultLoading)
-                  const LoadingPlaceholderWidget(width: 80, height: 14)
-                else
+    return SizedBox(
+      height: 38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.storage, color: Colors.blue, size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Text(
-                    '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 14,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    'Peso',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
-              ],
+                  if (widget.isResultLoading)
+                    const LoadingPlaceholderWidget(width: 80, height: 14)
+                  else
+                    Flexible(
+                      child: Text(
+                        '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -304,15 +304,65 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   Widget _buildBitrateRow(BuildContext context, {required bool isEditable}) {
     if (!isEditable) {
       // Modo resultado: shimmer o valor real
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      return SizedBox(
+        height: 38,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.tune, color: Colors.blue, size: 18),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Bit rate',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
+                    ),
+                    if (widget.isResultLoading)
+                      const LoadingPlaceholderWidget(width: 80, height: 14)
+                    else
+                      Flexible(
+                        child: Text(
+                          _formatBitrate(widget.videoFile.bitrate),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Modo edición: texto + lápiz para activar input
+    return SizedBox(
+      height: 38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.tune, color: Colors.blue, size: 20),
+            const Icon(Icons.tune, color: Colors.blue, size: 18),
             const SizedBox(width: 12),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Bit rate',
@@ -320,88 +370,46 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
-                  if (widget.isResultLoading)
-                    const LoadingPlaceholderWidget(width: 80, height: 14)
-                  else
-                    Text(
-                      _formatBitrate(widget.videoFile.bitrate),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 16),
+                        color: Colors.blue,
+                        splashRadius: 16,
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.only(right: 6),
+                        onPressed: () {
+                          setState(() {
+                            _isEditingBitrate = !_isEditingBitrate;
+                          });
+                        },
                       ),
-                    ),
+                      if (_isEditingBitrate)
+                        _buildTextField(
+                          controller: _bitrateController,
+                          suffix: 'kbps',
+                          onChanged: _onBitrateInput,
+                          autofocus: true,
+                        )
+                      else
+                        Text(
+                          _formatBitrateFromInput(),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ],
         ),
-      );
-    }
-
-    // Modo edición: texto + lápiz para activar input
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Icon(Icons.tune, color: Colors.blue, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Bit rate',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          color: Colors.blue,
-                          splashRadius: 18,
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.only(right: 8),
-                          onPressed: () {
-                            setState(() {
-                              _isEditingBitrate = !_isEditingBitrate;
-                            });
-                          },
-                        ),
-                        if (_isEditingBitrate)
-                          _buildTextField(
-                            controller: _bitrateController,
-                            suffix: 'kbps',
-                            onChanged: _onBitrateInput,
-                            autofocus: true,
-                          )
-                        else
-                          Text(
-                            _formatBitrateFromInput(),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                      ],
-                    ),
-                    if (_bitrateError != null) _buildFieldError(_bitrateError!),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -410,15 +418,65 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   Widget _buildFpsRow(BuildContext context, {required bool isEditable}) {
     if (!isEditable) {
       // Modo resultado: shimmer o valor real
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      return SizedBox(
+        height: 38,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(Icons.speed, color: Colors.blue, size: 18),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'FPS',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
+                    ),
+                    if (widget.isResultLoading)
+                      const LoadingPlaceholderWidget(width: 80, height: 14)
+                    else
+                      Flexible(
+                        child: Text(
+                          _formatFps(widget.videoFile.fps),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Modo edición: texto + lápiz para activar input
+    return SizedBox(
+      height: 38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.speed, color: Colors.blue, size: 20),
+            const Icon(Icons.speed, color: Colors.blue, size: 18),
             const SizedBox(width: 12),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'FPS',
@@ -426,89 +484,47 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
                   ),
-                  if (widget.isResultLoading)
-                    const LoadingPlaceholderWidget(width: 80, height: 14)
-                  else
-                    Text(
-                      _formatFps(widget.videoFile.fps),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 16),
+                        color: Colors.blue,
+                        splashRadius: 16,
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.only(right: 6),
+                        onPressed: () {
+                          setState(() {
+                            _isEditingFps = !_isEditingFps;
+                          });
+                        },
                       ),
-                    ),
+                      if (_isEditingFps)
+                        _buildTextField(
+                          controller: _fpsController,
+                          suffix: 'fps',
+                          onChanged: _onFpsInput,
+                          autofocus: true,
+                          width: ScreenSizeService.widthPercent(context, 17),
+                        )
+                      else
+                        Text(
+                          _formatFpsFromInput(),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ],
         ),
-      );
-    }
-
-    // Modo edición: texto + lápiz para activar input
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Icon(Icons.speed, color: Colors.blue, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'FPS',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          color: Colors.blue,
-                          splashRadius: 18,
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.only(right: 8),
-                          onPressed: () {
-                            setState(() {
-                              _isEditingFps = !_isEditingFps;
-                            });
-                          },
-                        ),
-                        if (_isEditingFps)
-                          _buildTextField(
-                            controller: _fpsController,
-                            suffix: 'fps',
-                            onChanged: _onFpsInput,
-                            autofocus: true,
-                            width: ScreenSizeService.widthPercent(context, 17),
-                          )
-                        else
-                          Text(
-                            _formatFpsFromInput(),
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontSize: 14,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                      ],
-                    ),
-                    if (_fpsError != null) _buildFieldError(_fpsError!),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -522,7 +538,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }) {
     return SizedBox(
       width: width,
-      height: 36,
+      height: 26,
       child: TextField(
         controller: controller,
         autofocus: autofocus,
@@ -531,16 +547,17 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
         textAlign: TextAlign.right,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: Colors.white,
+          fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 8,
+            horizontal: 6,
+            vertical: 2,
           ),
           suffixText: suffix,
-          suffixStyle: TextStyle(color: Colors.grey[500], fontSize: 12),
+          suffixStyle: TextStyle(color: Colors.grey[500], fontSize: 11),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(6),
             borderSide: BorderSide(color: Colors.grey[700]!),
@@ -560,7 +577,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   }
 
   Widget _buildFieldError(String message) => Padding(
-    padding: const EdgeInsets.only(top: 4),
+    padding: const EdgeInsets.only(top: 2),
     child: Text(
       message,
       style: const TextStyle(color: Colors.red, fontSize: 10),

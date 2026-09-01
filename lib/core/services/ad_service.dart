@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,18 +8,32 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdService {
   AdService._();
 
+  /// `true` para IDs de producción, o `false` para IDs de prueba.
   static bool isProd = false;
 
   static bool _initialized = false;
   static bool _isShowingAppOpenAd = false;
   static bool _isLoadingAppOpenAd = false;
-  static bool _wasInBackground = false;
-  static final _AdLifecycleObserver _lifecycleObserver = _AdLifecycleObserver();
+
+  // IDs de prueba de ads para Android
+  static const String _defaultTestBannerId =
+      'ca-app-pub-3940256099942544/6300978111';
+  static const String _defaultTestInterstitialId =
+      'ca-app-pub-3940256099942544/1033173712';
+  static const String _defaultTestRewardedId =
+      'ca-app-pub-3940256099942544/5224354917';
+  static const String _defaultTestAppOpenId =
+      'ca-app-pub-3940256099942544/9257395921';
 
   static bool get shouldLoadAds {
     final adsEnabled =
-        (dotenv.env['ads_enabled'] ?? 'true').toLowerCase() != 'false';
-    return adsEnabled && !const bool.fromEnvironment('flutter.test');
+        (dotenv.isInitialized ? (dotenv.env['ads_enabled'] ?? 'true') : 'true')
+            .toLowerCase() !=
+        'false';
+    final isTest =
+        const bool.fromEnvironment('flutter.test') ||
+        Platform.environment.containsKey('FLUTTER_TEST');
+    return adsEnabled && !isTest;
   }
 
   static RewardedAd? _rewardedAd;
@@ -27,38 +42,53 @@ class AdService {
 
   static String get bannerUnitId {
     if (!shouldLoadAds) return '';
-    return _shouldUseProdAds
-        ? dotenv.env['banner_prod'] ?? ''
-        : dotenv.env['banner_test'] ?? '';
+    if (_shouldUseProdAds) {
+      return (dotenv.isInitialized ? dotenv.env['banner_prod'] : null) ?? '';
+    }
+    final testId = dotenv.isInitialized ? dotenv.env['banner_test'] : null;
+    return (testId != null && testId.isNotEmpty)
+        ? testId
+        : _defaultTestBannerId;
   }
 
   static String get interstitialUnitId {
     if (!shouldLoadAds) return '';
-    return _shouldUseProdAds
-        ? dotenv.env['interstitial_prod'] ?? ''
-        : dotenv.env['interstitial_test'] ?? '';
+    if (_shouldUseProdAds) {
+      return (dotenv.isInitialized ? dotenv.env['interstitial_prod'] : null) ??
+          '';
+    }
+    final testId = dotenv.isInitialized
+        ? dotenv.env['interstitial_test']
+        : null;
+    return (testId != null && testId.isNotEmpty)
+        ? testId
+        : _defaultTestInterstitialId;
   }
 
   static String get rewardedUnitId {
     if (!shouldLoadAds) return '';
-    return _shouldUseProdAds
-        ? dotenv.env['rewarded_prod'] ?? ''
-        : dotenv.env['rewarded_test'] ?? '';
+    if (_shouldUseProdAds) {
+      return (dotenv.isInitialized ? dotenv.env['rewarded_prod'] : null) ?? '';
+    }
+    final testId = dotenv.isInitialized ? dotenv.env['rewarded_test'] : null;
+    return (testId != null && testId.isNotEmpty)
+        ? testId
+        : _defaultTestRewardedId;
   }
 
   static String get appOpenUnitId {
     if (!shouldLoadAds) return '';
-    return _shouldUseProdAds
-        ? dotenv.env['app_open_prod'] ?? ''
-        : dotenv.env['app_open_test'] ?? '';
+    if (_shouldUseProdAds) {
+      return (dotenv.isInitialized ? dotenv.env['app_open_prod'] : null) ?? '';
+    }
+    final testId = dotenv.isInitialized ? dotenv.env['app_open_test'] : null;
+    return (testId != null && testId.isNotEmpty)
+        ? testId
+        : _defaultTestAppOpenId;
   }
 
   static bool get _shouldUseProdAds {
-    return _isProduction || isProd;
-  }
-
-  static bool get _isProduction {
-    return const bool.fromEnvironment('dart.vm.product');
+    return isProd;
   }
 
   static Future<void> initialize() async {
@@ -68,7 +98,17 @@ class AdService {
     if (!shouldLoadAds) return;
 
     await MobileAds.instance.initialize();
-    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+
+    // Habilitar anuncios de prueba en emuladores
+    // Habilitar anuncios de prueba en emuladores y dispositivo físico
+    final configuration = RequestConfiguration(
+      testDeviceIds: <String>['EMULATOR', '92C3D2A309B4B67DE67A5F10A13F1F43'],
+    );
+    await MobileAds.instance.updateRequestConfiguration(configuration);
+
+    debugPrint(
+      'AdService initialized. Mode: ${isProd ? "PRODUCCIÓN" : "TEST / PRUEBA"}',
+    );
 
     _loadInterstitialAd();
     _loadRewardedAd();
@@ -81,10 +121,14 @@ class AdService {
     _loadAppOpenAd(showOnLoad: showOnLoad);
   }
 
+  static int _interstitialAttempts = 0;
+  static const int _maxAttempts = 3;
+
   static void _loadInterstitialAd() {
     final adUnitId = interstitialUnitId;
     if (adUnitId.isEmpty) return;
 
+    debugPrint('Loading InterstitialAd ($adUnitId)...');
     InterstitialAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
@@ -92,9 +136,16 @@ class AdService {
         onAdLoaded: (ad) {
           _interstitialAd?.dispose();
           _interstitialAd = ad;
+          _interstitialAttempts = 0;
+          debugPrint('InterstitialAd loaded successfully.');
         },
         onAdFailedToLoad: (error) {
           debugPrint('InterstitialAd failed to load: $error');
+          _interstitialAttempts++;
+          _interstitialAd = null;
+          if (_interstitialAttempts <= _maxAttempts) {
+            _loadInterstitialAd();
+          }
         },
       ),
     );
@@ -104,6 +155,7 @@ class AdService {
     final adUnitId = rewardedUnitId;
     if (adUnitId.isEmpty) return;
 
+    debugPrint('Loading RewardedAd ($adUnitId)...');
     RewardedAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
@@ -111,9 +163,10 @@ class AdService {
         onAdLoaded: (ad) {
           _rewardedAd?.dispose();
           _rewardedAd = ad;
+          debugPrint('RewardedAd loaded successfully.');
         },
         onAdFailedToLoad: (error) {
-          debugPrint('RewardedAd failed to load: $error');
+          debugPrint('RewardedAd failed to load (code ${error.code}): $error');
         },
       ),
     );
@@ -129,7 +182,7 @@ class AdService {
 
     _isLoadingAppOpenAd = true;
 
-    debugPrint('Loading AppOpenAd with unit ID: $adUnitId');
+    debugPrint('Loading AppOpenAd ($adUnitId)...');
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
@@ -145,7 +198,7 @@ class AdService {
         },
         onAdFailedToLoad: (error) {
           _isLoadingAppOpenAd = false;
-          debugPrint('AppOpenAd failed to load: $error');
+          debugPrint('AppOpenAd failed to load (code ${error.code}): $error');
         },
       ),
     );
@@ -154,35 +207,41 @@ class AdService {
   static Future<void> showInterstitialAd() async {
     final ad = _interstitialAd;
     if (ad == null) {
-      debugPrint('No interstitial ad ready');
+      debugPrint('Interstitial ad not ready, requesting load for next time.');
       _loadInterstitialAd();
       return;
     }
 
     final completer = Completer<void>();
+    _interstitialAd = null;
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _interstitialAd = null;
+      onAdDismissedFullScreenContent: (adInstance) {
+        adInstance.dispose();
         _loadInterstitialAd();
         if (!completer.isCompleted) completer.complete();
       },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _interstitialAd = null;
+      onAdFailedToShowFullScreenContent: (adInstance, error) {
+        adInstance.dispose();
         _loadInterstitialAd();
         debugPrint('InterstitialAd failed to show: $error');
         if (!completer.isCompleted) completer.complete();
       },
     );
 
-    ad.show();
+    try {
+      ad.show();
+    } catch (error) {
+      ad.dispose();
+      _loadInterstitialAd();
+      debugPrint('InterstitialAd show exception: $error');
+      if (!completer.isCompleted) completer.complete();
+    }
 
     await completer.future.timeout(
-      const Duration(seconds: 20),
+      const Duration(seconds: 10),
       onTimeout: () {
-        return;
+        debugPrint('InterstitialAd timed out');
       },
     );
   }
@@ -241,13 +300,11 @@ class AdService {
         ad.dispose();
         _appOpenAd = null;
         _isShowingAppOpenAd = false;
-        _loadAppOpenAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
         _appOpenAd = null;
         _isShowingAppOpenAd = false;
-        _loadAppOpenAd();
         debugPrint('AppOpenAd failed to show: $error');
       },
     );
@@ -262,34 +319,6 @@ class AdService {
       _isShowingAppOpenAd = false;
       debugPrint('AppOpenAd show failed: $error');
       debugPrint('$stackTrace');
-      _loadAppOpenAd();
     }
-  }
-
-  static void _handleAppLifecycleState(AppLifecycleState state) {
-    if (_isShowingAppOpenAd) return;
-
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.hidden) {
-      _wasInBackground = true;
-      return;
-    }
-
-    if (state == AppLifecycleState.resumed && _wasInBackground) {
-      _wasInBackground = false;
-      if (_appOpenAd == null) {
-        _loadAppOpenAd();
-      } else {
-        unawaited(showAppOpenAd());
-      }
-    }
-  }
-}
-
-class _AdLifecycleObserver with WidgetsBindingObserver {
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    AdService._handleAppLifecycleState(state);
   }
 }

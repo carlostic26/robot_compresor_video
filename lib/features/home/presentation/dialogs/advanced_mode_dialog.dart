@@ -27,7 +27,10 @@ class AdvancedModeDialog extends StatelessWidget {
   const AdvancedModeDialog({super.key, required this.onContinue});
 
   /// Muestra el diálogo sin esperar resultado (uso en navegación).
-  static void show(BuildContext context, {required Future<bool> Function() onContinue}) {
+  static void show(
+    BuildContext context, {
+    required Future<bool> Function() onContinue,
+  }) {
     showDialog<bool>(
       context: context,
       builder: (_) => AdvancedModeDialog(onContinue: onContinue),
@@ -60,7 +63,11 @@ class AdvancedModeDialog extends StatelessWidget {
               color: colorScheme.secondary.withValues(alpha: .15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.auto_awesome, color: colorScheme.secondary, size: 22),
+            child: Icon(
+              Icons.auto_awesome,
+              color: colorScheme.secondary,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Text(
@@ -98,11 +105,8 @@ class AdvancedModeDialog extends StatelessWidget {
             foregroundColor: colorScheme.onSecondary,
           ),
           onPressed: () async {
-            final canContinue = await onContinue();
-            if (!context.mounted) return;
-            if (canContinue) {
-              Navigator.pop(context, true);
-            }
+            Navigator.pop(context, true);
+            await onContinue();
           },
         ),
       ],

@@ -33,20 +33,25 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
     _isLoading = true;
 
-    final AnchoredAdaptiveBannerAdSize? adaptiveSize =
-        await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
+    AdSize adSize = AdSize.banner;
+    if (width > 0) {
+      final AnchoredAdaptiveBannerAdSize? adaptiveSize =
+          await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
+      if (adaptiveSize != null) {
+        adSize = adaptiveSize;
+      }
+    }
 
     if (!mounted) {
       _isLoading = false;
       return;
     }
 
-    final AdSize adSize = adaptiveSize ?? AdSize.banner;
-
     await _bannerAd?.dispose();
     _bannerAd = null;
     _isLoaded = false;
 
+    debugPrint('Loading BannerAd ($unitId)...');
     _bannerAd = BannerAd(
       adUnitId: unitId,
       size: adSize,
@@ -59,10 +64,14 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
             _isLoaded = true;
             _isLoading = false;
           });
+          debugPrint('BannerAd loaded successfully.');
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          _isLoading = false;
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+          });
           debugPrint('BannerAd failed to load: $error');
         },
       ),
@@ -81,8 +90,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
+    return Container(
+      width: _bannerAd!.size.width.toDouble(),
       height: _bannerAd!.size.height.toDouble(),
+      alignment: Alignment.center,
       child: AdWidget(ad: _bannerAd!),
     );
   }

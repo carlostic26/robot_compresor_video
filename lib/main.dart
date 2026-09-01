@@ -18,6 +18,7 @@ Future<void> main() async {
   }
 
   await setupDependencies();
+  await AdService.initialize();
 
   FlutterError.onError = (details) {
     debugPrint('Flutter framework error: ${details.exceptionAsString()}');

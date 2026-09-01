@@ -82,13 +82,7 @@ class SubirSection extends StatelessWidget {
                                       ?.copyWith(color: Colors.grey[500]),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
-                                  'Tamaño máximo: 2 GB',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(color: Colors.grey[500]),
-                                ),
+                               
                               ],
                             ),
                           ),
