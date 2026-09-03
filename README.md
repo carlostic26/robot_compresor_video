@@ -31,3 +31,5 @@ The application follows a clean architecture pattern with:
 - **Bloc**: State management and business logic
 - **Features**: Feature-based modularization (home, etc.)
 - **Core**: Common services, themes, constants and routes
+
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" uninstall com.blogspot.robotcompresorvideo

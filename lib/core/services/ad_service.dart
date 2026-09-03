@@ -9,7 +9,7 @@ class AdService {
   AdService._();
 
   /// `true` para IDs de producción, o `false` para IDs de prueba.
-  static bool isProd = false;
+  static bool isProd = true;
 
   static bool _initialized = false;
   static bool _isShowingAppOpenAd = false;

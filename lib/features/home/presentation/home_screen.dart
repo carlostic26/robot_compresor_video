@@ -43,16 +43,6 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: ScreenSizeService.heightPercent(context, 2.5)),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push(AppRoutes.tutorial),
-                  icon: const Icon(Icons.school_rounded),
-                  label: const Text('Ver Tutorial'),
-                ),
-              ),
-
-              SizedBox(height: ScreenSizeService.heightPercent(context, 2.5)),
 
               Text(
                 'Selecciona el método que mejor se adapte a tus necesidades.',
@@ -96,6 +86,17 @@ class HomeScreen extends StatelessWidget {
                           },
                         );
                       },
+                    ),
+                    SizedBox(
+                      height: ScreenSizeService.heightPercent(context, 4.5),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push(AppRoutes.tutorial),
+                        icon: const Icon(Icons.school_rounded),
+                        label: const Text('Ver Tutorial'),
+                      ),
                     ),
                   ],
                 ),
