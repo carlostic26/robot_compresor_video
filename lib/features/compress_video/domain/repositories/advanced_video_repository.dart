@@ -6,6 +6,7 @@ abstract class AdvancedVideoRepository {
   Future<AdvancedCompressionResult> compressVideoAdvanced({
     required VideoFile video,
     required AdvancedCompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   });
 
   Future<VideoFile> getExtendedMetadata(String videoPath);

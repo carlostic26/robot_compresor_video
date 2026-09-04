@@ -39,6 +39,7 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     on<LoadExtendedMetadataRequested>(_onLoadExtendedMetadataRequested);
     on<GenerateThumbnailRequested>(_onGenerateThumbnailRequested);
     on<ResetVideoRequested>(_onResetVideoRequested);
+    on<CompressionProgressUpdated>(_onCompressionProgressUpdated);
   }
   Future<void> _onPickVideoRequested(
     PickVideoRequested event,
@@ -95,12 +96,22 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
       return;
     }
 
-    emit(state.copyWith(status: VideoStatus.compressing, error: null));
+    emit(
+      state.copyWith(
+        status: VideoStatus.compressing,
+        compressionProgress: 0.0,
+        estimatedRemainingTime: null,
+        error: null,
+      ),
+    );
 
     try {
       final result = await compressVideoUseCase(
         video: video,
         config: event.config,
+        onProgress: (progress, remaining) {
+          add(CompressionProgressUpdated(progress, remaining));
+        },
       );
 
       debugPrint('COMPRESIÓN FINALIZADA');
@@ -110,6 +121,8 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
         state.copyWith(
           compressionResult: result,
           activeResult: ActiveResult.basic,
+          compressionProgress: 1.0,
+          estimatedRemainingTime: null,
           status: VideoStatus.success,
           error: null,
         ),
@@ -173,12 +186,22 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
       return;
     }
 
-    emit(state.copyWith(status: VideoStatus.compressingAdvanced, error: null));
+    emit(
+      state.copyWith(
+        status: VideoStatus.compressingAdvanced,
+        compressionProgress: 0.0,
+        estimatedRemainingTime: null,
+        error: null,
+      ),
+    );
 
     try {
       final result = await compressVideoAdvancedUseCase(
         video: video,
         config: event.config,
+        onProgress: (progress, remaining) {
+          add(CompressionProgressUpdated(progress, remaining));
+        },
       );
 
       debugPrint('COMPRESIÓN AVANZADA FINALIZADA: ${result.ffmpegCommand}');
@@ -187,6 +210,8 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
         state.copyWith(
           advancedCompressionResult: result,
           activeResult: ActiveResult.advanced,
+          compressionProgress: 1.0,
+          estimatedRemainingTime: null,
           status: VideoStatus.success,
           error: null,
         ),
@@ -197,6 +222,21 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     } catch (e) {
       debugPrint('ERROR COMPRESIÓN AVANZADA: $e');
       emit(state.copyWith(status: VideoStatus.failure, error: e.toString()));
+    }
+  }
+
+  void _onCompressionProgressUpdated(
+    CompressionProgressUpdated event,
+    Emitter<VideoState> emit,
+  ) {
+    if (state.status == VideoStatus.compressing ||
+        state.status == VideoStatus.compressingAdvanced) {
+      emit(
+        state.copyWith(
+          compressionProgress: event.progress,
+          estimatedRemainingTime: event.estimatedRemaining,
+        ),
+      );
     }
   }
 

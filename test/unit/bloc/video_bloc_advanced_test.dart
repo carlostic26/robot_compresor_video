@@ -281,6 +281,7 @@ void main() {
           () => advancedUseCase(
             video: any(named: 'video'),
             config: any(named: 'config'),
+            onProgress: any(named: 'onProgress'),
           ),
         ).thenAnswer((_) async => _advancedResult);
         when(
@@ -333,6 +334,7 @@ void main() {
           () => advancedUseCase(
             video: any(named: 'video'),
             config: any(named: 'config'),
+            onProgress: any(named: 'onProgress'),
           ),
         ).thenThrow(Exception('FFmpeg falló'));
         return _buildBloc(advancedUseCase: advancedUseCase);

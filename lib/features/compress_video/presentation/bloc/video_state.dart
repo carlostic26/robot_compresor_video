@@ -30,6 +30,12 @@ class VideoState extends Equatable {
   /// null mientras no se haya generado o si la generación falló.
   final String? thumbnailPath;
 
+  /// Progreso de la compresión actual (0.0 a 1.0).
+  final double compressionProgress;
+
+  /// Tiempo restante estimado de la compresión.
+  final Duration? estimatedRemainingTime;
+
   const VideoState({
     this.video,
     this.compressionResult,
@@ -38,6 +44,8 @@ class VideoState extends Equatable {
     this.error,
     this.thumbnailPath,
     this.activeResult = ActiveResult.none,
+    this.compressionProgress = 0.0,
+    this.estimatedRemainingTime,
   });
 
   VideoState copyWith({
@@ -48,6 +56,8 @@ class VideoState extends Equatable {
     Object? error = _unset,
     Object? thumbnailPath = _unset,
     ActiveResult? activeResult,
+    double? compressionProgress,
+    Object? estimatedRemainingTime = _unset,
   }) {
     return VideoState(
       video: identical(video, _unset) ? this.video : video as VideoFile?,
@@ -63,6 +73,10 @@ class VideoState extends Equatable {
           ? this.thumbnailPath
           : thumbnailPath as String?,
       activeResult: activeResult ?? this.activeResult,
+      compressionProgress: compressionProgress ?? this.compressionProgress,
+      estimatedRemainingTime: identical(estimatedRemainingTime, _unset)
+          ? this.estimatedRemainingTime
+          : estimatedRemainingTime as Duration?,
     );
   }
 
@@ -76,12 +90,14 @@ class VideoState extends Equatable {
 
   @override
   List<Object?> get props => [
-        video,
-        compressionResult,
-        advancedCompressionResult,
-        status,
-        error,
-        thumbnailPath,
-        activeResult,
-      ];
+    video,
+    compressionResult,
+    advancedCompressionResult,
+    status,
+    error,
+    thumbnailPath,
+    activeResult,
+    compressionProgress,
+    estimatedRemainingTime,
+  ];
 }

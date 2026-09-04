@@ -13,8 +13,13 @@ class AdvancedVideoRepositoryImpl implements AdvancedVideoRepository {
   Future<AdvancedCompressionResult> compressVideoAdvanced({
     required VideoFile video,
     required AdvancedCompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   }) {
-    return ffmpegDatasource.compress(video: video, config: config);
+    return ffmpegDatasource.compress(
+      video: video,
+      config: config,
+      onProgress: onProgress,
+    );
   }
 
   @override

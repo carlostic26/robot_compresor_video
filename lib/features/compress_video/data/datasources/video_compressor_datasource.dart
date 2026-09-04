@@ -19,57 +19,83 @@ class VideoCompressorDatasource {
   Future<CompressionResult> compress({
     required VideoFile video,
     required CompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   }) async {
-    final mediaInfo = await VideoCompress.compressVideo(
-      video.path,
-      quality: _mapQuality(config.quality),
-      deleteOrigin: config.deleteOriginal,
-    );
+    Subscription? subscription;
+    final startTime = DateTime.now();
 
-    if (mediaInfo == null || mediaInfo.path == null) {
-      throw Exception('No fue posible comprimir el video.');
+    if (onProgress != null) {
+      subscription = VideoCompress.compressProgress$.subscribe((
+        progressPercent,
+      ) {
+        final progress = (progressPercent / 100.0).clamp(0.0, 1.0);
+        Duration? remaining;
+        if (progress > 0.03 && progress < 1.0) {
+          final elapsed = DateTime.now().difference(startTime);
+          final totalMs = elapsed.inMilliseconds / progress;
+          final remainingMs = (totalMs - elapsed.inMilliseconds).round();
+          if (remainingMs > 0) {
+            remaining = Duration(milliseconds: remainingMs);
+          }
+        }
+        onProgress(progress, remaining);
+      });
     }
 
-    final tempFile = File(mediaInfo.path!);
+    try {
+      final mediaInfo = await VideoCompress.compressVideo(
+        video.path,
+        quality: _mapQuality(config.quality),
+        deleteOrigin: config.deleteOriginal,
+      );
 
-    if (!await tempFile.exists()) {
-      throw Exception('No se encontró el archivo comprimido.');
+      if (mediaInfo == null || mediaInfo.path == null) {
+        throw Exception('No fue posible comprimir el video.');
+      }
+
+      final tempFile = File(mediaInfo.path!);
+
+      if (!await tempFile.exists()) {
+        throw Exception('No se encontró el archivo comprimido.');
+      }
+
+      final directory = tempFile.parent.path;
+
+      /// video.mp4
+      final originalName = path.basename(video.path);
+
+      /// 20260721_103545
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+
+      /// compressed_20260721_103545_video.mp4
+      final newName = 'compressed_${timestamp}_$originalName';
+
+      final newPath = path.join(directory, newName);
+
+      /// Si ya existe lo eliminamos
+      final newFile = File(newPath);
+
+      if (await newFile.exists()) {
+        await newFile.delete();
+      }
+
+      /// Renombrar el archivo
+      final renamedFile = await tempFile.rename(newPath);
+
+      /// Leer metadata extendida del nuevo archivo via FFprobe
+      /// (obtiene bitrate real, fps y fecha de modificación)
+      final compressedVideo = await ffmpegDatasource.getExtendedMetadata(
+        renamedFile.path,
+      );
+
+      return CompressionResult(
+        compressedVideo: compressedVideo,
+        originalSize: video.size,
+        compressedSize: await renamedFile.length(),
+      );
+    } finally {
+      subscription?.unsubscribe();
     }
-
-    final directory = tempFile.parent.path;
-
-    /// video.mp4
-    final originalName = path.basename(video.path);
-
-    /// 20260721_103545
-    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-
-    /// compressed_20260721_103545_video.mp4
-    final newName = 'compressed_${timestamp}_$originalName';
-
-    final newPath = path.join(directory, newName);
-
-    /// Si ya existe lo eliminamos
-    final newFile = File(newPath);
-
-    if (await newFile.exists()) {
-      await newFile.delete();
-    }
-
-    /// Renombrar el archivo
-    final renamedFile = await tempFile.rename(newPath);
-
-    /// Leer metadata extendida del nuevo archivo via FFprobe
-    /// (obtiene bitrate real, fps y fecha de modificación)
-    final compressedVideo = await ffmpegDatasource.getExtendedMetadata(
-      renamedFile.path,
-    );
-
-    return CompressionResult(
-      compressedVideo: compressedVideo,
-      originalSize: video.size,
-      compressedSize: await renamedFile.length(),
-    );
   }
 
   VideoQuality _mapQuality(CompressionQuality quality) {

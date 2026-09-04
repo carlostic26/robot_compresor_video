@@ -11,7 +11,12 @@ class CompressVideoAdvancedUseCase {
   Future<AdvancedCompressionResult> call({
     required VideoFile video,
     required AdvancedCompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   }) {
-    return repository.compressVideoAdvanced(video: video, config: config);
+    return repository.compressVideoAdvanced(
+      video: video,
+      config: config,
+      onProgress: onProgress,
+    );
   }
 }

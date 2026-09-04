@@ -56,6 +56,8 @@ class ResultSection extends StatelessWidget {
                 VideoPreviewWidget(
                   thumbnailPath: state.video!.thumbnailPath,
                   mode: PreviewMode.processing,
+                  progress: state.compressionProgress,
+                  estimatedRemaining: state.estimatedRemainingTime,
                   height: ScreenSizeService.heightPercent(context, 22),
                 ),
                 const SizedBox(height: 24),
@@ -111,12 +113,15 @@ class ResultSection extends StatelessWidget {
               Stack(
                 children: [
                   VideoPreviewWidget(
-                    thumbnailPath: state.thumbnailPath ?? state.video?.thumbnailPath,
+                    thumbnailPath:
+                        state.thumbnailPath ?? state.video?.thumbnailPath,
                     originalVideoPath: state.video?.path,
                     compressedVideoPath: result.path,
                     height: ScreenSizeService.heightPercent(context, 26),
                   ),
-                  if (isGeneratingThumb && state.thumbnailPath == null && state.video?.path == null)
+                  if (isGeneratingThumb &&
+                      state.thumbnailPath == null &&
+                      state.video?.path == null)
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(

@@ -15,6 +15,8 @@ class VideoPreviewWidget extends StatelessWidget {
   final double? width;
   final double? height;
   final PreviewMode mode;
+  final double progress;
+  final Duration? estimatedRemaining;
 
   const VideoPreviewWidget({
     super.key,
@@ -24,11 +26,14 @@ class VideoPreviewWidget extends StatelessWidget {
     this.width,
     this.height,
     this.mode = PreviewMode.play,
+    this.progress = 0.0,
+    this.estimatedRemaining,
   });
 
   @override
   Widget build(BuildContext context) {
-    final canCompare = mode != PreviewMode.processing &&
+    final canCompare =
+        mode != PreviewMode.processing &&
         originalVideoPath != null &&
         compressedVideoPath != null;
 
@@ -84,7 +89,7 @@ class VideoPreviewWidget extends StatelessWidget {
             Positioned.fill(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: const _ProcessingScrim(),
+                child: _ProcessingScrim(progress: progress),
               ),
             ),
 
@@ -114,10 +119,31 @@ class VideoPreviewWidget extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  width: 42,
-                  height: 42,
-                  child: CircularProgressIndicator(strokeWidth: 3),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 76,
+                      height: 76,
+                      child: CircularProgressIndicator(
+                        value: progress > 0 ? progress.clamp(0.0, 1.0) : null,
+                        strokeWidth: 5,
+                        backgroundColor: Colors.white.withValues(alpha: 0.18),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 14),
@@ -127,18 +153,53 @@ class VideoPreviewWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
+                    fontSize: 15,
                   ),
                 ),
+
+                if (estimatedRemaining != null &&
+                    estimatedRemaining!.inSeconds > 0) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Quedan aprox. ${_formatRemaining(estimatedRemaining!)}',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ] else if (progress > 0 && progress < 1.0) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Calculando tiempo...',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ],
             ),
         ],
       ),
     );
   }
+
+  String _formatRemaining(Duration d) {
+    if (d.inHours > 0) {
+      return '${d.inHours}h ${d.inMinutes.remainder(60)}m';
+    }
+    if (d.inMinutes > 0) {
+      return '${d.inMinutes}m ${d.inSeconds.remainder(60)}s';
+    }
+    return '${d.inSeconds}s';
+  }
 }
 
 class _ProcessingScrim extends StatefulWidget {
-  const _ProcessingScrim();
+  final double progress;
+  const _ProcessingScrim({this.progress = 0.0});
 
   @override
   State<_ProcessingScrim> createState() => _ProcessingScrimState();
@@ -165,10 +226,58 @@ class _ProcessingScrimState extends State<_ProcessingScrim>
 
   @override
   Widget build(BuildContext context) {
+    final clampedProgress = widget.progress.clamp(0.0, 1.0);
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        Container(color: Colors.black.withValues(alpha: 0.28)),
+        Container(color: Colors.black.withValues(alpha: 0.32)),
+
+        // Progreso gradual horizontal en el eje X (de 0 a 100%)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: AnimatedFractionallySizedBox(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            widthFactor: clampedProgress,
+            heightFactor: 1.0,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.blueAccent.withValues(alpha: 0.20),
+                        Colors.blueAccent.withValues(alpha: 0.38),
+                      ],
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    width: 2.5,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blueAccent.withValues(alpha: 0.9),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Destello animado sobre la superficie
         AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
@@ -179,14 +288,14 @@ class _ProcessingScrimState extends State<_ProcessingScrim>
             );
           },
           child: Container(
-            width: 120,
+            width: 140,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [
                   Colors.transparent,
-                  Colors.white.withValues(alpha: 0.12),
+                  Colors.white.withValues(alpha: 0.14),
                   Colors.transparent,
                 ],
               ),

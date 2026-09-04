@@ -52,3 +52,14 @@ class GenerateThumbnailRequested extends VideoEvent {
 class ResetVideoRequested extends VideoEvent {
   const ResetVideoRequested();
 }
+
+/// Actualiza el progreso y tiempo restante de la compresión en tiempo real.
+class CompressionProgressUpdated extends VideoEvent {
+  final double progress;
+  final Duration? estimatedRemaining;
+
+  const CompressionProgressUpdated(this.progress, this.estimatedRemaining);
+
+  @override
+  List<Object?> get props => [progress, estimatedRemaining];
+}

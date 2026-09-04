@@ -59,7 +59,8 @@ class AdvancedResultSection extends StatelessWidget {
             state.video != null) {
           final sourceVideo = state.video!;
           final processingVideo = _buildProcessingDisplayVideo(sourceVideo);
-          final processingThumb = state.thumbnailPath ?? sourceVideo.thumbnailPath;
+          final processingThumb =
+              state.thumbnailPath ?? sourceVideo.thumbnailPath;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -69,6 +70,8 @@ class AdvancedResultSection extends StatelessWidget {
                   videoFile: processingVideo,
                   thumbnailPath: processingThumb,
                   previewMode: PreviewMode.processing,
+                  progress: state.compressionProgress,
+                  estimatedRemaining: state.estimatedRemainingTime,
                   onBitrateChanged: (_) {},
                   isResultLoading: true,
                 ),
@@ -83,8 +86,11 @@ class AdvancedResultSection extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.video_library_outlined,
-                    size: 64, color: Colors.grey.shade500),
+                Icon(
+                  Icons.video_library_outlined,
+                  size: 64,
+                  color: Colors.grey.shade500,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Aún no hay un video comprimido',
@@ -94,10 +100,9 @@ class AdvancedResultSection extends StatelessWidget {
                 Text(
                   'Cuando finalice la compresión\nel resultado aparecerá aquí.',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
@@ -119,9 +124,9 @@ class AdvancedResultSection extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => context
-                        .read<VideoBloc>()
-                        .add(const ResetVideoRequested()),
+                    onPressed: () => context.read<VideoBloc>().add(
+                      const ResetVideoRequested(),
+                    ),
                     icon: const Icon(Icons.add_circle_outline),
                     label: const Text('Subir otro video'),
                   ),
@@ -148,9 +153,9 @@ class AdvancedResultSection extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: (isSaving || isSaved)
                       ? null
-                      : () => context
-                          .read<VideoBloc>()
-                          .add(const SaveVideoRequested()),
+                      : () => context.read<VideoBloc>().add(
+                          const SaveVideoRequested(),
+                        ),
                   icon: isSaving
                       ? const SizedBox(
                           width: 18,
@@ -165,8 +170,8 @@ class AdvancedResultSection extends StatelessWidget {
                     isSaving
                         ? 'Guardando...'
                         : isSaved
-                            ? 'Guardado'
-                            : 'Guardar video',
+                        ? 'Guardado'
+                        : 'Guardar video',
                   ),
                 ),
               ),
@@ -178,7 +183,8 @@ class AdvancedResultSection extends StatelessWidget {
   }
 
   VideoFile _buildProcessingDisplayVideo(VideoFile source) {
-    final name = source.name.startsWith('compress_') ||
+    final name =
+        source.name.startsWith('compress_') ||
             source.name.startsWith('compressed_')
         ? source.name
         : 'compress_${source.name}';

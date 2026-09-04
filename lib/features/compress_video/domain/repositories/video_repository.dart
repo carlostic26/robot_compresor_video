@@ -8,6 +8,7 @@ abstract class VideoRepository {
   Future<CompressionResult> compressVideo({
     required VideoFile video,
     required CompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   });
 
   Future<void> saveVideo(VideoFile video);

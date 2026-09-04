@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_new/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:intl/intl.dart';
@@ -27,6 +29,7 @@ class FfmpegDatasource {
   Future<AdvancedCompressionResult> compress({
     required VideoFile video,
     required AdvancedCompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   }) async {
     final outputPath = _buildOutputPath(video.path);
 
@@ -42,7 +45,47 @@ class FfmpegDatasource {
       config: config,
     );
 
-    final session = await FFmpegKit.executeWithArguments(args);
+    final completer = Completer<FFmpegSession>();
+    final startTime = DateTime.now();
+    final totalDurationMs = video.duration.inMilliseconds;
+
+    await FFmpegKit.executeWithArgumentsAsync(
+      args,
+      (session) {
+        if (!completer.isCompleted) {
+          completer.complete(session);
+        }
+      },
+      null,
+      (statistics) {
+        if (totalDurationMs > 0 && onProgress != null) {
+          final timeMs = statistics.getTime();
+          if (timeMs > 0) {
+            final progress = (timeMs / totalDurationMs).clamp(0.0, 1.0);
+            Duration? remaining;
+            final speed = statistics.getSpeed();
+            if (speed > 0.05) {
+              final remainingMs = ((totalDurationMs - timeMs) / speed).round();
+              if (remainingMs > 0) {
+                remaining = Duration(milliseconds: remainingMs);
+              }
+            } else {
+              final elapsed = DateTime.now().difference(startTime);
+              if (progress > 0.03) {
+                final totalMs = elapsed.inMilliseconds / progress;
+                final remainingMs = (totalMs - elapsed.inMilliseconds).round();
+                if (remainingMs > 0) {
+                  remaining = Duration(milliseconds: remainingMs);
+                }
+              }
+            }
+            onProgress(progress, remaining);
+          }
+        }
+      },
+    );
+
+    final session = await completer.future;
     final returnCode = await session.getReturnCode();
 
     if (!ReturnCode.isSuccess(returnCode)) {

@@ -41,6 +41,10 @@ class AdvancedVideoInfoTable extends StatefulWidget {
   final String? originalVideoPath;
   final String? compressedVideoPath;
 
+  /// Progreso de compresión (0.0 a 1.0) y tiempo restante estimado.
+  final double progress;
+  final Duration? estimatedRemaining;
+
   const AdvancedVideoInfoTable({
     super.key,
     required this.videoFile,
@@ -52,6 +56,8 @@ class AdvancedVideoInfoTable extends StatefulWidget {
     this.finalSizeMB,
     this.originalVideoPath,
     this.compressedVideoPath,
+    this.progress = 0.0,
+    this.estimatedRemaining,
   });
 
   // Mantener compatibilidad con el parámetro anterior isSizeLoading
@@ -128,7 +134,8 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.previewMode == PreviewMode.processing ||
-            (widget.originalVideoPath != null && widget.compressedVideoPath != null) ||
+            (widget.originalVideoPath != null &&
+                widget.compressedVideoPath != null) ||
             widget.thumbnailPath != null ||
             widget.videoFile.thumbnailPath != null)
           Padding(
@@ -138,11 +145,14 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                   widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
               originalVideoPath: widget.originalVideoPath,
               compressedVideoPath: widget.compressedVideoPath,
-              height: (widget.originalVideoPath != null &&
+              height:
+                  (widget.originalVideoPath != null &&
                       widget.compressedVideoPath != null)
                   ? 240
                   : 180,
               mode: widget.previewMode,
+              progress: widget.progress,
+              estimatedRemaining: widget.estimatedRemaining,
             ),
           ),
 

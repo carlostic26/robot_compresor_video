@@ -6,17 +6,18 @@ import 'package:robot_compresor_video/features/compress_video/domain/entities/co
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/repositories/video_repository.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_storage_datasource.dart';
+
 class VideoRepositoryImpl implements VideoRepository {
   final VideoPickerDatasource pickerDatasource;
   final VideoMetadataDatasource metadataDatasource;
   final VideoCompressorDatasource compressorDatasource;
-   final VideoStorageDatasource storageDatasource;
+  final VideoStorageDatasource storageDatasource;
 
   VideoRepositoryImpl(
     this.pickerDatasource,
     this.metadataDatasource,
     this.compressorDatasource,
-      this.storageDatasource,
+    this.storageDatasource,
   );
 
   @override
@@ -34,8 +35,13 @@ class VideoRepositoryImpl implements VideoRepository {
   Future<CompressionResult> compressVideo({
     required VideoFile video,
     required CompressionConfig config,
+    void Function(double progress, Duration? estimatedRemaining)? onProgress,
   }) {
-    return compressorDatasource.compress(video: video, config: config);
+    return compressorDatasource.compress(
+      video: video,
+      config: config,
+      onProgress: onProgress,
+    );
   }
 
   @override
