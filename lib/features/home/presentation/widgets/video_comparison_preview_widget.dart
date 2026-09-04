@@ -458,20 +458,16 @@ class _VideoComparisonPreviewWidgetState
                   ),
                 ),
 
-                // Botón para resetear deslizador a 50%
+                // Botón para pantalla completa
                 IconButton(
                   icon: const Icon(
-                    Icons.vertical_split_rounded,
-                    color: Colors.white70,
-                    size: 18,
+                    Icons.fullscreen_rounded,
+                    color: Colors.white,
+                    size: 22,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _sliderValue = 0.5;
-                    });
-                  },
+                  onPressed: _openFullScreen,
                   splashRadius: 18,
-                  tooltip: 'Centrar comparador',
+                  tooltip: 'Pantalla completa',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(
                     minWidth: 28,
@@ -482,6 +478,24 @@ class _VideoComparisonPreviewWidgetState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _openFullScreen() async {
+    if (_isPlaying) {
+      await _togglePlay();
+    }
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FullScreenComparisonScreen(
+          originalVideoPath: widget.originalVideoPath,
+          compressedVideoPath: widget.compressedVideoPath,
+          initialPosition: _position,
+          initialSliderValue: _sliderValue,
+          initialIsMuted: _isMuted,
+        ),
       ),
     );
   }
@@ -532,6 +546,412 @@ class _VideoComparisonPreviewWidgetState
           color: Colors.black.withValues(alpha: 0.5),
         ),
         child: Center(child: child),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (d.inHours > 0) {
+      final hours = d.inHours.toString().padLeft(2, '0');
+      return '$hours:$minutes:$seconds';
+    }
+    return '$minutes:$seconds';
+  }
+}
+
+/// Pantalla completa inmersiva para la comparativa interactiva Antes / Después.
+class FullScreenComparisonScreen extends StatefulWidget {
+  final String originalVideoPath;
+  final String compressedVideoPath;
+  final Duration initialPosition;
+  final double initialSliderValue;
+  final bool initialIsMuted;
+
+  const FullScreenComparisonScreen({
+    super.key,
+    required this.originalVideoPath,
+    required this.compressedVideoPath,
+    this.initialPosition = Duration.zero,
+    this.initialSliderValue = 0.5,
+    this.initialIsMuted = false,
+  });
+
+  @override
+  State<FullScreenComparisonScreen> createState() =>
+      _FullScreenComparisonScreenState();
+}
+
+class _FullScreenComparisonScreenState
+    extends State<FullScreenComparisonScreen> {
+  VideoPlayerController? _controllerBefore;
+  VideoPlayerController? _controllerAfter;
+
+  bool _isInitialized = false;
+  bool _isPlaying = false;
+  late bool _isMuted;
+  late double _sliderValue;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  bool _isSeeking = false;
+  bool _showControls = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _isMuted = widget.initialIsMuted;
+    _sliderValue = widget.initialSliderValue;
+    _position = widget.initialPosition;
+    _initControllers();
+  }
+
+  Future<void> _initControllers() async {
+    try {
+      final fileBefore = File(widget.originalVideoPath);
+      final fileAfter = File(widget.compressedVideoPath);
+
+      final cBefore = VideoPlayerController.file(fileBefore);
+      final cAfter = VideoPlayerController.file(fileAfter);
+
+      _controllerBefore = cBefore;
+      _controllerAfter = cAfter;
+
+      await Future.wait([cBefore.initialize(), cAfter.initialize()]);
+
+      await cBefore.setLooping(true);
+      await cAfter.setLooping(true);
+
+      await cBefore.setVolume(_isMuted ? 0.0 : 1.0);
+      await cAfter.setVolume(0.0);
+
+      if (widget.initialPosition > Duration.zero) {
+        await Future.wait([
+          cBefore.seekTo(widget.initialPosition),
+          cAfter.seekTo(widget.initialPosition),
+        ]);
+      }
+
+      cBefore.addListener(_onControllerTick);
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _duration = cBefore.value.duration;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error inicializando pantalla completa de comparación: $e');
+    }
+  }
+
+  void _onControllerTick() {
+    if (!mounted || _controllerBefore == null || _isSeeking) return;
+
+    final pos = _controllerBefore!.value.position;
+    final isPlaying = _controllerBefore!.value.isPlaying;
+
+    if (_controllerAfter != null && _controllerAfter!.value.isInitialized) {
+      final afterPos = _controllerAfter!.value.position;
+      final drift = (pos - afterPos).inMilliseconds.abs();
+      if (drift > 200) {
+        _controllerAfter!.seekTo(pos);
+      }
+    }
+
+    setState(() {
+      _position = pos;
+      _isPlaying = isPlaying;
+    });
+  }
+
+  Future<void> _togglePlay() async {
+    if (!_isInitialized ||
+        _controllerBefore == null ||
+        _controllerAfter == null) {
+      return;
+    }
+
+    if (_isPlaying) {
+      await Future.wait([
+        _controllerBefore!.pause(),
+        _controllerAfter!.pause(),
+      ]);
+    } else {
+      final pos = _controllerBefore!.value.position;
+      await _controllerAfter!.seekTo(pos);
+      await Future.wait([_controllerBefore!.play(), _controllerAfter!.play()]);
+    }
+
+    if (mounted) {
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
+    }
+  }
+
+  Future<void> _seekTo(double valueMs) async {
+    if (!_isInitialized ||
+        _controllerBefore == null ||
+        _controllerAfter == null) {
+      return;
+    }
+
+    final target = Duration(milliseconds: valueMs.toInt());
+    await Future.wait([
+      _controllerBefore!.seekTo(target),
+      _controllerAfter!.seekTo(target),
+    ]);
+
+    if (mounted) {
+      setState(() {
+        _position = target;
+        _isSeeking = false;
+      });
+    }
+  }
+
+  Future<void> _toggleMute() async {
+    if (_controllerBefore == null) return;
+    final nextMuted = !_isMuted;
+    await _controllerBefore!.setVolume(nextMuted ? 0.0 : 1.0);
+    if (mounted) {
+      setState(() {
+        _isMuted = nextMuted;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controllerBefore?.removeListener(_onControllerTick);
+    _controllerBefore?.dispose();
+    _controllerAfter?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Video interactivo centrado ocupando el espacio disponible
+            if (_isInitialized &&
+                _controllerBefore != null &&
+                _controllerAfter != null) ...[
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showControls = !_showControls;
+                  });
+                },
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: _controllerBefore!.value.aspectRatio > 0
+                        ? _controllerBefore!.value.aspectRatio
+                        : 16 / 9,
+                    child: BeforeAfter(
+                      value: _sliderValue,
+                      onValueChanged: (v) => setState(() => _sliderValue = v),
+                      before: SizedBox.expand(
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: SizedBox(
+                            width: _controllerBefore!.value.size.width,
+                            height: _controllerBefore!.value.size.height,
+                            child: VideoPlayer(_controllerBefore!),
+                          ),
+                        ),
+                      ),
+                      after: SizedBox.expand(
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: SizedBox(
+                            width: _controllerAfter!.value.size.width,
+                            height: _controllerAfter!.value.size.height,
+                            child: VideoPlayer(_controllerAfter!),
+                          ),
+                        ),
+                      ),
+                      trackColor: Colors.white70,
+                      thumbColor: Colors.blueAccent,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Badges
+              Positioned(
+                top: 16,
+                left: 16,
+                child: _buildBadge(
+                  label: 'Antes (Original)',
+                  color: Colors.blueAccent.withValues(alpha: 0.85),
+                ),
+              ),
+              Positioned(
+                top: 16,
+                right: 16,
+                child: _buildBadge(
+                  label: 'Después (Comprimido)',
+                  color: Colors.green.withValues(alpha: 0.85),
+                ),
+              ),
+
+              // Botón central de play cuando está pausado
+              if (!_isPlaying && _showControls)
+                Center(
+                  child: GestureDetector(
+                    onTap: _togglePlay,
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.65),
+                        border: Border.all(color: Colors.white70, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 48,
+                      ),
+                    ),
+                  ),
+                ),
+            ] else
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+
+            // Barra inferior de controles
+            if (_showControls && _isInitialized)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.85),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _isPlaying
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        onPressed: _togglePlay,
+                        tooltip: _isPlaying ? 'Pausar' : 'Reproducir',
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${_formatDuration(_position)} / ${_formatDuration(_duration)}',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6,
+                            ),
+                            trackHeight: 3,
+                            activeTrackColor: Colors.blueAccent,
+                            inactiveTrackColor: Colors.white24,
+                            thumbColor: Colors.white,
+                          ),
+                          child: Slider(
+                            min: 0,
+                            max: _duration.inMilliseconds.toDouble() > 0
+                                ? _duration.inMilliseconds.toDouble()
+                                : 1.0,
+                            value: _position.inMilliseconds.toDouble().clamp(
+                              0.0,
+                              _duration.inMilliseconds.toDouble() > 0
+                                  ? _duration.inMilliseconds.toDouble()
+                                  : 1.0,
+                            ),
+                            onChangeStart: (_) => _isSeeking = true,
+                            onChanged: (v) {
+                              setState(() {
+                                _position = Duration(milliseconds: v.toInt());
+                              });
+                            },
+                            onChangeEnd: (v) => _seekTo(v),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      IconButton(
+                        icon: Icon(
+                          _isMuted
+                              ? Icons.volume_off_rounded
+                              : Icons.volume_up_rounded,
+                          color: _isMuted ? Colors.white54 : Colors.white,
+                          size: 22,
+                        ),
+                        onPressed: _toggleMute,
+                        tooltip: _isMuted ? 'Activar sonido' : 'Silenciar',
+                      ),
+                      // Botón para salir de pantalla completa (contraer)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.fullscreen_exit_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        tooltip: 'Salir de pantalla completa',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge({required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.45), blurRadius: 4),
+        ],
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }

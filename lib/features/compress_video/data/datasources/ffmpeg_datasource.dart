@@ -158,8 +158,13 @@ class FfmpegDatasource {
     // Preferir bitrate del stream de video para mayor precisión.
     // Si no está disponible, usar el bitrate total del contenedor o calcularlo a partir de peso y duración.
     final containerBitrate = int.tryParse(info.getBitrate() ?? '0') ?? 0;
-    final streamBitrate =
+    final streamBitrateFromMethod =
+        int.tryParse(videoStream.getBitrate()?.toString() ?? '0') ?? 0;
+    final streamBitrateFromProp =
         int.tryParse(_streamProp(videoStream, 'bit_rate') ?? '0') ?? 0;
+    final streamBitrate = streamBitrateFromMethod > 0
+        ? streamBitrateFromMethod
+        : streamBitrateFromProp;
     var bitrate = streamBitrate > 0 ? streamBitrate : containerBitrate;
 
     if (bitrate <= 0 && fileLength > 0 && duration.inMilliseconds > 0) {

@@ -25,21 +25,37 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
   /// Bitrate objetivo en kbps. Null si el campo es inválido.
   int? _targetBitrateKbps;
 
-  /// FPS objetivo. Null si el campo es inválido.
+  /// FPS objetivo. Null si el usuario no lo modificó (conserva el original nativo).
   int? _targetFps;
 
-  /// Indica si los valores iniciales ya fueron cargados desde el video.
-  bool _initialized = false;
+  /// Ruta del video actual para detectar cambios de archivo.
+  String? _currentVideoPath;
 
-  void _initFromVideo(VideoState state) {
-    if (_initialized) return;
+  /// Indica si el usuario editó manualmente el campo de bitrate.
+  bool _userEditedBitrate = false;
+
+  /// Indica si el usuario editó manualmente el campo de FPS.
+  bool _userEditedFps = false;
+
+  void _syncFromVideo(VideoState state) {
     final video = state.video;
     if (video == null) return;
-    // Solo inicializar cuando la metadata extendida ya esté disponible
-    if (video.bitrate > 0 || video.fps > 0) {
-      _targetBitrateKbps = video.bitrate > 0 ? video.bitrate ~/ 1000 : null;
-      _targetFps = video.fps > 0 ? video.fps.round() : null;
-      _initialized = true;
+
+    // Si cambió el archivo de video, reiniciar seguimiento de ediciones
+    if (_currentVideoPath != video.path) {
+      _currentVideoPath = video.path;
+      _userEditedBitrate = false;
+      _userEditedFps = false;
+    }
+
+    // Sincronizar bitrate por defecto si el usuario no lo ha editado
+    if (!_userEditedBitrate && video.bitrate > 0) {
+      _targetBitrateKbps = video.bitrate ~/ 1000;
+    }
+
+    // Sincronizar FPS por defecto si el usuario no lo ha editado
+    if (!_userEditedFps) {
+      _targetFps = null; // null = conservar original sin resampling
     }
   }
 
@@ -50,14 +66,15 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
     return BlocBuilder<VideoBloc, VideoState>(
       builder: (context, state) {
         final video = state.video;
-        final effectiveThumbnailPath = state.thumbnailPath ?? video?.thumbnailPath;
+        final effectiveThumbnailPath =
+            state.thumbnailPath ?? video?.thumbnailPath;
 
         if (video == null) {
           return const Center(child: Text('No hay video seleccionado'));
         }
 
-        // Inicializar valores desde el video cuando la metadata esté lista
-        _initFromVideo(state);
+        // Sincronizar dinámicamente cuando la metadata del video esté disponible/actualizada
+        _syncFromVideo(state);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -68,10 +85,16 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
                 videoFile: video,
                 thumbnailPath: effectiveThumbnailPath,
                 onBitrateChanged: (kbps) {
-                  setState(() => _targetBitrateKbps = kbps);
+                  setState(() {
+                    _userEditedBitrate = true;
+                    _targetBitrateKbps = kbps;
+                  });
                 },
                 onFpsChanged: (fps) {
-                  setState(() => _targetFps = fps);
+                  setState(() {
+                    _userEditedFps = true;
+                    _targetFps = fps;
+                  });
                 },
               ),
 
@@ -93,7 +116,7 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
 
   /// Flujo al pulsar "Comprimir":
   /// 1. Diálogo de confirmación Antes vs Después.
-  /// 2. Dispatch compresión con bitrate Y fps del usuario.
+  /// 2. Dispatch compresión con la configuración confirmada.
   Future<void> _onCompress() async {
     final video = context.read<VideoBloc>().state.video;
     if (video == null || _targetBitrateKbps == null) return;
@@ -104,15 +127,15 @@ class _AdvancedCompressorSectionState extends State<AdvancedCompressorSection> {
       builder: (_) => AdvancedCompressionDialog(
         video: video,
         targetBitrateKbps: _targetBitrateKbps!,
-        targetFps: _targetFps,
+        targetFps: _userEditedFps ? _targetFps : null,
       ),
     );
 
     if (!mounted || config == null) return;
 
-    // Paso 2: Ejecutar compresión con bitrate y fps del usuario.
+    // Paso 2: Ejecutar compresión con la configuración resultante.
     context.read<VideoBloc>().add(
-          CompressVideoAdvancedRequested(config: config),
-        );
+      CompressVideoAdvancedRequested(config: config),
+    );
   }
 }

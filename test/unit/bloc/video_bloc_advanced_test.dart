@@ -11,6 +11,7 @@ import 'package:robot_compresor_video/features/compress_video/domain/use_cases/g
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/get_extended_metadata_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/pick_video_use_case.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/use_cases/save_video_use_case.dart';
+import 'package:robot_compresor_video/features/compress_video/data/datasources/ffmpeg_command_builder.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -386,27 +387,81 @@ void main() {
 
   // ── FfmpegCommandBuilder — bitrate no hardcodeado ─────────────────────────────
 
-  group('FfmpegCommandBuilder — bitrate dinámico', () {
-    test(
-      'el bitrate proviene de AdvancedCompressionConfig, no está hardcodeado',
-      () {
-        const config1 = AdvancedCompressionConfig(targetVideoBitrate: 1200000);
-        const config2 = AdvancedCompressionConfig(targetVideoBitrate: 4000000);
-        expect(config1.targetVideoBitrate, isNot(config2.targetVideoBitrate));
-      },
-    );
+  group(
+    'FfmpegCommandBuilder — bitrate dinámico y preservación de framerate',
+    () {
+      final builder = FfmpegCommandBuilder();
 
-    test('targetVideoBitrate null no aplica filtro de bitrate', () {
-      const config = AdvancedCompressionConfig();
-      expect(config.targetVideoBitrate, isNull);
-    });
+      test(
+        'el bitrate proviene de AdvancedCompressionConfig, no está hardcodeado',
+        () {
+          const config1 = AdvancedCompressionConfig(
+            targetVideoBitrate: 1200000,
+          );
+          const config2 = AdvancedCompressionConfig(
+            targetVideoBitrate: 4000000,
+          );
+          expect(config1.targetVideoBitrate, isNot(config2.targetVideoBitrate));
+        },
+      );
 
-    test('targetVideoBitrate 1200000 bps = 1200 kbps para FFmpeg', () {
-      const bps = 1200000;
-      final kbps = (bps / 1000).round();
-      expect(kbps, 1200);
-    });
-  });
+      test('targetVideoBitrate null no aplica filtro de bitrate', () {
+        const config = AdvancedCompressionConfig();
+        expect(config.targetVideoBitrate, isNull);
+        final args = builder.build(
+          inputPath: '/tmp/in.mp4',
+          outputPath: '/tmp/out.mp4',
+          config: config,
+        );
+        expect(args.contains('-b:v'), isFalse);
+      });
+
+      test(
+        'targetVideoBitrate 1200000 bps = 1200 kbps para FFmpeg con maxrate y bufsize limpios',
+        () {
+          const config = AdvancedCompressionConfig(targetVideoBitrate: 1200000);
+          final args = builder.build(
+            inputPath: '/tmp/in.mp4',
+            outputPath: '/tmp/out.mp4',
+            config: config,
+          );
+          expect(args.contains('-b:v'), isTrue);
+          final bIndex = args.indexOf('-b:v');
+          expect(args[bIndex + 1], '1200k');
+          expect(args.contains('-minrate'), isFalse);
+          expect(args.contains('nal-hrd=cbr:force-cfr=1'), isFalse);
+        },
+      );
+
+      test(
+        'targetFps null no agrega flag -r preservando framerate original',
+        () {
+          const config = AdvancedCompressionConfig(targetVideoBitrate: 1200000);
+          final args = builder.build(
+            inputPath: '/tmp/in.mp4',
+            outputPath: '/tmp/out.mp4',
+            config: config,
+          );
+          expect(args.contains('-r'), isFalse);
+        },
+      );
+
+      test('targetFps especificado agrega flag -r con el valor objetivo', () {
+        const config = AdvancedCompressionConfig(
+          targetVideoBitrate: 1200000,
+          targetFps: 24,
+        );
+        final args = builder.build(
+          inputPath: '/tmp/in.mp4',
+          outputPath: '/tmp/out.mp4',
+          config: config,
+        );
+        expect(args.contains('-r'), isTrue);
+        final rIndex = args.indexOf('-r');
+        expect(args[rIndex + 1], '24');
+      });
+    },
+  );
 
   // ── Resultado — peso granular ─────────────────────────────────────────────────
 

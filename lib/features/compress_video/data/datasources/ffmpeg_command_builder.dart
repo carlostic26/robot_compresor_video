@@ -19,7 +19,7 @@ class FfmpegCommandBuilder {
     required AdvancedCompressionConfig config,
   }) {
     final args = <String>[
-      '-y',           // Sobreescribir sin preguntar
+      '-y', // Sobreescribir sin preguntar
       '-i', inputPath,
       '-map', '0:v:0',
     ];
@@ -27,16 +27,15 @@ class FfmpegCommandBuilder {
     if (config.targetVideoBitrate != null) {
       // Convertir bps → k (FFmpeg usa kilobits)
       final kbps = (config.targetVideoBitrate! / 1000).round();
-      args.addAll(['-b:v', '${kbps}k']);
-
-      // Control de bitrate más estricto (near-CBR).
-      // Nota: el bitrate final de archivo puede variar por audio/mux overhead.
+      final maxKbps = (kbps * 1.5).round();
       final bufKbps = (kbps * 2).clamp(500, 2000000);
       args.addAll([
-        '-minrate', '${kbps}k',
-        '-maxrate', '${kbps}k',
-        '-bufsize', '${bufKbps}k',
-        '-x264-params', 'nal-hrd=cbr:force-cfr=1',
+        '-b:v',
+        '${kbps}k',
+        '-maxrate',
+        '${maxKbps}k',
+        '-bufsize',
+        '${bufKbps}k',
       ]);
     }
 
