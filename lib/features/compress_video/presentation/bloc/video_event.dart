@@ -63,3 +63,12 @@ class CompressionProgressUpdated extends VideoEvent {
   @override
   List<Object?> get props => [progress, estimatedRemaining];
 }
+
+/// Actualiza el nombre final del video comprimido para el guardado.
+class UpdateOutputVideoName extends VideoEvent {
+  final String name;
+  const UpdateOutputVideoName(this.name);
+
+  @override
+  List<Object?> get props => [name];
+}

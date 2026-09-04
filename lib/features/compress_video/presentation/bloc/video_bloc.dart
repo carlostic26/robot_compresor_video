@@ -40,6 +40,7 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
     on<GenerateThumbnailRequested>(_onGenerateThumbnailRequested);
     on<ResetVideoRequested>(_onResetVideoRequested);
     on<CompressionProgressUpdated>(_onCompressionProgressUpdated);
+    on<UpdateOutputVideoName>(_onUpdateOutputVideoName);
   }
   Future<void> _onPickVideoRequested(
     PickVideoRequested event,
@@ -296,6 +297,45 @@ class VideoBloc extends Bloc<VideoEvent, VideoState> {
       // No es un error crítico: la UI puede funcionar con los datos básicos
       debugPrint('No se pudo cargar metadata extendida: $e');
       emit(state.copyWith(status: VideoStatus.success));
+    }
+  }
+
+  /// Actualiza el nombre personalizado del video comprimido para el guardado.
+  void _onUpdateOutputVideoName(
+    UpdateOutputVideoName event,
+    Emitter<VideoState> emit,
+  ) {
+    final trimmed = event.name.trim();
+    if (trimmed.isEmpty) return;
+
+    if (state.activeResult == ActiveResult.basic &&
+        state.compressionResult != null) {
+      final updatedVideo = state.compressionResult!.compressedVideo.copyWith(
+        name: trimmed,
+      );
+      emit(
+        state.copyWith(
+          compressionResult: CompressionResult(
+            compressedVideo: updatedVideo,
+            originalSize: state.compressionResult!.originalSize,
+            compressedSize: state.compressionResult!.compressedSize,
+          ),
+        ),
+      );
+    } else if (state.activeResult == ActiveResult.advanced &&
+        state.advancedCompressionResult != null) {
+      final updatedVideo = state.advancedCompressionResult!.compressedVideo
+          .copyWith(name: trimmed);
+      emit(
+        state.copyWith(
+          advancedCompressionResult: AdvancedCompressionResult(
+            compressedVideo: updatedVideo,
+            originalSize: state.advancedCompressionResult!.originalSize,
+            compressedSize: state.advancedCompressionResult!.compressedSize,
+            ffmpegCommand: state.advancedCompressionResult!.ffmpegCommand,
+          ),
+        ),
+      );
     }
   }
 }

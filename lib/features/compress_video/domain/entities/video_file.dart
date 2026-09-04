@@ -66,4 +66,30 @@ class VideoFile {
 
     return '${name.substring(0, visible)}...$extension';
   }
+
+  VideoFile copyWith({
+    String? path,
+    String? name,
+    int? size,
+    Duration? duration,
+    int? width,
+    int? height,
+    int? bitrate,
+    double? fps,
+    DateTime? createdAt,
+    String? thumbnailPath,
+  }) {
+    return VideoFile(
+      path: path ?? this.path,
+      name: name ?? this.name,
+      size: size ?? this.size,
+      duration: duration ?? this.duration,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      bitrate: bitrate ?? this.bitrate,
+      fps: fps ?? this.fps,
+      createdAt: createdAt ?? this.createdAt,
+      thumbnailPath: thumbnailPath ?? this.thumbnailPath,
+    );
+  }
 }

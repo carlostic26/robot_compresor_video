@@ -45,12 +45,19 @@ class AdvancedVideoInfoTable extends StatefulWidget {
   final double progress;
   final Duration? estimatedRemaining;
 
+  /// Video original para mostrar comparativas de valores previos tachados (modo resultado).
+  final VideoFile? originalVideoFile;
+
   /// Controla si se renderiza el widget de preview integrado en la parte superior.
   final bool showPreview;
+
+  /// Callback para actualizar el nombre del video en modo resultado.
+  final ValueChanged<String>? onNameChanged;
 
   const AdvancedVideoInfoTable({
     super.key,
     required this.videoFile,
+    this.originalVideoFile,
     this.thumbnailPath,
     this.previewMode = PreviewMode.play,
     required this.onBitrateChanged,
@@ -62,6 +69,7 @@ class AdvancedVideoInfoTable extends StatefulWidget {
     this.progress = 0.0,
     this.estimatedRemaining,
     this.showPreview = true,
+    this.onNameChanged,
   });
 
   // Mantener compatibilidad con el parámetro anterior isSizeLoading
@@ -76,16 +84,19 @@ class AdvancedVideoInfoTable extends StatefulWidget {
 class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   late final TextEditingController _bitrateController;
   late final TextEditingController _fpsController;
+  late final TextEditingController _nameController;
   bool _bitrateTouched = false;
   bool _fpsTouched = false;
   bool _isEditingBitrate = false;
   bool _isEditingFps = false;
+  bool _isEditingName = false;
 
   @override
   void initState() {
     super.initState();
     _bitrateController = TextEditingController();
     _fpsController = TextEditingController();
+    _nameController = TextEditingController(text: widget.videoFile.name);
     _syncDefaultValues(force: true);
   }
 
@@ -93,12 +104,16 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
   void didUpdateWidget(covariant AdvancedVideoInfoTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncDefaultValues();
+    if (oldWidget.videoFile.name != widget.videoFile.name && !_isEditingName) {
+      _nameController.text = widget.videoFile.name;
+    }
   }
 
   @override
   void dispose() {
     _bitrateController.dispose();
     _fpsController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -194,12 +209,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
           ),
           child: Column(
             children: [
-              _buildRow(
-                context,
-                icon: Icons.description_outlined,
-                label: 'Nombre',
-                value: widget.videoFile.shortName,
-              ),
+              _buildNameRow(context),
               _buildDivider(),
               _buildRow(
                 context,
@@ -231,6 +241,157 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNameRow(BuildContext context) {
+    final canEdit = widget.onNameChanged != null;
+
+    return SizedBox(
+      height: 38,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.description_outlined,
+              color: Colors.blue,
+              size: 18,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Nombre',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
+                  ),
+                  if (widget.isResultLoading)
+                    const LoadingPlaceholderWidget(width: 80, height: 14)
+                  else if (canEdit)
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _isEditingName
+                                  ? Icons.check
+                                  : Icons.edit_outlined,
+                              size: 16,
+                            ),
+                            color: _isEditingName
+                                ? Colors.greenAccent
+                                : Colors.blue,
+                            splashRadius: 16,
+                            constraints: const BoxConstraints(),
+                            padding: const EdgeInsets.only(right: 6),
+                            onPressed: () {
+                              setState(() {
+                                if (_isEditingName) {
+                                  widget.onNameChanged?.call(
+                                    _nameController.text.trim(),
+                                  );
+                                  _isEditingName = false;
+                                } else {
+                                  _isEditingName = true;
+                                }
+                              });
+                            },
+                          ),
+                          if (_isEditingName)
+                            Flexible(
+                              child: SizedBox(
+                                height: 26,
+                                child: TextField(
+                                  controller: _nameController,
+                                  autofocus: true,
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (val) {
+                                    setState(() {
+                                      widget.onNameChanged?.call(val.trim());
+                                      _isEditingName = false;
+                                    });
+                                  },
+                                  onChanged: (val) {
+                                    widget.onNameChanged?.call(val.trim());
+                                  },
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[700]!,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey[700]!,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                      borderSide: const BorderSide(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Flexible(
+                              child: Text(
+                                widget.videoFile.shortName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: Text(
+                        widget.videoFile.shortName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -306,16 +467,13 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                     const LoadingPlaceholderWidget(width: 80, height: 14)
                   else
                     Flexible(
-                      child: Text(
-                        '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 14,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: _buildComparisonText(
+                        context,
+                        previousValue: widget.originalVideoFile != null
+                            ? '${widget.originalVideoFile!.sizeMB.toStringAsFixed(2)} MB'
+                            : null,
+                        currentValue:
+                            '${(widget.finalSizeMB ?? widget.videoFile.sizeMB).toStringAsFixed(2)} MB',
                       ),
                     ),
                 ],
@@ -354,17 +512,16 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                       const LoadingPlaceholderWidget(width: 80, height: 14)
                     else
                       Flexible(
-                        child: Text(
-                          _formatBitrate(widget.videoFile.bitrate),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontSize: 14,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
+                        child: _buildComparisonText(
+                          context,
+                          previousValue: widget.originalVideoFile != null
+                              ? _formatBitrate(
+                                  widget.originalVideoFile!.bitrate,
+                                )
+                              : null,
+                          currentValue: _formatBitrate(
+                            widget.videoFile.bitrate,
+                          ),
                         ),
                       ),
                   ],
@@ -466,17 +623,12 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
                       const LoadingPlaceholderWidget(width: 80, height: 14)
                     else
                       Flexible(
-                        child: Text(
-                          _formatFps(widget.videoFile.fps),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontSize: 14,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
+                        child: _buildComparisonText(
+                          context,
+                          previousValue: widget.originalVideoFile != null
+                              ? _formatFps(widget.originalVideoFile!.fps)
+                              : null,
+                          currentValue: _formatFps(widget.videoFile.fps),
                         ),
                       ),
                   ],
@@ -642,7 +794,6 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
 
   String _formatBitrate(int bps) {
     if (bps <= 0) return '--';
-    if (bps >= 1000000) return '${(bps / 1000000).toStringAsFixed(1)} Mbps';
     return '${bps ~/ 1000} kbps';
   }
 
@@ -650,5 +801,67 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     if (fps <= 0) return '--';
     if (fps == fps.roundToDouble()) return '${fps.round()} fps';
     return '${fps.toStringAsFixed(2)} fps';
+  }
+
+  Widget _buildComparisonText(
+    BuildContext context, {
+    String? previousValue,
+    required String currentValue,
+  }) {
+    final hasDifference =
+        previousValue != null &&
+        previousValue.isNotEmpty &&
+        previousValue != '--' &&
+        previousValue != currentValue;
+
+    if (hasDifference) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: previousValue,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 12,
+                color: Colors.grey[500],
+                decoration: TextDecoration.lineThrough,
+                decorationColor: Colors.grey[400],
+                decorationThickness: 1.5,
+              ),
+            ),
+            TextSpan(
+              text: ' → ',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue.shade400,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextSpan(
+              text: currentValue,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.end,
+      );
+    }
+
+    return Text(
+      currentValue,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.end,
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        fontSize: 14,
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
+      ),
+    );
   }
 }

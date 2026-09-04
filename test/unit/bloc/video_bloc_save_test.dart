@@ -14,11 +14,19 @@ import 'package:robot_compresor_video/features/compress_video/domain/use_cases/s
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 
 class MockPickVideoUseCase extends Mock implements PickVideoUseCase {}
+
 class MockCompressVideoUseCase extends Mock implements CompressVideoUseCase {}
+
 class MockSaveVideoUseCase extends Mock implements SaveVideoUseCase {}
-class MockCompressVideoAdvancedUseCase extends Mock implements CompressVideoAdvancedUseCase {}
-class MockGetExtendedMetadataUseCase extends Mock implements GetExtendedMetadataUseCase {}
-class MockGenerateThumbnailUseCase extends Mock implements GenerateThumbnailUseCase {}
+
+class MockCompressVideoAdvancedUseCase extends Mock
+    implements CompressVideoAdvancedUseCase {}
+
+class MockGetExtendedMetadataUseCase extends Mock
+    implements GetExtendedMetadataUseCase {}
+
+class MockGenerateThumbnailUseCase extends Mock
+    implements GenerateThumbnailUseCase {}
 
 const _compressedVideo = VideoFile(
   path: '/tmp/compr_video.mp4',
@@ -38,9 +46,7 @@ const _compressionResult = CompressionResult(
   compressedSize: 512 * 1024,
 );
 
-VideoBloc _buildBloc({
-  MockSaveVideoUseCase? saveUseCase,
-}) {
+VideoBloc _buildBloc({MockSaveVideoUseCase? saveUseCase}) {
   return VideoBloc(
     pickVideoUseCase: MockPickVideoUseCase(),
     compressVideoUseCase: MockCompressVideoUseCase(),
@@ -113,8 +119,7 @@ void main() {
       'emite saving → failure cuando el datasource lanza excepción',
       build: () {
         final saveUseCase = MockSaveVideoUseCase();
-        when(() => saveUseCase(any()))
-            .thenThrow(Exception('Permiso denegado'));
+        when(() => saveUseCase(any())).thenThrow(Exception('Permiso denegado'));
         return _buildBloc(saveUseCase: saveUseCase);
       },
       seed: () => const VideoState(
@@ -160,6 +165,39 @@ void main() {
         status: VideoStatus.saved,
       ),
       act: (bloc) => bloc.add(const SaveVideoRequested()),
+      expect: () => [],
+    );
+  });
+
+  group('VideoBloc — UpdateOutputVideoName', () {
+    blocTest<VideoBloc, VideoState>(
+      'actualiza el nombre del compressedVideo en modo básico',
+      build: _buildBloc,
+      seed: () => const VideoState(
+        compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
+        status: VideoStatus.success,
+      ),
+      act: (bloc) =>
+          bloc.add(const UpdateOutputVideoName('mi_video_final.mp4')),
+      expect: () => [
+        isA<VideoState>().having(
+          (s) => s.compressionResult?.compressedVideo.name,
+          'name',
+          'mi_video_final.mp4',
+        ),
+      ],
+    );
+
+    blocTest<VideoBloc, VideoState>(
+      'ignora nombres vacíos o solo espacios',
+      build: _buildBloc,
+      seed: () => const VideoState(
+        compressionResult: _compressionResult,
+        activeResult: ActiveResult.basic,
+        status: VideoStatus.success,
+      ),
+      act: (bloc) => bloc.add(const UpdateOutputVideoName('   ')),
       expect: () => [],
     );
   });

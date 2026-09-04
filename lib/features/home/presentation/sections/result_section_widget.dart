@@ -193,7 +193,11 @@ class ResultSection extends StatelessWidget {
 
               VideoInfoTableWidget(
                 videoFile: videoWithThumb,
+                originalVideoFile: state.video,
                 thumbnailPath: state.thumbnailPath,
+                onNameChanged: (newName) {
+                  context.read<VideoBloc>().add(UpdateOutputVideoName(newName));
+                },
               ),
             ],
           ),

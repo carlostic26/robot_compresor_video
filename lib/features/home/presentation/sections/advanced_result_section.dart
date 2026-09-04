@@ -182,8 +182,12 @@ class AdvancedResultSection extends StatelessWidget {
               // finalSizeMB fuerza mostrar el peso real (no shimmer).
               AdvancedVideoInfoTable(
                 videoFile: compressedVideo,
+                originalVideoFile: state.video,
                 thumbnailPath: state.thumbnailPath,
                 onBitrateChanged: (_) {},
+                onNameChanged: (newName) {
+                  context.read<VideoBloc>().add(UpdateOutputVideoName(newName));
+                },
                 finalSizeMB: compressedVideo.sizeMB,
                 showPreview: false,
               ),
@@ -196,8 +200,7 @@ class AdvancedResultSection extends StatelessWidget {
 
   VideoFile _buildProcessingDisplayVideo(VideoFile source) {
     final name =
-        source.name.startsWith('compress_') ||
-            source.name.startsWith('compr_')
+        source.name.startsWith('compress_') || source.name.startsWith('compr_')
         ? source.name
         : 'compress_${source.name}';
 

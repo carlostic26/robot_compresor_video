@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_compressor_datasource.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_metadata_datasource.dart';
 import 'package:robot_compresor_video/features/compress_video/data/datasources/video_picker_datasource.dart';
@@ -45,7 +47,43 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<void> saveVideo(VideoFile video) {
-    return storageDatasource.saveVideo(video.path);
+  Future<void> saveVideo(VideoFile video) async {
+    final originalFile = File(video.path);
+    if (!await originalFile.exists()) {
+      return storageDatasource.saveVideo(video.path);
+    }
+
+    final currentDiskName = originalFile.uri.pathSegments.isNotEmpty
+        ? originalFile.uri.pathSegments.last
+        : '';
+    String targetName = video.name.trim();
+
+    if (targetName.isEmpty || targetName == currentDiskName) {
+      return storageDatasource.saveVideo(video.path);
+    }
+
+    // Asegurar que conserve la extensión de video
+    if (!targetName.contains('.')) {
+      final ext = currentDiskName.contains('.')
+          ? currentDiskName.split('.').last
+          : 'mp4';
+      targetName = '$targetName.$ext';
+    }
+
+    final targetPath = '${originalFile.parent.path}/$targetName';
+    if (targetPath == video.path) {
+      return storageDatasource.saveVideo(video.path);
+    }
+
+    final renamedFile = await originalFile.copy(targetPath);
+    try {
+      await storageDatasource.saveVideo(renamedFile.path);
+    } finally {
+      if (await renamedFile.exists()) {
+        try {
+          await renamedFile.delete();
+        } catch (_) {}
+      }
+    }
   }
 }
