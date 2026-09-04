@@ -39,8 +39,8 @@ class MockGenerateThumbnailUseCase extends Mock
 final _processedAt = DateTime(2026, 7, 29, 10, 35, 0);
 
 const _compressedVideo = VideoFile(
-  path: '/tmp/compressed_video.mp4',
-  name: 'compressed_video.mp4',
+  path: '/tmp/compr_video.mp4',
+  name: 'compr_video.mp4',
   size: 512 * 1024,
   duration: Duration(seconds: 30),
   width: 1920,

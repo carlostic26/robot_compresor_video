@@ -45,6 +45,9 @@ class AdvancedVideoInfoTable extends StatefulWidget {
   final double progress;
   final Duration? estimatedRemaining;
 
+  /// Controla si se renderiza el widget de preview integrado en la parte superior.
+  final bool showPreview;
+
   const AdvancedVideoInfoTable({
     super.key,
     required this.videoFile,
@@ -58,6 +61,7 @@ class AdvancedVideoInfoTable extends StatefulWidget {
     this.compressedVideoPath,
     this.progress = 0.0,
     this.estimatedRemaining,
+    this.showPreview = true,
   });
 
   // Mantener compatibilidad con el parámetro anterior isSizeLoading
@@ -133,11 +137,12 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.previewMode == PreviewMode.processing ||
-            (widget.originalVideoPath != null &&
-                widget.compressedVideoPath != null) ||
-            widget.thumbnailPath != null ||
-            widget.videoFile.thumbnailPath != null)
+        if (widget.showPreview &&
+            (widget.previewMode == PreviewMode.processing ||
+                (widget.originalVideoPath != null &&
+                    widget.compressedVideoPath != null) ||
+                widget.thumbnailPath != null ||
+                widget.videoFile.thumbnailPath != null))
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: VideoPreviewWidget(
@@ -156,7 +161,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
             ),
           ),
 
-        Padding(
+        /* Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'Información del vídeo',
@@ -164,7 +169,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
               context,
             ).textTheme.titleLarge?.copyWith(color: Colors.blue, fontSize: 16),
           ),
-        ),
+        ), */
         if (isEditable)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),

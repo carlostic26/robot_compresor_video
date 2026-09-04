@@ -7,8 +7,8 @@ import 'package:robot_compresor_video/features/compress_video/domain/use_cases/s
 class MockVideoRepository extends Mock implements VideoRepository {}
 
 const _testVideo = VideoFile(
-  path: '/tmp/compressed_video.mp4',
-  name: 'compressed_video.mp4',
+  path: '/tmp/compr_video.mp4',
+  name: 'compr_video.mp4',
   size: 1024 * 1024,
   duration: Duration(seconds: 10),
   width: 1920,

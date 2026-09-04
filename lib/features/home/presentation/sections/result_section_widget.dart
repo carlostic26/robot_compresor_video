@@ -143,14 +143,7 @@ class ResultSection extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 24),
-
-              VideoInfoTableWidget(
-                videoFile: videoWithThumb,
-                thumbnailPath: state.thumbnailPath,
-              ),
-
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Botón Guardar video
               SizedBox(
@@ -195,6 +188,13 @@ class ResultSection extends StatelessWidget {
                   ),
                 ),
               ],
+
+              const SizedBox(height: 24),
+
+              VideoInfoTableWidget(
+                videoFile: videoWithThumb,
+                thumbnailPath: state.thumbnailPath,
+              ),
             ],
           ),
         );

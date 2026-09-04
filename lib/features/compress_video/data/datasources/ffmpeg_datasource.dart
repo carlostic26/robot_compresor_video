@@ -273,7 +273,7 @@ class FfmpegDatasource {
   String _buildOutputPath(String inputPath) {
     final dir = path.dirname(inputPath);
     final originalName = path.basename(inputPath);
-    return path.join(dir, 'compressed_$originalName');
+    return path.join(dir, 'compr_$originalName');
   }
 
   double _extractFps(dynamic videoStream, Duration duration) {

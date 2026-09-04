@@ -67,8 +67,8 @@ class VideoCompressorDatasource {
       /// 20260721_103545
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
 
-      /// compressed_20260721_103545_video.mp4
-      final newName = 'compressed_${timestamp}_$originalName';
+      /// compr_20260721_103545_video.mp4
+      final newName = 'compr_${timestamp}_$originalName';
 
       final newPath = path.join(directory, newName);
 

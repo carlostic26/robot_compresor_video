@@ -21,8 +21,8 @@ class MockGetExtendedMetadataUseCase extends Mock implements GetExtendedMetadata
 class MockGenerateThumbnailUseCase extends Mock implements GenerateThumbnailUseCase {}
 
 const _compressedVideo = VideoFile(
-  path: '/tmp/compressed_video.mp4',
-  name: 'compressed_video.mp4',
+  path: '/tmp/compr_video.mp4',
+  name: 'compr_video.mp4',
   size: 512 * 1024,
   duration: Duration(seconds: 10),
   width: 1920,

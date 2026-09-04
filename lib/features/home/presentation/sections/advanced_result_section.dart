@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/features/compress_video/domain/entities/video_file.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/advanced_video_info_table.dart';
@@ -120,34 +121,18 @@ class AdvancedResultSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              if (isSaved) ...[
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.read<VideoBloc>().add(
-                      const ResetVideoRequested(),
-                    ),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('Subir otro video'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // Tabla con valores reales del archivo comprimido.
-              // Tabla con valores reales del archivo comprimido y preview comparativo.
-              // finalSizeMB fuerza mostrar el peso real (no shimmer).
-              AdvancedVideoInfoTable(
-                videoFile: compressedVideo,
-                thumbnailPath: state.thumbnailPath,
+              // Preview interactivo Antes / Después
+              VideoPreviewWidget(
+                thumbnailPath:
+                    state.thumbnailPath ?? compressedVideo.thumbnailPath,
                 originalVideoPath: state.video?.path,
                 compressedVideoPath: compressedVideo.path,
-                onBitrateChanged: (_) {},
-                finalSizeMB: compressedVideo.sizeMB,
+                height: ScreenSizeService.heightPercent(context, 26),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
+              // Botón Guardar video
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -175,6 +160,33 @@ class AdvancedResultSection extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Botón "Subir otro video" — solo visible tras guardado exitoso
+              if (isSaved) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.read<VideoBloc>().add(
+                      const ResetVideoRequested(),
+                    ),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Subir otro video'),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Tabla con valores reales del archivo comprimido.
+              // finalSizeMB fuerza mostrar el peso real (no shimmer).
+              AdvancedVideoInfoTable(
+                videoFile: compressedVideo,
+                thumbnailPath: state.thumbnailPath,
+                onBitrateChanged: (_) {},
+                finalSizeMB: compressedVideo.sizeMB,
+                showPreview: false,
+              ),
             ],
           ),
         );
@@ -185,7 +197,7 @@ class AdvancedResultSection extends StatelessWidget {
   VideoFile _buildProcessingDisplayVideo(VideoFile source) {
     final name =
         source.name.startsWith('compress_') ||
-            source.name.startsWith('compressed_')
+            source.name.startsWith('compr_')
         ? source.name
         : 'compress_${source.name}';
 
