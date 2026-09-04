@@ -37,6 +37,10 @@ class AdvancedVideoInfoTable extends StatefulWidget {
   /// Tamaño final real del archivo (MB). Null mientras no esté disponible.
   final double? finalSizeMB;
 
+  /// Rutas de video para el modo comparativa Antes / Después.
+  final String? originalVideoPath;
+  final String? compressedVideoPath;
+
   const AdvancedVideoInfoTable({
     super.key,
     required this.videoFile,
@@ -46,6 +50,8 @@ class AdvancedVideoInfoTable extends StatefulWidget {
     this.onFpsChanged,
     this.isResultLoading = false,
     this.finalSizeMB,
+    this.originalVideoPath,
+    this.compressedVideoPath,
   });
 
   // Mantener compatibilidad con el parámetro anterior isSizeLoading
@@ -122,6 +128,7 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.previewMode == PreviewMode.processing ||
+            (widget.originalVideoPath != null && widget.compressedVideoPath != null) ||
             widget.thumbnailPath != null ||
             widget.videoFile.thumbnailPath != null)
           Padding(
@@ -129,7 +136,12 @@ class _AdvancedVideoInfoTableState extends State<AdvancedVideoInfoTable> {
             child: VideoPreviewWidget(
               thumbnailPath:
                   widget.thumbnailPath ?? widget.videoFile.thumbnailPath,
-              height: 180,
+              originalVideoPath: widget.originalVideoPath,
+              compressedVideoPath: widget.compressedVideoPath,
+              height: (widget.originalVideoPath != null &&
+                      widget.compressedVideoPath != null)
+                  ? 240
+                  : 180,
               mode: widget.previewMode,
             ),
           ),

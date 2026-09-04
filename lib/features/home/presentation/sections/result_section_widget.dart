@@ -107,14 +107,16 @@ class ResultSection extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Preview con thumbnail real (o placeholder si aún se genera)
+              // Preview interactivo Antes / Después (con thumbnail como fallback)
               Stack(
                 children: [
                   VideoPreviewWidget(
-                    thumbnailPath: state.thumbnailPath,
-                    height: ScreenSizeService.heightPercent(context, 22),
+                    thumbnailPath: state.thumbnailPath ?? state.video?.thumbnailPath,
+                    originalVideoPath: state.video?.path,
+                    compressedVideoPath: result.path,
+                    height: ScreenSizeService.heightPercent(context, 26),
                   ),
-                  if (isGeneratingThumb)
+                  if (isGeneratingThumb && state.thumbnailPath == null && state.video?.path == null)
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(

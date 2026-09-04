@@ -2,11 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'video_comparison_preview_widget.dart';
+
 enum PreviewMode { play, processing }
 
 /// Widget que muestra la miniatura del video.
+/// Widget que muestra la miniatura del video o la comparativa Antes / Después.
 class VideoPreviewWidget extends StatelessWidget {
   final String? thumbnailPath;
+  final String? originalVideoPath;
+  final String? compressedVideoPath;
   final double? width;
   final double? height;
   final PreviewMode mode;
@@ -14,6 +19,8 @@ class VideoPreviewWidget extends StatelessWidget {
   const VideoPreviewWidget({
     super.key,
     required this.thumbnailPath,
+    this.originalVideoPath,
+    this.compressedVideoPath,
     this.width,
     this.height,
     this.mode = PreviewMode.play,
@@ -21,6 +28,20 @@ class VideoPreviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canCompare = mode != PreviewMode.processing &&
+        originalVideoPath != null &&
+        compressedVideoPath != null;
+
+    if (canCompare) {
+      return VideoComparisonPreviewWidget(
+        originalVideoPath: originalVideoPath!,
+        compressedVideoPath: compressedVideoPath!,
+        thumbnailPath: thumbnailPath,
+        width: width,
+        height: height,
+      );
+    }
+
     final hasThumbnail =
         thumbnailPath != null && File(thumbnailPath!).existsSync();
 

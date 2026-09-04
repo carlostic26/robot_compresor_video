@@ -130,10 +130,13 @@ class AdvancedResultSection extends StatelessWidget {
               ],
 
               // Tabla con valores reales del archivo comprimido.
+              // Tabla con valores reales del archivo comprimido y preview comparativo.
               // finalSizeMB fuerza mostrar el peso real (no shimmer).
               AdvancedVideoInfoTable(
                 videoFile: compressedVideo,
                 thumbnailPath: state.thumbnailPath,
+                originalVideoPath: state.video?.path,
+                compressedVideoPath: compressedVideo.path,
                 onBitrateChanged: (_) {},
                 finalSizeMB: compressedVideo.sizeMB,
               ),
