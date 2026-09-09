@@ -9,11 +9,12 @@ class AdService {
   AdService._();
 
   /// `true` para IDs de producción, o `false` para IDs de prueba.
-  static bool isProd = false;
+  static bool isProd = true;
 
   static bool _initialized = false;
-  static bool _isShowingAppOpenAd = false;
-  static bool _isLoadingAppOpenAd = false;
+  static bool _isShowingFullScreenAd = false;
+  static DateTime? _lastAdDismissedTime;
+  static AppLifecycleListener? _appLifecycleListener;
 
   // IDs de prueba de ads para Android
   static const String _defaultTestBannerId =
@@ -39,6 +40,10 @@ class AdService {
   static RewardedAd? _rewardedAd;
   static InterstitialAd? _interstitialAd;
   static AppOpenAd? _appOpenAd;
+
+  static Completer<InterstitialAd?>? _interstitialLoadCompleter;
+  static Completer<AppOpenAd?>? _appOpenLoadCompleter;
+  static Completer<RewardedAd?>? _rewardedLoadCompleter;
 
   static String get bannerUnitId {
     if (!shouldLoadAds) return '';
@@ -99,7 +104,6 @@ class AdService {
 
     await MobileAds.instance.initialize();
 
-    // Habilitar anuncios de prueba en emuladores
     // Habilitar anuncios de prueba en emuladores y dispositivo físico
     final configuration = RequestConfiguration(
       testDeviceIds: <String>['EMULATOR', '92C3D2A309B4B67DE67A5F10A13F1F43'],
@@ -110,15 +114,31 @@ class AdService {
       'AdService initialized. Mode: ${isProd ? "PRODUCCIÓN" : "TEST / PRUEBA"}',
     );
 
+    _startAppLifecycleReactor();
+
+    // Precargar anuncios en paralelo desde el arranque
     _loadInterstitialAd();
     _loadRewardedAd();
+    _loadAppOpenAd();
+  }
+
+  static void _startAppLifecycleReactor() {
+    _appLifecycleListener?.dispose();
+    _appLifecycleListener = AppLifecycleListener(
+      onResume: () {
+        debugPrint('AdService: onResume -> intentando mostrar AppOpenAd');
+        unawaited(showAppOpenAd());
+      },
+    );
   }
 
   static Future<void> initializeAndLoadAppOpenAd({
     bool showOnLoad = true,
   }) async {
     await initialize();
-    _loadAppOpenAd(showOnLoad: showOnLoad);
+    if (showOnLoad) {
+      await showAppOpenAd();
+    }
   }
 
   static int _interstitialAttempts = 0;
@@ -127,7 +147,13 @@ class AdService {
   static void _loadInterstitialAd() {
     final adUnitId = interstitialUnitId;
     if (adUnitId.isEmpty) return;
+    if (_interstitialAd != null) return;
+    if (_interstitialLoadCompleter != null &&
+        !_interstitialLoadCompleter!.isCompleted) {
+      return;
+    }
 
+    _interstitialLoadCompleter = Completer<InterstitialAd?>();
     debugPrint('Loading InterstitialAd ($adUnitId)...');
     InterstitialAd.load(
       adUnitId: adUnitId,
@@ -138,11 +164,19 @@ class AdService {
           _interstitialAd = ad;
           _interstitialAttempts = 0;
           debugPrint('InterstitialAd loaded successfully.');
+          if (_interstitialLoadCompleter != null &&
+              !_interstitialLoadCompleter!.isCompleted) {
+            _interstitialLoadCompleter!.complete(ad);
+          }
         },
         onAdFailedToLoad: (error) {
           debugPrint('InterstitialAd failed to load: $error');
           _interstitialAttempts++;
           _interstitialAd = null;
+          if (_interstitialLoadCompleter != null &&
+              !_interstitialLoadCompleter!.isCompleted) {
+            _interstitialLoadCompleter!.complete(null);
+          }
           if (_interstitialAttempts <= _maxAttempts) {
             _loadInterstitialAd();
           }
@@ -154,7 +188,13 @@ class AdService {
   static void _loadRewardedAd() {
     final adUnitId = rewardedUnitId;
     if (adUnitId.isEmpty) return;
+    if (_rewardedAd != null) return;
+    if (_rewardedLoadCompleter != null &&
+        !_rewardedLoadCompleter!.isCompleted) {
+      return;
+    }
 
+    _rewardedLoadCompleter = Completer<RewardedAd?>();
     debugPrint('Loading RewardedAd ($adUnitId)...');
     RewardedAd.load(
       adUnitId: adUnitId,
@@ -164,65 +204,119 @@ class AdService {
           _rewardedAd?.dispose();
           _rewardedAd = ad;
           debugPrint('RewardedAd loaded successfully.');
+          if (_rewardedLoadCompleter != null &&
+              !_rewardedLoadCompleter!.isCompleted) {
+            _rewardedLoadCompleter!.complete(ad);
+          }
         },
         onAdFailedToLoad: (error) {
           debugPrint('RewardedAd failed to load (code ${error.code}): $error');
+          _rewardedAd = null;
+          if (_rewardedLoadCompleter != null &&
+              !_rewardedLoadCompleter!.isCompleted) {
+            _rewardedLoadCompleter!.complete(null);
+          }
         },
       ),
     );
   }
 
-  static void _loadAppOpenAd({bool showOnLoad = false}) {
+  static void _loadAppOpenAd() {
     final adUnitId = appOpenUnitId;
     if (adUnitId.isEmpty) {
       debugPrint('AppOpenAd unit ID is empty. Skipping load.');
       return;
     }
-    if (_isLoadingAppOpenAd || _appOpenAd != null) return;
+    if (_appOpenAd != null) return;
+    if (_appOpenLoadCompleter != null && !_appOpenLoadCompleter!.isCompleted) {
+      return;
+    }
 
-    _isLoadingAppOpenAd = true;
-
+    _appOpenLoadCompleter = Completer<AppOpenAd?>();
     debugPrint('Loading AppOpenAd ($adUnitId)...');
     AppOpenAd.load(
       adUnitId: adUnitId,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
-          _isLoadingAppOpenAd = false;
           _appOpenAd?.dispose();
           _appOpenAd = ad;
           debugPrint('AppOpenAd loaded successfully.');
-          if (showOnLoad) {
-            unawaited(showAppOpenAd());
+          if (_appOpenLoadCompleter != null &&
+              !_appOpenLoadCompleter!.isCompleted) {
+            _appOpenLoadCompleter!.complete(ad);
           }
         },
         onAdFailedToLoad: (error) {
-          _isLoadingAppOpenAd = false;
           debugPrint('AppOpenAd failed to load (code ${error.code}): $error');
+          _appOpenAd = null;
+          if (_appOpenLoadCompleter != null &&
+              !_appOpenLoadCompleter!.isCompleted) {
+            _appOpenLoadCompleter!.complete(null);
+          }
         },
       ),
     );
   }
 
-  static Future<void> showInterstitialAd() async {
-    final ad = _interstitialAd;
-    if (ad == null) {
-      debugPrint('Interstitial ad not ready, requesting load for next time.');
-      _loadInterstitialAd();
+  static Future<void> showInterstitialAd({
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    if (_isShowingFullScreenAd) {
+      debugPrint(
+        'Another full screen ad is already showing. Skipping interstitial.',
+      );
       return;
     }
 
-    final completer = Completer<void>();
+    if (!shouldLoadAds) return;
+
+    if (_interstitialAd == null) {
+      if (_interstitialLoadCompleter != null &&
+          !_interstitialLoadCompleter!.isCompleted) {
+        debugPrint(
+          'InterstitialAd is currently loading. Awaiting (timeout: ${timeout.inSeconds}s)...',
+        );
+        try {
+          await _interstitialLoadCompleter!.future.timeout(
+            timeout,
+            onTimeout: () {
+              debugPrint('Awaiting InterstitialAd load timed out.');
+              return null;
+            },
+          );
+        } catch (e) {
+          debugPrint('Error awaiting InterstitialAd: $e');
+        }
+      } else {
+        _loadInterstitialAd();
+      }
+    }
+
+    final ad = _interstitialAd;
+    if (ad == null) {
+      debugPrint('InterstitialAd not available to show.');
+      return;
+    }
+
+    if (_isShowingFullScreenAd) return;
+
+    _isShowingFullScreenAd = true;
     _interstitialAd = null;
 
+    final completer = Completer<void>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (adInstance) {
         adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
         _loadInterstitialAd();
         if (!completer.isCompleted) completer.complete();
       },
       onAdFailedToShowFullScreenContent: (adInstance, error) {
         adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
         _loadInterstitialAd();
         debugPrint('InterstitialAd failed to show: $error');
         if (!completer.isCompleted) completer.complete();
@@ -233,37 +327,71 @@ class AdService {
       ad.show();
     } catch (error) {
       ad.dispose();
+      _isShowingFullScreenAd = false;
+      _lastAdDismissedTime = DateTime.now();
       _loadInterstitialAd();
       debugPrint('InterstitialAd show exception: $error');
       if (!completer.isCompleted) completer.complete();
     }
 
     await completer.future.timeout(
-      const Duration(seconds: 10),
+      const Duration(seconds: 15),
       onTimeout: () {
-        debugPrint('InterstitialAd timed out');
+        debugPrint('InterstitialAd presentation timed out');
       },
     );
   }
 
-  static Future<bool> showRewardedAd() async {
+  static Future<bool> showRewardedAd({
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    if (_isShowingFullScreenAd) return false;
+    if (!shouldLoadAds) return false;
+
+    if (_rewardedAd == null) {
+      if (_rewardedLoadCompleter != null &&
+          !_rewardedLoadCompleter!.isCompleted) {
+        debugPrint(
+          'RewardedAd is currently loading. Awaiting (timeout: ${timeout.inSeconds}s)...',
+        );
+        try {
+          await _rewardedLoadCompleter!.future.timeout(
+            timeout,
+            onTimeout: () {
+              debugPrint('Awaiting RewardedAd load timed out.');
+              return null;
+            },
+          );
+        } catch (e) {
+          debugPrint('Error awaiting RewardedAd: $e');
+        }
+      } else {
+        _loadRewardedAd();
+      }
+    }
+
     final ad = _rewardedAd;
     if (ad == null) {
       debugPrint('No rewarded ad ready');
       return false;
     }
 
+    _isShowingFullScreenAd = true;
+    _rewardedAd = null;
+
     final completer = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _rewardedAd = null;
+      onAdDismissedFullScreenContent: (adInstance) {
+        adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
         _loadRewardedAd();
         if (!completer.isCompleted) completer.complete(false);
       },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _rewardedAd = null;
+      onAdFailedToShowFullScreenContent: (adInstance, error) {
+        adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
         _loadRewardedAd();
         if (!completer.isCompleted) completer.complete(false);
         debugPrint('RewardedAd failed to show: $error');
@@ -271,54 +399,107 @@ class AdService {
     );
 
     ad.show(
-      onUserEarnedReward: (ad, reward) {
+      onUserEarnedReward: (adInstance, reward) {
         if (!completer.isCompleted) completer.complete(true);
       },
     );
 
     return completer.future.timeout(
-      const Duration(seconds: 10),
+      const Duration(seconds: 15),
       onTimeout: () {
+        _isShowingFullScreenAd = false;
         return false;
       },
     );
   }
 
-  static Future<void> showAppOpenAd() async {
-    if (_isShowingAppOpenAd) return;
-
-    final ad = _appOpenAd;
-    if (ad == null) {
-      debugPrint('No AppOpenAd ready');
+  static Future<void> showAppOpenAd({
+    Duration timeout = const Duration(seconds: 4),
+  }) async {
+    if (_isShowingFullScreenAd) {
+      debugPrint('A full screen ad is already showing. Skipping AppOpenAd.');
       return;
     }
 
-    _isShowingAppOpenAd = true;
+    if (!shouldLoadAds) return;
 
+    if (_lastAdDismissedTime != null) {
+      final elapsed = DateTime.now().difference(_lastAdDismissedTime!);
+      if (elapsed < const Duration(seconds: 5)) {
+        debugPrint('AppOpenAd skipped due to cooldown ($elapsed elapsed).');
+        return;
+      }
+    }
+
+    if (_appOpenAd == null) {
+      if (_appOpenLoadCompleter != null &&
+          !_appOpenLoadCompleter!.isCompleted) {
+        debugPrint(
+          'AppOpenAd is loading. Awaiting (timeout: ${timeout.inSeconds}s)...',
+        );
+        try {
+          await _appOpenLoadCompleter!.future.timeout(
+            timeout,
+            onTimeout: () {
+              debugPrint('Awaiting AppOpenAd load timed out.');
+              return null;
+            },
+          );
+        } catch (e) {
+          debugPrint('Error awaiting AppOpenAd: $e');
+        }
+      } else {
+        _loadAppOpenAd();
+      }
+    }
+
+    final ad = _appOpenAd;
+    if (ad == null) {
+      debugPrint('AppOpenAd not available to show.');
+      return;
+    }
+
+    if (_isShowingFullScreenAd) return;
+
+    _isShowingFullScreenAd = true;
+    _appOpenAd = null;
+
+    final completer = Completer<void>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _appOpenAd = null;
-        _isShowingAppOpenAd = false;
+      onAdDismissedFullScreenContent: (adInstance) {
+        adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
+        _loadAppOpenAd();
+        if (!completer.isCompleted) completer.complete();
       },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _appOpenAd = null;
-        _isShowingAppOpenAd = false;
+      onAdFailedToShowFullScreenContent: (adInstance, error) {
+        adInstance.dispose();
+        _isShowingFullScreenAd = false;
+        _lastAdDismissedTime = DateTime.now();
+        _loadAppOpenAd();
         debugPrint('AppOpenAd failed to show: $error');
+        if (!completer.isCompleted) completer.complete();
       },
     );
 
     try {
-      await ad.show();
+      ad.show();
     } catch (error, stackTrace) {
       ad.dispose();
-      if (identical(_appOpenAd, ad)) {
-        _appOpenAd = null;
-      }
-      _isShowingAppOpenAd = false;
+      _isShowingFullScreenAd = false;
+      _lastAdDismissedTime = DateTime.now();
+      _loadAppOpenAd();
       debugPrint('AppOpenAd show failed: $error');
       debugPrint('$stackTrace');
+      if (!completer.isCompleted) completer.complete();
     }
+
+    await completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () {
+        debugPrint('AppOpenAd presentation timed out');
+      },
+    );
   }
 }

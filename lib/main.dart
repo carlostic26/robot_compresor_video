@@ -31,7 +31,7 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     unawaited(() async {
       try {
-        await AdService.initializeAndLoadAppOpenAd(showOnLoad: true);
+        await AdService.showAppOpenAd(timeout: const Duration(seconds: 4));
       } catch (error, stackTrace) {
         debugPrint('AppOpenAd startup flow failed: $error');
         debugPrint('$stackTrace');

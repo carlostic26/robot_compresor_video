@@ -42,6 +42,7 @@ class _VideoComparisonPreviewWidgetState
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   bool _isSeeking = false;
+  DateTime _lastDriftSync = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
@@ -90,6 +91,7 @@ class _VideoComparisonPreviewWidgetState
       await cAfter.setVolume(0.0);
 
       cBefore.addListener(_onControllerTick);
+      cAfter.addListener(_onControllerTick);
 
       if (mounted) {
         setState(() {
@@ -114,19 +116,32 @@ class _VideoComparisonPreviewWidgetState
     final pos = _controllerBefore!.value.position;
     final isPlaying = _controllerBefore!.value.isPlaying;
 
-    // Corrección de deriva entre ambos videos si difieren por más de 200 ms
     if (_controllerAfter != null && _controllerAfter!.value.isInitialized) {
-      final afterPos = _controllerAfter!.value.position;
-      final drift = (pos - afterPos).inMilliseconds.abs();
-      if (drift > 200) {
-        _controllerAfter!.seekTo(pos);
+      // Si estamos en reproducción activa pero el secundario no está corriendo, forzar play
+      if (_isPlaying &&
+          !_controllerAfter!.value.isPlaying &&
+          !_controllerAfter!.value.isBuffering) {
+        _controllerAfter!.play();
+      }
+
+      if (isPlaying && _controllerAfter!.value.isPlaying) {
+        final afterPos = _controllerAfter!.value.position;
+        final drift = (pos - afterPos).inMilliseconds.abs();
+        final now = DateTime.now();
+        if (drift > 300 &&
+            now.difference(_lastDriftSync).inMilliseconds > 2000) {
+          _lastDriftSync = now;
+          _controllerAfter!.seekTo(pos);
+        }
       }
     }
 
-    setState(() {
-      _position = pos;
-      _isPlaying = isPlaying;
-    });
+    if (_position != pos || _isPlaying != isPlaying) {
+      setState(() {
+        _position = pos;
+        _isPlaying = isPlaying;
+      });
+    }
   }
 
   Future<void> _togglePlay() async {
@@ -137,20 +152,29 @@ class _VideoComparisonPreviewWidgetState
     }
 
     if (_isPlaying) {
+      setState(() => _isPlaying = false);
       await Future.wait([
         _controllerBefore!.pause(),
         _controllerAfter!.pause(),
       ]);
-    } else {
       final pos = _controllerBefore!.value.position;
-      await _controllerAfter!.seekTo(pos);
+      // Sincronizar con precisión ambos reproductores al pausar
+      await Future.wait([
+        _controllerBefore!.seekTo(pos),
+        _controllerAfter!.seekTo(pos),
+      ]);
+      if (mounted) {
+        setState(() => _position = pos);
+      }
+    } else {
+      setState(() => _isPlaying = true);
+      _lastDriftSync = DateTime.now();
+      final posBefore = _controllerBefore!.value.position;
+      final posAfter = _controllerAfter!.value.position;
+      if ((posBefore - posAfter).inMilliseconds.abs() > 100) {
+        await _controllerAfter!.seekTo(posBefore);
+      }
       await Future.wait([_controllerBefore!.play(), _controllerAfter!.play()]);
-    }
-
-    if (mounted) {
-      setState(() {
-        _isPlaying = !_isPlaying;
-      });
     }
   }
 
@@ -162,6 +186,7 @@ class _VideoComparisonPreviewWidgetState
     }
 
     final target = Duration(milliseconds: valueMs.toInt());
+    _lastDriftSync = DateTime.now();
     await Future.wait([
       _controllerBefore!.seekTo(target),
       _controllerAfter!.seekTo(target),
@@ -596,6 +621,7 @@ class _FullScreenComparisonScreenState
   Duration _duration = Duration.zero;
   bool _isSeeking = false;
   bool _showControls = true;
+  DateTime _lastDriftSync = DateTime.fromMillisecondsSinceEpoch(0);
 
   @override
   void initState() {
@@ -633,6 +659,7 @@ class _FullScreenComparisonScreenState
       }
 
       cBefore.addListener(_onControllerTick);
+      cAfter.addListener(_onControllerTick);
 
       if (mounted) {
         setState(() {
@@ -652,17 +679,31 @@ class _FullScreenComparisonScreenState
     final isPlaying = _controllerBefore!.value.isPlaying;
 
     if (_controllerAfter != null && _controllerAfter!.value.isInitialized) {
-      final afterPos = _controllerAfter!.value.position;
-      final drift = (pos - afterPos).inMilliseconds.abs();
-      if (drift > 200) {
-        _controllerAfter!.seekTo(pos);
+      // Si estamos en reproducción activa pero el secundario no está corriendo, forzar play
+      if (_isPlaying &&
+          !_controllerAfter!.value.isPlaying &&
+          !_controllerAfter!.value.isBuffering) {
+        _controllerAfter!.play();
+      }
+
+      if (isPlaying && _controllerAfter!.value.isPlaying) {
+        final afterPos = _controllerAfter!.value.position;
+        final drift = (pos - afterPos).inMilliseconds.abs();
+        final now = DateTime.now();
+        if (drift > 300 &&
+            now.difference(_lastDriftSync).inMilliseconds > 2000) {
+          _lastDriftSync = now;
+          _controllerAfter!.seekTo(pos);
+        }
       }
     }
 
-    setState(() {
-      _position = pos;
-      _isPlaying = isPlaying;
-    });
+    if (_position != pos || _isPlaying != isPlaying) {
+      setState(() {
+        _position = pos;
+        _isPlaying = isPlaying;
+      });
+    }
   }
 
   Future<void> _togglePlay() async {
@@ -673,20 +714,29 @@ class _FullScreenComparisonScreenState
     }
 
     if (_isPlaying) {
+      setState(() => _isPlaying = false);
       await Future.wait([
         _controllerBefore!.pause(),
         _controllerAfter!.pause(),
       ]);
-    } else {
       final pos = _controllerBefore!.value.position;
-      await _controllerAfter!.seekTo(pos);
+      // Sincronizar con precisión ambos reproductores al pausar
+      await Future.wait([
+        _controllerBefore!.seekTo(pos),
+        _controllerAfter!.seekTo(pos),
+      ]);
+      if (mounted) {
+        setState(() => _position = pos);
+      }
+    } else {
+      setState(() => _isPlaying = true);
+      _lastDriftSync = DateTime.now();
+      final posBefore = _controllerBefore!.value.position;
+      final posAfter = _controllerAfter!.value.position;
+      if ((posBefore - posAfter).inMilliseconds.abs() > 100) {
+        await _controllerAfter!.seekTo(posBefore);
+      }
       await Future.wait([_controllerBefore!.play(), _controllerAfter!.play()]);
-    }
-
-    if (mounted) {
-      setState(() {
-        _isPlaying = !_isPlaying;
-      });
     }
   }
 
@@ -698,6 +748,7 @@ class _FullScreenComparisonScreenState
     }
 
     final target = Duration(milliseconds: valueMs.toInt());
+    _lastDriftSync = DateTime.now();
     await Future.wait([
       _controllerBefore!.seekTo(target),
       _controllerAfter!.seekTo(target),
