@@ -5,7 +5,6 @@ import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/bloc/home_section_bloc.dart';
-import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/animated_section_tabs.dart';
@@ -178,7 +177,6 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         drawer: const AppDrawer(),
-        bottomNavigationBar: const BannerAdWidget(),
       ),
     );
   }

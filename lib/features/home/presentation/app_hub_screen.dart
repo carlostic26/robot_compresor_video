@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
 import 'package:robot_compresor_video/core/theme/app_colors.dart';
-import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
 
@@ -77,7 +76,6 @@ class AppHubScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const BannerAdWidget(),
     );
   }
 }
