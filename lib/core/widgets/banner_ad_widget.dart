@@ -16,17 +16,42 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   int? _lastWidth;
 
   @override
+  void initState() {
+    super.initState();
+    AdService.canShowBanners.addListener(_onCanShowBannersChanged);
+  }
+
+  void _onCanShowBannersChanged() {
+    if (!mounted) return;
+    if (AdService.canShowBanners.value) {
+      if (_bannerAd == null && !_isLoading && _lastWidth != null) {
+        _loadBanner(_lastWidth!);
+      } else {
+        setState(() {});
+      }
+    } else {
+      _bannerAd?.dispose();
+      _bannerAd = null;
+      _isLoaded = false;
+      _isLoading = false;
+      setState(() {});
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final width = MediaQuery.of(context).size.width.truncate();
     if (_lastWidth != width) {
       _lastWidth = width;
-      _loadBanner(width);
+      if (AdService.canShowBanners.value) {
+        _loadBanner(width);
+      }
     }
   }
 
   Future<void> _loadBanner(int width) async {
-    if (_isLoading) return;
+    if (_isLoading || !AdService.canShowBanners.value) return;
 
     final unitId = AdService.bannerUnitId;
     if (unitId.isEmpty) return;
@@ -42,7 +67,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       }
     }
 
-    if (!mounted) {
+    if (!mounted || !AdService.canShowBanners.value) {
       _isLoading = false;
       return;
     }
@@ -58,7 +83,11 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          if (!mounted) return;
+          if (!mounted || !AdService.canShowBanners.value) {
+            ad.dispose();
+            _isLoading = false;
+            return;
+          }
           setState(() {
             _bannerAd = ad as BannerAd;
             _isLoaded = true;
@@ -80,13 +109,14 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   void dispose() {
+    AdService.canShowBanners.removeListener(_onCanShowBannersChanged);
     _bannerAd?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_isLoaded || _bannerAd == null) {
+    if (!AdService.canShowBanners.value || !_isLoaded || _bannerAd == null) {
       return const SizedBox.shrink();
     }
 

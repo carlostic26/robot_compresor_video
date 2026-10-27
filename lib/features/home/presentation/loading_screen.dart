@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
+import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 
 class LoadingScreen extends StatefulWidget {
@@ -22,9 +23,12 @@ class _LoadingScreenState extends State<LoadingScreen>
   void initState() {
     super.initState();
 
+    // Iniciar la sesión de AppOpenAd al abrir la app desde LoadingScreen
+    unawaited(AdService.startAppOpenSession());
+
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 7),
+      duration: AdService.loadingScreenDuration,
     );
 
     _controller.forward();
@@ -100,7 +104,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0xFF00D9FF).withValues(alpha: .30),
+                          color: const Color(0xFF00D9FF).withValues(alpha: .30),
                           blurRadius: 100,
                           spreadRadius: 35,
                         ),
@@ -118,7 +122,6 @@ class _LoadingScreenState extends State<LoadingScreen>
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
-
                   children: [
                     // Logo
                     Container(
@@ -171,8 +174,6 @@ class _LoadingScreenState extends State<LoadingScreen>
                       ],
                     ),
 
-               
-
                     const Text(
                       'reducimos tus videos hasta un 60% sin perder calidad.',
                       textAlign: TextAlign.center,
@@ -195,7 +196,7 @@ class _LoadingScreenState extends State<LoadingScreen>
                         borderRadius: BorderRadius.circular(10),
                         child: LinearProgressIndicator(
                           value: progress,
-                          minHeight:6,
+                          minHeight: 6,
                           backgroundColor: const Color(0xFF163044),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             Color(0xFF00D9FF),
@@ -203,8 +204,6 @@ class _LoadingScreenState extends State<LoadingScreen>
                         ),
                       ),
                     ),
-
-                   
 
                     SizedBox(
                       height: ScreenSizeService.heightPercent(context, 9),

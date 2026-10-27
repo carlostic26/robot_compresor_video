@@ -27,17 +27,6 @@ Future<void> main() async {
   };
 
   runApp(const App());
-
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    unawaited(() async {
-      try {
-        await AdService.showAppOpenAd(timeout: const Duration(seconds: 4));
-      } catch (error, stackTrace) {
-        debugPrint('AppOpenAd startup flow failed: $error');
-        debugPrint('$stackTrace');
-      }
-    }());
-  });
 }
 
 class App extends StatelessWidget {
