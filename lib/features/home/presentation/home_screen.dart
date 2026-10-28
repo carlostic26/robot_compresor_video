@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:robot_compresor_video/core/routes/app_routes.dart';
 import 'package:robot_compresor_video/core/services/ad_service.dart';
-import 'package:robot_compresor_video/core/services/screen_size_service.dart';
 import 'package:robot_compresor_video/core/theme/app_colors.dart';
 import 'package:robot_compresor_video/core/widgets/banner_ad_widget.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/advanced_mode_dialog.dart';
 import 'package:robot_compresor_video/features/home/presentation/widgets/app_drawer.dart';
 import 'package:robot_compresor_video/features/home/presentation/dialogs/app_info_dialog.dart';
+
+/// Formatos de video admitidos por la app.
+const List<String> _supportedFormats = ['MP4', 'MOV', 'AVI', 'MKV'];
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,7 +17,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,67 +39,90 @@ class HomeScreen extends StatelessWidget {
       drawer: const AppDrawer(),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: ScreenSizeService.heightPercent(context, 2.5)),
-
-              Text(
-                'Selecciona el método que mejor se adapte a tus necesidades.',
-                style: textTheme.bodyMedium?.copyWith(color: AppColors.grey),
-                textAlign: TextAlign.center,
+              // ~40% — Compresión básica
+              Expanded(
+                flex: 40,
+                child: _CompressionModeCard(
+                  icon: Icons.bolt_rounded,
+                  title: 'Compresión básica',
+                  badge: 'Sin anuncios',
+                  badgeIcon: Icons.check_circle_rounded,
+                  badgeColor: AppColors.success,
+                  description:
+                      'Rápida y sencilla. Elige un preset de calidad y reduce '
+                      'el tamaño de tus videos en pocos toques.',
+                  features: const [
+                    'Presets de calidad predefinidos',
+                    'Proceso rápido y automático',
+                    'Ideal para compartir en redes y chats',
+                  ],
+                  color: colorScheme.primary,
+                  onTap: () => context.push(AppRoutes.basic),
+                ),
               ),
 
-              SizedBox(height: ScreenSizeService.heightPercent(context, 4)),
+              const SizedBox(height: 12),
 
+              // ~40% — Compresión avanzada
               Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _CompressionCard(
-                      icon: Icons.bolt_rounded,
-                      title: 'Compresión básica',
-                      subtitle: 'No contiene anuncio',
-                      description:
-                          'Rápida y sencilla. Elige entre presets de calidad para reducir el tamaño de tus videos.',
-                      color: colorScheme.primary,
-                      onTap: () => context.push(AppRoutes.basic),
-                    ),
-                    SizedBox(
-                      height: ScreenSizeService.heightPercent(context, 4),
-                    ),
-                    _CompressionCard(
-                      icon: Icons.auto_awesome,
-                      title: 'Compresión avanzada',
-                      subtitle: 'Contiene anuncio',
-                      description:
-                          'Mayor control utilizando FFmpeg. Permite modificar y ajustar bitrate, FPS y dimensión del video.',
-                      color: colorScheme.primary,
-                      onTap: () {
-                        AdvancedModeDialog.show(
-                          context,
-                          onContinue: () async {
-                            await AdService.showInterstitialAd();
-                            if (!context.mounted) return false;
-                            context.push(AppRoutes.advanced);
-                            return true;
-                          },
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: ScreenSizeService.heightPercent(context, 4.5),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push(AppRoutes.tutorial),
-                        icon: const Icon(Icons.school_rounded),
-                        label: const Text('Ver Tutorial'),
-                      ),
-                    ),
+                flex: 40,
+                child: _CompressionModeCard(
+                  icon: Icons.auto_awesome,
+                  title: 'Compresión avanzada',
+                  badge: 'Contiene anuncio',
+                  badgeIcon: Icons.campaign_rounded,
+                  badgeColor: AppColors.primary,
+                  description:
+                      'Control total con FFmpeg. Ajusta cada parámetro y '
+                      'compara el resultado antes de guardar.',
+                  features: const [
+                    'Bitrate personalizado (kbps)',
+                    'Ajuste de FPS y resolución',
+                    'Vista previa antes / después',
                   ],
+                  color: colorScheme.primary,
+                  onTap: () {
+                    AdvancedModeDialog.show(
+                      context,
+                      onContinue: () async {
+                        await AdService.showInterstitialAd();
+                        if (!context.mounted) return false;
+                        context.push(AppRoutes.advanced);
+                        return true;
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              // ~20% — márgenes + botón de tutorial
+              Expanded(
+                flex: 20,
+                child: Center(
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push(AppRoutes.tutorial),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      icon: const Icon(Icons.school_rounded),
+                      label: const Text('Ver Tutorial'),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -110,19 +134,25 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _CompressionCard extends StatelessWidget {
+class _CompressionModeCard extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final String badge;
+  final IconData badgeIcon;
+  final Color badgeColor;
   final String description;
+  final List<String> features;
   final Color color;
   final VoidCallback onTap;
 
-  const _CompressionCard({
+  const _CompressionModeCard({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    required this.badge,
+    required this.badgeIcon,
+    required this.badgeColor,
     required this.description,
+    required this.features,
     required this.color,
     required this.onTap,
   });
@@ -133,64 +163,166 @@ class _CompressionCard extends StatelessWidget {
 
     return Material(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         splashColor: color.withValues(alpha: .15),
         highlightColor: color.withValues(alpha: .08),
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
           decoration: BoxDecoration(
             border: Border.all(color: color.withValues(alpha: .25)),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: .12),
-                  borderRadius: BorderRadius.circular(14),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+          // Scroll de respaldo para pantallas muy pequeñas; en pantallas
+          // normales el contenido cabe sin desplazarse.
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Encabezado
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: .12),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(icon, color: color, size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Icon(badgeIcon, size: 14, color: badgeColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      badge,
+                                      style: textTheme.bodySmall?.copyWith(
+                                        color: badgeColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: color.withValues(alpha: .6),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Descripción
+                      Text(
+                        description,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurface.withValues(alpha: .85),
+                          height: 1.35,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Características
+                      ...features.map(
+                        (feature) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.check_rounded,
+                                size: 16,
+                                color: color,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  feature,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: AppColors.grey,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Formatos admitidos
+                      Row(
+                        children: [
+                          Text(
+                            'Formatos:',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: _supportedFormats
+                                  .map(
+                                    (format) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: color.withValues(alpha: .10),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: color.withValues(alpha: .30),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        format,
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: color,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Icon(icon, color: color, size: 30),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      description,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: AppColors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: color.withValues(alpha: .6),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

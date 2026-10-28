@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:robot_compresor_video/core/services/ad_service.dart';
 import 'package:robot_compresor_video/core/services/injection_container.dart';
 import 'package:robot_compresor_video/features/compress_video/presentation/bloc/video_bloc.dart';
 import 'package:robot_compresor_video/features/home/presentation/sections/advanced_compressor_section.dart';
@@ -94,6 +97,17 @@ class _AdvancedCompressionScreenState extends State<AdvancedCompressionScreen> {
                 );
                 _pageController.jumpToPage(1);
               }
+            }
+
+            // Video elegido y widget de carga visible: si el AppOpenAd quedó
+            // pendiente (no se mostró en LoadingScreen), se muestra aquí con
+            // los banners apagados.
+            if (state.video != null &&
+                (state.status == VideoStatus.loadingExtendedMetadata ||
+                    (state.status == VideoStatus.success &&
+                        state.video!.fps == 0 &&
+                        state.advancedCompressionResult == null))) {
+              unawaited(AdService.showPendingAppOpenAdOnVideoSelected());
             }
 
             // Cargar metadata extendida (bitrate real, fps) tras seleccionar video

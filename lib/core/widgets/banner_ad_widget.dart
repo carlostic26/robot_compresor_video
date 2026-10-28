@@ -14,6 +14,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   bool _isLoaded = false;
   bool _isLoading = false;
   int? _lastWidth;
+  int _loadGeneration = 0;
 
   @override
   void initState() {
@@ -30,11 +31,18 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         setState(() {});
       }
     } else {
-      _bannerAd?.dispose();
-      _bannerAd = null;
-      _isLoaded = false;
-      _isLoading = false;
-      setState(() {});
+      // Retirar el banner del árbol inmediatamente y liberarlo tras el frame,
+      // garantizando que no quede ninguna vista de banner bajo el AppOpenAd.
+      final oldAd = _bannerAd;
+      _loadGeneration++; // invalida cualquier carga en curso
+      setState(() {
+        _bannerAd = null;
+        _isLoaded = false;
+        _isLoading = false;
+      });
+      if (oldAd != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => oldAd.dispose());
+      }
     }
   }
 
@@ -77,15 +85,20 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     _isLoaded = false;
 
     debugPrint('Loading BannerAd ($unitId)...');
+    final generation = ++_loadGeneration;
     _bannerAd = BannerAd(
       adUnitId: unitId,
       size: adSize,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          if (!mounted || !AdService.canShowBanners.value) {
+          // Descartar respuestas de cargas obsoletas o si los banners
+          // fueron apagados (p. ej. por un AppOpenAd).
+          if (!mounted ||
+              generation != _loadGeneration ||
+              !AdService.canShowBanners.value) {
             ad.dispose();
-            _isLoading = false;
+            if (generation == _loadGeneration) _isLoading = false;
             return;
           }
           setState(() {
@@ -97,7 +110,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          if (!mounted) return;
+          if (!mounted || generation != _loadGeneration) return;
           setState(() {
             _isLoading = false;
           });

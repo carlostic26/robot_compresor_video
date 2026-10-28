@@ -35,6 +35,9 @@ class _LoadingScreenState extends State<LoadingScreen>
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
+        // Si el AppOpenAd no se mostró durante la carga, queda pendiente
+        // para cuando el usuario seleccione un video.
+        AdService.onLoadingScreenFinished();
         setState(() {
           _isReadyToContinue = true;
         });
